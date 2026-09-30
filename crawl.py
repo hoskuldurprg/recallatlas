@@ -6,10 +6,13 @@ normalizes them into one schema, and writes data/recalls.json.
 Sources (all official, public, no API key needed):
   US  - CPSC consumer products        saferproducts.gov REST API
   US  - FDA food / drugs / devices    api.fda.gov enforcement reports
+  US  - NHTSA vehicles, car seats     data.transportation.gov (Socrata)
+  US  - USDA FSIS meat & poultry      fsis.usda.gov recall API
   UK  - OPSS product safety alerts    gov.uk search API
   UK  - FSA food alerts               data.food.gov.uk
   CA  - Health Canada / CFIA / TC     recalls-rappels.canada.ca open data
   EU  - Safety Gate (27 EU + EEA)     ec.europa.eu public API
+  EU  - RASFF food alerts             webgate.ec.europa.eu/rasff-window consumer API
 
 Run:  python crawl.py            (writes data/recalls.json)
 Deps: requests
@@ -19,7 +22,7 @@ from pathlib import Path
 
 try:
     import requests
-except ImportError:  # seed.py imports the normalizers without network deps
+except ImportError:  # lets tests import the normalizers without network deps
     requests = None
 
 DAYS_BACK = 60          # how far back to keep recalls
@@ -32,7 +35,7 @@ EU_NAMES = {
  "EE":"Estonia","FI":"Finland","FR":"France","DE":"Germany","GR":"Greece","HU":"Hungary","IE":"Ireland",
  "IT":"Italy","LV":"Latvia","LT":"Lithuania","LU":"Luxembourg","MT":"Malta","NL":"Netherlands","PL":"Poland",
  "PT":"Portugal","RO":"Romania","SK":"Slovakia","SI":"Slovenia","ES":"Spain","SE":"Sweden",
- "IS":"Iceland","NO":"Norway","LI":"Liechtenstein","XI":"Northern Ireland"}
+ "IS":"Iceland","NO":"Norway","LI":"Liechtenstein","CH":"Switzerland","XI":"Northern Ireland"}
 
 # ---------------------------------------------------------------- helpers
 def get(url, **kw):
@@ -53,25 +56,34 @@ def clean(s, n=None):
         s = s[: n - 1].rsplit(" ", 1)[0] + "…"
     return s
 
-CATS = [  # first match wins; checked against title + product + hazard
- ("vehicles",  r"\b(vehicle|car|truck|suv|bus|motorcycle|tire|tyre|airbag|transport canada|nhtsa|a\.t\.v)\b"),
- ("medical",   r"\b(drug|tablet|capsule|injection|insulin|vaccine|biologic|medical device|syringe|catheter|implant|pump module|suture|mri|infusion|pharma)\b"),
- ("food",      r"\b(food|salmonella|listeria|e\. ?coli|allergen|undeclared|milk|peanut|gluten|sesame|egg|soya|snack|salsa|sprout|cheese|meat|fish|tuna|lobster|olive|chocolate|candy|beverage|drink|juice|bakery|cookie|cake|spice|coleslaw|norovirus|raspberr|mango|beans|ipa)\b"),
- ("kids",      r"\b(toy|toys|child|children|baby|infant|crib|cradle|stroller|toddler|kids|puzzle|doll|pacifier|high chair|bike helmet)\b"),
- ("electrical",r"\b(charger|battery|batteries|power bank|lithium|electric|electrical|usb|plug|socket|adapter|heater|lamp|light|led|appliance|headphone|speaker|smart glasses|shock|power supply|powerwall|welder|refrigerator|air conditioner|grill)\b"),
- ("cosmetics", r"\b(cosmetic|nail|tattoo|ink|cream|lotion|shampoo|perfume|makeup|face paint|e-cigarette|nicotine|chemical)\b"),
- ("home",      r"\b(mattress|dresser|furniture|chair|table|ladder|blanket|window|door|stove|kitchen|dining|bed|tool|pressure washer|fuel container|pool|lighter|exercise|yoga)\b"),
- ("apparel",   r"\b(clothing|jacket|anorak|hoodie|drawstring|shoe|jewel|earring|bracelet|necklace|bag|textile|rain suit)\b"),
+CATS = [  # first match wins; checked against title + product + hazard (plurals match too)
+ ("vehicles",  r"\b(vehicle|car|truck|suv|bus|motorcycle|motor home|trailer|tire|tyre|airbag|transport canada|nhtsa|a\.t\.v|snowmobile|scooter|motorbike|dirt bike)\b"),
+ ("medical",   r"\b(drug|tablet|capsule|injection|insulin|vaccine|biologic|medical device|syringe|catheter|implant|pump module|suture|mri|infusion|pharma|stent|occluder|glucose|walker|hearing aid|contact lens|surgical)\b"),
+ ("food",      r"\b(food|salmonella|listeria|e\. ?coli|allergen|undeclared|milk|peanut|gluten|sesame|egg|soya|soy|snack|salsa|sprout|cheese|meat|pork|beef|chicken|poultry|sausage|fish|tuna|lobster|shrimp|olive|chocolate|candy|beverage|drink|juice|bakery|bread|cookie|cake|spice|coleslaw|norovirus|raspberr|berr|mango|beans|ipa|beer|wine|flour|rice|noodle|sauce|seasoning|supplement|vitamin|infant formula|botulism|mycotoxin|aflatoxin|pesticide|ethylene oxide|probiotic|herbal)\b"),
+ ("kids",      r"\b(toy|toys|child|children|baby|babies|infant|crib|cradle|stroller|pram|toddler|kids|kid|puzzle|doll|pacifier|teether|rattle|high chair|playpen|play pen|busy board|squishy|slime|swim ring|swim seat|float|bath seat|bassinet|carrier|car seat|sand art|coloured sand|colored sand|school|princess|dress-up|costume|swing set|safety lock|cabinet lock|night light|balloon|water bead|sensory|play gym|buggy|dough|fidget|anti-stress|jumper|craft)\b"),
+ ("sports",    r"\b(bike|bicycle|e-bike|ebike|helmet|treadmill|exercise|fitness|yoga|pilates|weight plate|barbell|dumbbell|kettlebell|buoyancy|life jacket|lifejacket|swim|dive|diving|regulator|climbing|quickdraw|carabiner|harness|hockey|visor|ski|skate|skateboard|trampoline|handlebar|camping|tent|kayak|paddle|golf|football|basketball|dart)\b"),
+ ("tools",     r"\b(drill|saw|saw blade|grinder|angle grinder|sander|polisher|polishing machine|trimmer|brush cutter|mower|lawn|chainsaw|jack|ladder|welder|laser|engraving|cutter|harvester|tractor|compressor|generator|pressure washer|nail gun|leaf blower|blower|grease gun|mixer|kneading|glove|mask|respirator|earmuff|ear defender|goggles|protective)\b"),
+ ("electrical",r"\b(charger|battery|batteries|power bank|powerbank|power station|hand warmer|adaptor|luminaire|circuit breaker|circuit-breaker|web cam|lithium|electric|electrical|usb|plug|socket|extension lead|adapter|heater|lamp|light|lighting|led|appliance|headphone|earbud|speaker|smart glasses|webcam|camera|pager|projector|shock|power supply|powerwall|refrigerator|fridge|freezer|air conditioner|fan|kettle|toaster|blender|hair dryer|straightener|sleep machine|grill|range|oven|microwave|dishwasher|washing machine|dryer|vacuum)\b"),
+ ("cosmetics", r"\b(cosmetic|nail|tattoo|ink|cream|lotion|shampoo|conditioner|mousse|hand wash|soap|micellar|cleansing|sunscreen|perfume|makeup|mascara|lipstick|face paint|hair dye|e-cigarette|vape|nicotine|chemical|detergent|cleaner|air freshener|aer spray|bleach|wipe|spray|hyaluronic)\b"),
+ ("home",      r"\b(mattress|dresser|furniture|chair|table|shelf|cabinet|blind|shade|curtain|blanket|duvet|pillow|window|door|doorstop|draught excluder|stove|kitchen|dining|cookware|pan|pot|glass|mug|bottle|pepper mill|bed|sofa|sauna|pool|lighter|candle|fire extinguisher|fire spray|smoke alarm|carbon monoxide|solar collector|boiler|fuel container|garden|shower|jug|stairway|fire alarm|plant)\b"),
+ ("apparel",   r"\b(clothing|jacket|anorak|coat|hoodie|sweater|pyjama|pajama|nightwear|bathrobe|robe|drawstring|shoe|boot|sandal|jewel|jewellery|jewelry|earring|bracelet|necklace|ring|bag|handbag|textile|rain suit|hat|scarf|sunglasses)\b"),
 ]
+HINTS = {  # EU Safety Gate productCategory / Canada category -> our category
+ "toys": "kids", "childcare_articles_and_children_equipment": "kids", "toys and games": "kids",
+ "cosmetics": "cosmetics", "chemical_products": "cosmetics",
+ "electrical_appliances": "electrical", "lighting_equipment": "electrical", "lighting_chains": "electrical",
+ "electronics": "electrical", "appliances": "electrical", "communication_and_media_equipment": "electrical",
+ "clothing_textiles": "apparel", "jewellery": "apparel", "fashion_items": "apparel",
+ "hobby_sports_equipment": "sports", "sports and recreation": "sports",
+ "hand_tools": "tools", "machinery": "tools", "protective_equipment": "tools", "personal_protective_equipment": "tools",
+ "lighters": "home", "furniture": "home", "kitchen_cooking_accessories": "home", "decorative_articles": "home",
+ "motor_vehicles": "vehicles", "food_imitating_products": "kids",
+}
 def categorize(*parts, hint=""):
-    text = " ".join(str(p or "") for p in parts).lower()
     h = (hint or "").lower()
-    if h in {"toys"}: return "kids"
-    if h in {"cosmetics"}: return "cosmetics"
-    if h in {"electrical_appliances","lighting_equipment","lighting_chains","electronics","appliances"}: return "electrical"
-    if h in {"clothing_textiles","jewellery"}: return "apparel"
-    if h in {"chemical_products"}: return "cosmetics"
-    if h in {"hobby_sports_equipment","lighters","hand_tools","furniture"}: return "home"
+    if h in HINTS:
+        return HINTS[h]
+    text = " ".join(str(p or "") for p in parts).lower()
     for cat, rx in CATS:
         if re.search(rx[:-3] + r")(e?s)?\b", text):
             return cat
@@ -230,9 +242,85 @@ def crawl_eu(since, max_pages=40):
             time.sleep(0.3)  # be polite
     return out
 
+# ---------------------------------------------------------------- US: NHTSA (vehicles, tires, car seats, equipment)
+def norm_nhtsa(r):
+    typ = r.get("recall_type", "Vehicle")
+    flags = []
+    if r.get("do_not_drive") == "Yes": flags.append("Do not drive")
+    if r.get("fire_risk_when_parked") == "Yes": flags.append("Park outside")
+    return rec(
+        id=f"nhtsa-{r['nhtsa_id']}", date=r["report_received_date"][:10], country="US",
+        source="NHTSA", title=f"{clean(r.get('manufacturer'), 60)}: {r.get('subject', '')}",
+        product=clean(r.get("component"), 80), brand=clean(r.get("manufacturer"), 60),
+        hazard=r.get("consequence_summary") or r.get("defect_summary", ""),
+        severity=" · ".join(flags) or typ,
+        units=(f"{int(r['potentially_affected']):,} affected" if str(r.get("potentially_affected", "")).isdigit() else ""),
+        category="kids" if typ == "Child Seat" else "vehicles",
+        url=(r.get("recall_link") or {}).get("url") or f"https://www.nhtsa.gov/recalls?nhtsaId={r['nhtsa_id']}")
+
+def crawl_nhtsa(since):
+    url = ("https://data.transportation.gov/resource/6axg-epim.json"
+           f"?$where=report_received_date>='{since}'&$order=report_received_date DESC&$limit=2000")
+    return [norm_nhtsa(r) for r in get(url).json()]
+
+# ---------------------------------------------------------------- US: USDA FSIS (meat, poultry, eggs)
+def norm_fsis(r):
+    reasons = ", ".join(r.get("field_recall_reason") or [])
+    states = r.get("field_states") or []
+    num = r.get("field_recall_number") or re.sub(r"\W+", "-", r.get("field_title", ""))[:40]
+    return rec(
+        id=f"fsis-{num}", date=r["field_recall_date"][:10], country="US", source="USDA FSIS",
+        title=r.get("field_title"), product=clean("; ".join(r.get("field_product_items") or []), 140),
+        brand=clean(", ".join(r.get("field_establishment") or []), 60), hazard=reasons,
+        severity=r.get("field_recall_classification") or r.get("field_recall_type", ""),
+        units=("Nationwide" if "Nationwide" in states else clean(", ".join(states), 80)),
+        category="food", url=(r.get("field_recall_url") or "").replace("http://", "https://"))
+
+def crawl_fsis(since):
+    hdr = {**UA, "User-Agent": "Mozilla/5.0 (compatible; RecallAtlas/1.0; +https://recallatlas.org)",
+           "Accept": "application/json"}
+    r = requests.get("https://www.fsis.usda.gov/fsis/api/recall/v/1", headers=hdr, timeout=120)
+    r.raise_for_status()
+    return [norm_fsis(x) for x in r.json()
+            if (x.get("field_recall_date") or "") >= since and x.get("langcode") == "English"]
+
+# ---------------------------------------------------------------- EU: RASFF food alerts for consumers
+RASFF = "https://webgate.ec.europa.eu/rasff-window/"
+def norm_rasff(n, countries):
+    d, m, y = n["ecValidationDate"][:10].split("-")
+    risk = (n.get("riskDecision") or {}).get("description", "")
+    ptype = (n.get("productType") or {}).get("description", "food")
+    return rec(
+        id=f"rasff-{n['reference']}", date=f"{y}-{m}-{d}",
+        country=(n.get("notifyingCountry") or {}).get("isoCode", "EU"), region="EU",
+        countries=sorted(countries), source="EU RASFF", title=n.get("subject", ""),
+        product=(n.get("productCategory") or {}).get("description", ""),
+        hazard=f"{(n.get('notificationClassification') or {}).get('description', '').capitalize()}. "
+               f"Product category: {(n.get('productCategory') or {}).get('description', '')}.",
+        severity=f"{risk} risk" if risk and "risk" not in risk else risk,
+        category="home" if ptype == "food contact material" else "food",
+        url=f"{RASFF}screen/notification/{n['notifId']}")
+
+def crawl_rasff(since):
+    orgs = get(RASFF + "backend/public/organization/single/market/list/en/").json()["organizations"]
+    found, where = {}, {}
+    for o in orgs:
+        if o["id"] == -1 or not o.get("numberOfNotifications"):
+            continue
+        body = {"parameters": {"pageNumber": 1, "itemsPerPage": 100}, "organizationId": str(o["id"])}
+        r = requests.post(RASFF + "backend/public/consumer/search/en/", json=body, headers=UA, timeout=60)
+        r.raise_for_status()
+        for n in r.json().get("notifications", []):
+            found[n["notifId"]] = n
+            where.setdefault(n["notifId"], set()).add(o["code"])
+        time.sleep(0.5)
+    out = [norm_rasff(n, where[i]) for i, n in found.items()]
+    return [x for x in out if x["date"] >= since]
+
 # ---------------------------------------------------------------- main
-SOURCES = [("CPSC", crawl_cpsc), ("FDA", crawl_fda), ("UK OPSS", crawl_opss),
-           ("UK FSA", crawl_fsa), ("Canada", crawl_canada), ("EU Safety Gate", crawl_eu)]
+SOURCES = [("CPSC", crawl_cpsc), ("FDA", crawl_fda), ("NHTSA", crawl_nhtsa), ("USDA FSIS", crawl_fsis),
+           ("UK OPSS", crawl_opss), ("UK FSA", crawl_fsa), ("Canada", crawl_canada),
+           ("EU Safety Gate", crawl_eu), ("EU RASFF", crawl_rasff)]
 
 def finalize(records, sources_ok):
     for r in records:
