@@ -104,6 +104,10 @@ ol.list{list-style:none;margin:0;padding:0 0 40px}
 
 footer{border-top:1px solid var(--line);padding-block:24px 48px;color:var(--muted);font-size:13px}
 footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
+.browse{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px 24px;margin-bottom:26px}
+.browse ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 12px}
+.browse a{color:var(--ink);text-decoration:none}
+.browse a:hover{color:var(--accent);text-decoration:underline}
 .srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 24px;margin-bottom:18px}
 .srcgrid div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding-block:4px}
 .srcgrid span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -182,6 +186,7 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 </main>
 
 <footer><div class="wrap">
+  <div class="browse"><div><h4>By country</h4><ul><li><a href="/us/">United States</a></li><li><a href="/ca/">Canada</a></li><li><a href="/uk/">United Kingdom</a></li><li><a href="/eu/">EU & EEA</a></li><li><a href="/de/">Germany</a></li><li><a href="/fr/">France</a></li><li><a href="/it/">Italy</a></li><li><a href="/es/">Spain</a></li><li><a href="/nl/">Netherlands</a></li><li><a href="/se/">Sweden</a></li><li><a href="/pl/">Poland</a></li><li><a href="/ie/">Ireland</a></li></ul></div><div><h4>By product type</h4><ul><li><a href="/recalls/food/">Food & drink</a></li><li><a href="/recalls/toys-kids/">Toys & kids</a></li><li><a href="/recalls/electrical/">Electrical</a></li><li><a href="/recalls/home-garden/">Home & garden</a></li><li><a href="/recalls/sports-outdoor/">Sports & outdoor</a></li><li><a href="/recalls/tools-diy/">Tools & DIY</a></li><li><a href="/recalls/vehicles/">Vehicles</a></li><li><a href="/recalls/drugs-medical/">Drugs & medical</a></li><li><a href="/recalls/cosmetics-chemicals/">Cosmetics & chemicals</a></li><li><a href="/recalls/clothing-jewellery/">Clothing & jewellery</a></li></ul></div><div><h4>Common searches</h4><ul><li><a href="/recalls/car-seats/">Car seat recalls</a></li><li><a href="/recalls/baby-products/">Baby product recalls</a></li><li><a href="/recalls/power-banks/">Power bank recalls</a></li><li><a href="/recalls/e-bikes-scooters/">E-bike and e-scooter recalls</a></li><li><a href="/recalls/airbags/">Airbag recalls</a></li><li><a href="/recalls/batteries/">Battery recalls</a></li><li><a href="/recalls/chargers/">Charger and adapter recalls</a></li><li><a href="/recalls/heaters/">Heater and electric blanket recalls</a></li><li><a href="/recalls/mattresses/">Mattress recalls</a></li><li><a href="/recalls/furniture-tip-over/">Furniture tip-over recalls</a></li><li><a href="/recalls/magnets/">Magnet recalls</a></li><li><a href="/recalls/helmets/">Helmet recalls</a></li><li><a href="/recalls/salmonella/">Salmonella recalls</a></li><li><a href="/recalls/listeria/">Listeria recalls</a></li><li><a href="/recalls/e-coli/">E. coli recalls</a></li><li><a href="/recalls/food-allergens/">Food allergen recalls</a></li><li><a href="/recalls/choking-hazard/">Choking hazard recalls</a></li><li><a href="/recalls/fire-hazard/">Fire hazard recalls</a></li><li><a href="/recalls/e-cigarettes/">E-cigarette recalls</a></li><li><a href="/recalls/tattoo-inks/">Tattoo ink recalls</a></li></ul></div></div>
   <h4>Sources</h4>
   <div class="srcgrid" id="sources"></div>
   <p>Recall Atlas collects recalls from official government sources every 6 hours. Always read the official notice before acting; it has the exact models, batch numbers and what to do. Not affiliated with any government agency.</p>
@@ -216,7 +221,9 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 </script>
 <script id="recall-data" type="application/json">/*DATA*/</script>
 <script>
-const PRESET="LU", NAMES={"US": "United States", "CA": "Canada", "GB": "United Kingdom", "EU": "all EU & EEA countries", "AT": "Austria", "BE": "Belgium", "BG": "Bulgaria", "HR": "Croatia", "CY": "Cyprus", "CZ": "Czechia", "DK": "Denmark", "EE": "Estonia", "FI": "Finland", "FR": "France", "DE": "Germany", "GR": "Greece", "HU": "Hungary", "IE": "Ireland", "IT": "Italy", "LV": "Latvia", "LT": "Lithuania", "LU": "Luxembourg", "MT": "Malta", "NL": "Netherlands", "PL": "Poland", "PT": "Portugal", "RO": "Romania", "SK": "Slovakia", "SI": "Slovenia", "ES": "Spain", "SE": "Sweden", "IS": "Iceland", "NO": "Norway", "LI": "Liechtenstein", "CH": "Switzerland", "XI": "Northern Ireland"};
+const PRESET="LU", NAMES={"US": "United States", "CA": "Canada", "GB": "United Kingdom", "EU": "all EU & EEA countries", "AT": "Austria", "BE": "Belgium", "BG": "Bulgaria", "HR": "Croatia", "CY": "Cyprus", "CZ": "Czechia", "DK": "Denmark", "EE": "Estonia", "FI": "Finland", "FR": "France", "DE": "Germany", "GR": "Greece", "HU": "Hungary", "IE": "Ireland", "IT": "Italy", "LV": "Latvia", "LT": "Lithuania", "LU": "Luxembourg", "MT": "Malta", "NL": "Netherlands", "PL": "Poland", "PT": "Portugal", "RO": "Romania", "SK": "Slovakia", "SI": "Slovenia", "ES": "Spain", "SE": "Sweden", "IS": "Iceland", "NO": "Norway", "LI": "Liechtenstein", "CH": "Switzerland", "XI": "Northern Ireland"}, PCAT="", TOPIC=null, PAGES=new Set(["/ca/drugs-medical/", "/ca/electrical/", "/ca/food/", "/ca/home-garden/", "/ca/toys-kids/", "/ca/vehicles/", "/eu/clothing-jewellery/", "/eu/cosmetics-chemicals/", "/eu/electrical/", "/eu/food/", "/eu/home-garden/", "/eu/sports-outdoor/", "/eu/tools-diy/", "/eu/toys-kids/", "/eu/vehicles/", "/recalls/clothing-jewellery/", "/recalls/cosmetics-chemicals/", "/recalls/drugs-medical/", "/recalls/electrical/", "/recalls/food/", "/recalls/home-garden/", "/recalls/sports-outdoor/", "/recalls/tools-diy/", "/recalls/toys-kids/", "/recalls/vehicles/", "/uk/cosmetics-chemicals/", "/uk/electrical/", "/uk/food/", "/uk/home-garden/", "/uk/sports-outdoor/", "/uk/tools-diy/", "/uk/toys-kids/", "/uk/vehicles/", "/us/drugs-medical/", "/us/electrical/", "/us/food/", "/us/home-garden/", "/us/sports-outdoor/", "/us/tools-diy/", "/us/toys-kids/", "/us/vehicles/"]);
+const CATSLUG={food:"food",kids:"toys-kids",electrical:"electrical",home:"home-garden",sports:"sports-outdoor",tools:"tools-diy",vehicles:"vehicles",medical:"drugs-medical",cosmetics:"cosmetics-chemicals",apparel:"clothing-jewellery",other:"other"};
+const TOPIC_RX=TOPIC?new RegExp("\\b("+TOPIC.words.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","i"):null;
 const CATS={all:"All",food:"Food & drink",kids:"Toys & kids",electrical:"Electrical",home:"Home & garden",
   sports:"Sports & outdoor",tools:"Tools & DIY",vehicles:"Vehicles",medical:"Drugs & medical",cosmetics:"Cosmetics & chemicals",apparel:"Clothing & jewellery",other:"Other"};
 const SOURCE_INFO={"CPSC":["US Consumer Product Safety Commission","https://www.cpsc.gov/Recalls"],
@@ -263,6 +270,7 @@ function filtered(ignoreCat){
   const q=state.q.toLowerCase().split(/\s+/).filter(Boolean);
   return DATA.recalls.filter(r=>matchCountry(r)
     &&(ignoreCat||state.cat==="all"||r.category===state.cat)
+    &&(!TOPIC_RX||TOPIC_RX.test(r.title+" "+r.hazard+" "+(r.product||"")))
     &&q.every(w=>{const t=(r.title+" "+r.hazard+" "+r.brand+" "+(r.product||"")).toLowerCase();return t.includes(w)||t.replace(/[\s-]+/g,"").includes(w)}));
 }
 function sevClass(s){s=(s||"").toLowerCase();
@@ -278,8 +286,9 @@ function render(){
     .map(([k,v])=>`<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${v}<span class="n">${cc[k]||0}</span></button>`).join("");
   const rows=filtered(false);
   const sel=$("#country").selectedOptions[0];
-  const place=state.country==="all"?"All recalls":"Recalls in "+(NAMES[state.country]||"");
-  $("#heading").textContent=place+(state.cat!=="all"?" · "+CATS[state.cat]:"");
+  const where=state.country==="all"?"":" in "+(["US","GB","NL"].includes(state.country)?"the ":"")+(NAMES[state.country]||"");
+  const what=TOPIC?TOPIC.name+" recalls":state.cat!=="all"?CATS[state.cat]+" recalls":"Recalls";
+  $("#heading").textContent=(what==="Recalls"&&!where?"All recalls":what+where);
   $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`;
   $("#euNote").hidden=!(isEU(state.country)&&state.country!=="EU");
   let html="",last="";
@@ -292,10 +301,14 @@ function render(){
       ${r.hazard?`<p class="hz">${esc(r.hazard)}</p>`:""}
       <div class="src"><span>${esc(r.source)}${r.region==="EU"?" · reported by "+esc(r.countryName):""}</span>${r.brand?`<span>${esc(r.brand)}</span>`:""}${r.units?`<span>${esc(r.units)}</span>`:""}<a href="${esc(r.url)}" target="_blank" rel="noopener">Official notice →</a></div></div></li>`;
   });
-  $("#list").innerHTML=html||`<li class="empty">${!state.q&&state.cat==="all"&&state.country!=="all"?"No recalls reported for "+NAMES[state.country]+" in the last 60 days.":"No recalls match. Try another country or clear the search."}</li>`;
+  $("#list").innerHTML=html||`<li class="empty">${!state.q&&(state.cat==="all"||PCAT)?"No "+(TOPIC?TOPIC.name.toLowerCase()+" ":state.cat!=="all"?CATS[state.cat].toLowerCase()+" ":"")+"recalls reported"+where+" in the last 60 days.":"No recalls match. Try another country or clear the search."}</li>`;
   $("#more").hidden=rows.length<=state.limit;
 }
-function setCountry(c){location.href="/"+SLUG(c)+(SLUG(c)?"/":"");}
+function setCountry(c){
+  const inPlace=()=>{state.country=c;state.limit=PAGE;render();$("h1").textContent=$("#heading").textContent;};
+  if(TOPIC) return inPlace();
+  if(PCAT){const p=c==="all"?"/recalls/"+CATSLUG[PCAT]+"/":"/"+SLUG(c)+"/"+CATSLUG[PCAT]+"/";return PAGES.has(p)?(location.href=p):inPlace();}
+  location.href="/"+SLUG(c)+(SLUG(c)?"/":"");}
 
 load().then(d=>{
   DATA=d;
@@ -308,6 +321,7 @@ load().then(d=>{
   const start=PRESET||"all";
   $("#country").value=[...$("#country").options].some(o=>o.value===start)?start:"all";
   state.country=$("#country").value;
+  if(PCAT)state.cat=PCAT;
   render();
 }).catch(()=>{$("#list").innerHTML=`<li class="empty">The recall list could not load. Refresh the page to try again.</li>`});
 
