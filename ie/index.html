@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Product recalls in Ireland | Recall Atlas</title>
+<meta name="description" content="13 current product, food and safety recalls affecting Ireland, from the EU Safety Gate and RASFF food alerts. Updated every 6 hours.">
+<link rel="canonical" href="https://recallatlas.org/ie/">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://recallatlas.org/ie/">
+<meta property="og:title" content="Product recalls in Ireland | Recall Atlas">
+<meta property="og:description" content="13 current product, food and safety recalls affecting Ireland, from the EU Safety Gate and RASFF food alerts. Updated every 6 hours.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; a sticky filter bar; each recall is a dated notice row with a source stripe. */
+:root{
+  --bg:#f2f4f6; --surface:#ffffff; --ink:#15212c; --muted:#5b6875; --line:#dde2e7;
+  --accent:#b8480f; --accent-soft:#fbe9dd;
+  --sev-high:#b42318; --sev-high-soft:#fde8e6; --sev-mid:#a15c07; --sev-mid-soft:#fdf1dc;
+  --chip:#e8ecf0; --chip-on:#15212c; --chip-on-fg:#ffffff;
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f151b; --surface:#161e26; --ink:#e7ecf1; --muted:#98a5b2; --line:#26313c;
+  --accent:#f08a4b; --accent-soft:#3a2417;
+  --sev-high:#ff8a80; --sev-high-soft:#3b1a19; --sev-mid:#f2b35a; --sev-mid-soft:#352713;
+  --chip:#202a34; --chip-on:#e7ecf1; --chip-on-fg:#0f151b; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f151b; --surface:#161e26; --ink:#e7ecf1; --muted:#98a5b2; --line:#26313c;
+  --accent:#f08a4b; --accent-soft:#3a2417;
+  --sev-high:#ff8a80; --sev-high-soft:#3b1a19; --sev-mid:#f2b35a; --sev-mid-soft:#352713;
+  --chip:#202a34; --chip-on:#e7ecf1; --chip-on-fg:#0f151b; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:900px;margin:0 auto;padding-inline:16px}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header.top{padding-block:40px 20px}
+.brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-stretch:80%;
+  letter-spacing:.02em;text-transform:uppercase;font-size:14px}
+.brand .mark{width:22px;height:22px;border-radius:4px;background:var(--accent);display:grid;place-items:center}
+.brand .mark svg{width:14px;height:14px}
+h1{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:clamp(34px,6.4vw,56px);line-height:1;
+  margin:18px 0 12px;text-wrap:balance;letter-spacing:-.01em}
+.lede{color:var(--muted);max-width:60ch;margin:0}
+.stamp{margin-top:14px;font:12px/1.4 var(--mono);color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
+.stamp b{color:var(--ink);font-weight:500}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2f9e62;margin-right:6px;vertical-align:1px}
+
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+  padding-block:12px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+select,input[type=search]{font:inherit;font-size:15px;color:var(--ink);background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;padding:9px 12px;min-height:42px}
+#country{min-width:220px;max-width:100%}
+.grow{flex:1 1 220px}
+.grow input{width:100%}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chip{font:500 13px/1 var(--body);border:0;border-radius:999px;background:var(--chip);color:var(--ink);padding:8px 12px;cursor:pointer;
+  display:inline-flex;gap:6px;align-items:center}
+.chip .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.chip[aria-pressed=true]{background:var(--chip-on);color:var(--chip-on-fg)}
+.chip[aria-pressed=true] .n{color:inherit;opacity:.7}
+.eu-note{margin-top:10px;font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.eu-note input{accent-color:var(--accent);width:16px;height:16px}
+
+.summary{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding-block:18px 6px}
+.summary h2{font-family:var(--display);font-stretch:85%;font-weight:700;font-size:20px;margin:0}
+.summary .meta{font:12px var(--mono);color:var(--muted)}
+
+ol.list{list-style:none;margin:0;padding:0 0 40px}
+.day{font:500 12px/1 var(--mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase;padding:18px 0 8px;
+  border-bottom:1px solid var(--line)}
+.item{display:grid;grid-template-columns:52px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--line)}
+.cc{font:500 12px/1 var(--mono);text-align:center;border:1px solid var(--line);border-radius:6px;padding:7px 0;
+  background:var(--surface);height:max-content}
+.cc small{display:block;font-size:9.5px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
+.body{min-width:0}
+.tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.tag{font:600 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:4px;
+  background:var(--chip);color:var(--muted)}
+.tag.cat{background:var(--accent-soft);color:var(--accent)}
+.tag.high{background:var(--sev-high-soft);color:var(--sev-high)}
+.tag.mid{background:var(--sev-mid-soft);color:var(--sev-mid)}
+.item h3{font:600 16px/1.35 var(--body);margin:0 0 4px;overflow-wrap:anywhere}
+.item h3 a{text-decoration:none}
+.item h3 a:hover{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.hz{margin:0;color:var(--ink);opacity:.85;font-size:14px;max-width:70ch}
+.src{margin-top:8px;font:12px/1.4 var(--mono);color:var(--muted);display:flex;gap:6px 14px;flex-wrap:wrap}
+.src a{color:var(--accent);text-decoration:none;font-weight:500}
+.src a:hover{text-decoration:underline}
+.empty{padding:48px 0;text-align:center;color:var(--muted)}
+.more{display:block;margin:0 auto 40px;font:600 14px var(--body);background:var(--surface);color:var(--ink);border:1px solid var(--line);
+  border-radius:8px;padding:10px 18px;cursor:pointer}
+
+footer{border-top:1px solid var(--line);padding-block:24px 48px;color:var(--muted);font-size:13px}
+footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
+.srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 24px;margin-bottom:18px}
+.srcgrid div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding-block:4px}
+.srcgrid span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums}
+@media (max-width:700px){.bar{position:static}}
+@media (max-width:520px){.item{grid-template-columns:44px 1fr;gap:10px}#country{min-width:0;width:100%}.field{width:100%}}
+@media (prefers-reduced-motion:no-preference){.item{animation:in .25s ease both}@keyframes in{from{opacity:.4}to{opacity:1}}}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand"><span class="mark"><svg viewBox="0 0 16 16" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><path d="M8 3v6"/><circle cx="8" cy="12.5" r=".6" fill="#fff"/></svg></span>Recall Atlas</div>
+    <h1>Recalls in Ireland</h1>
+    <p class="lede">Official recalls and safety alerts for Ireland from the EU Safety Gate and RASFF food alerts, updated every 6 hours. Search by product, brand or hazard.</p>
+    <div class="stamp"><span><span class="dot"></span>Updated <b id="updated">–</b></span><span><b id="total">–</b> recalls in the last 60 days</span></div>
+  </header>
+</div>
+
+<div class="bar"><div class="wrap">
+  <div class="row">
+    <div class="field"><label for="country">Country</label>
+      <select id="country"></select></div>
+    <div class="field grow"><label for="q">Search</label>
+      <input id="q" type="search" placeholder="Product, brand or hazard, e.g. power bank, salmonella" autocomplete="off"></div>
+  </div>
+  <div class="chips" id="cats" role="group" aria-label="Category"></div>
+  <label class="eu-note" id="euNote" hidden><input type="checkbox" id="euAll"> <span>Include alerts reported by other EU countries. Products sold in one EU country are usually sold across the EU.</span></label>
+</div></div>
+
+<main class="wrap">
+  <div class="summary"><h2 id="heading">Recalls in Ireland</h2><span class="meta" id="shown"></span></div>
+  <ol class="list" id="list"><li class="day">2026-09-29</li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Toys & kids</span><span class="tag mid">chemical</span></div><h3><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118935?lang=en" target="_blank" rel="noopener">Antistress toy (LLL Assets Ltd trading as Kids-World)</a></h3><p class="hz">The product contains benzene. Benzene is mutagenic and causes cancer. Exposure to large amounts may also cause a burning feeling throughout the digestive tract and skin irritation.</p><div class="src"><span>EU Safety Gate · reported by Ireland</span><span>LLL Assets Ltd trading as Kids-World</span><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118935?lang=en" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-24</li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Clothing & jewellery</span><span class="tag mid">chemical, environment</span></div><h3><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118705?lang=en" target="_blank" rel="noopener">Wallet (Primark)</a></h3><p class="hz">The material of the purse has an excessive concentration of Bis(2-ethylhexyl) phthalate (DEHP) (measured value up to 7.55% by weight). This phthalate may harm the health by causing possible damage to the reproductive…</p><div class="src"><span>EU Safety Gate · reported by Ireland</span><span>Primark</span><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118705?lang=en" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Toys & kids</span><span class="tag high">choking, strangulation</span></div><h3><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118840?lang=en" target="_blank" rel="noopener">Plastic toy · Mini Multi-Functional Busy Board Montessori Educational Early Learning Toy</a></h3><p class="hz">The toy has small parts (plastic components) that can easily detach. A small child could put them in the mouth and choke. Moreover, the product contains cords/chains that are too long. They could entangle around the…</p><div class="src"><span>EU Safety Gate · reported by Ireland</span><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118840?lang=en" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-18</li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag high">serious risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/873759" target="_blank" rel="noopener">Listeria monocytogenes detected in Various Chicken Products</a></h3><p class="hz">Information notification for attention. Product category: poultry meat and poultry meat products.</p><div class="src"><span>EU RASFF · reported by Ireland</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/873759" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-16</li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Electrical</span><span class="tag high">fire</span></div><h3><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118795?lang=en" target="_blank" rel="noopener">Radiator (Kobe) · Oil Filled Radiator 9 FIN 2kW</a></h3><p class="hz">The product&#x27;s plug has a manufacturing defect and may therefore overheat. This could lead to the plug and cable melting and/or catching fire.</p><div class="src"><span>EU Safety Gate · reported by Ireland</span><span>Kobe</span><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10118795?lang=en" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-15</li>
+<li class="item"><div class="cc" title="Poland">PL<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag high">potentially serious risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/869999" target="_blank" rel="noopener">wysoka zawartość alkaloidów pirolizydynowanych w herbacie ziołowej z pokrzywy // high content of pyrrolizidine alkaloids in nettle herbal tea</a></h3><p class="hz">Information notification for follow-up. Product category: herbs and spices.</p><div class="src"><span>EU RASFF · reported by Poland</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/869999" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-10</li>
+<li class="item"><div class="cc" title="Germany">DE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Home & garden</span><span class="tag ">potential risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/871961" target="_blank" rel="noopener">Migration of bisphenol A from tins of bamboo shoots in strips or slices from China, via the Netherlands</a></h3><p class="hz">Information notification for follow-up. Product category: food contact materials.</p><div class="src"><span>EU RASFF · reported by Germany</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/871961" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="item"><div class="cc" title="Netherlands">NL<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag high">serious risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/871959" target="_blank" rel="noopener">STEC in goat milk kefir from The Netherlands</a></h3><p class="hz">Alert notification. Product category: milk and milk products.</p><div class="src"><span>EU RASFF · reported by Netherlands</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/871959" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-09</li>
+<li class="item"><div class="cc" title="Finland">FI<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag high">serious risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/870432" target="_blank" rel="noopener">Salmonella in timur berry spice from Nepal</a></h3><p class="hz">Alert notification. Product category: herbs and spices.</p><div class="src"><span>EU RASFF · reported by Finland</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/870432" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-03</li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Clothing & jewellery</span><span class="tag mid">chemical</span></div><h3><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10099609?lang=en" target="_blank" rel="noopener">Necklace</a></h3><p class="hz">The product has an excessive concentration of cadmium (measured value: 87% by weight) and the rate of nickel release is too high (1.6 μg/cm³/week). Cadmium is harmful to human health because it accumulates in the body,…</p><div class="src"><span>EU Safety Gate · reported by Ireland</span><a href="https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/10099609?lang=en" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag high">serious risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/870821" target="_blank" rel="noopener">Allergens on muesli bars not labelled in English</a></h3><p class="hz">Alert notification. Product category: prepared dishes and snacks.</p><div class="src"><span>EU RASFF · reported by Ireland</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/870821" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-09-01</li>
+<li class="item"><div class="cc" title="Ireland">IE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag high">potentially serious risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/869482" target="_blank" rel="noopener">Presence of Listeria monocytogenes in in Buffalo Mozzarella and Bocconcini cheese from Ireland</a></h3><p class="hz">Information notification for attention. Product category: milk and milk products.</p><div class="src"><span>EU RASFF · reported by Ireland</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/869482" target="_blank" rel="noopener">Official notice →</a></div></div></li>
+<li class="day">2026-08-10</li>
+<li class="item"><div class="cc" title="Germany">DE<small>EU</small></div><div class="body"><div class="tags"><span class="tag cat">Food & drink</span><span class="tag ">potential risk</span></div><h3><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/865095" target="_blank" rel="noopener">Unauthorized substance thiamethoxam in fenugreek from India via Italy</a></h3><p class="hz">Information notification for follow-up. Product category: herbs and spices.</p><div class="src"><span>EU RASFF · reported by Germany</span><a href="https://webgate.ec.europa.eu/rasff-window/screen/notification/865095" target="_blank" rel="noopener">Official notice →</a></div></div></li></ol>
+  <button class="more" id="more" hidden>Show more</button>
+</main>
+
+<footer><div class="wrap">
+  <h4>Sources</h4>
+  <div class="srcgrid" id="sources"></div>
+  <p>Recall Atlas collects recalls from official government sources every 6 hours. Always read the official notice before acting; it has the exact models, batch numbers and what to do. Not affiliated with any government agency.</p>
+</div></footer>
+
+<script id="recall-data" type="application/json">/*DATA*/</script>
+<script>
+const PRESET="IE", NAMES={"US": "United States", "CA": "Canada", "GB": "United Kingdom", "EU": "all EU & EEA countries", "AT": "Austria", "BE": "Belgium", "BG": "Bulgaria", "HR": "Croatia", "CY": "Cyprus", "CZ": "Czechia", "DK": "Denmark", "EE": "Estonia", "FI": "Finland", "FR": "France", "DE": "Germany", "GR": "Greece", "HU": "Hungary", "IE": "Ireland", "IT": "Italy", "LV": "Latvia", "LT": "Lithuania", "LU": "Luxembourg", "MT": "Malta", "NL": "Netherlands", "PL": "Poland", "PT": "Portugal", "RO": "Romania", "SK": "Slovakia", "SI": "Slovenia", "ES": "Spain", "SE": "Sweden", "IS": "Iceland", "NO": "Norway", "LI": "Liechtenstein", "CH": "Switzerland", "XI": "Northern Ireland"};
+const CATS={all:"All",food:"Food & drink",kids:"Toys & kids",electrical:"Electrical",home:"Home & garden",
+  sports:"Sports & outdoor",tools:"Tools & DIY",vehicles:"Vehicles",medical:"Drugs & medical",cosmetics:"Cosmetics & chemicals",apparel:"Clothing & jewellery",other:"Other"};
+const SOURCE_INFO={"CPSC":["US Consumer Product Safety Commission","https://www.cpsc.gov/Recalls"],
+  "FDA":["US Food and Drug Administration","https://www.fda.gov/safety/recalls-market-withdrawals-safety-alerts"],
+  "UK OPSS":["UK Office for Product Safety and Standards","https://www.gov.uk/product-safety-alerts-reports-recalls"],
+  "UK FSA":["UK Food Standards Agency","https://www.food.gov.uk/news-alerts/search/alerts"],
+  "Canada":["Health Canada, CFIA and Transport Canada","https://recalls-rappels.canada.ca/en"],
+  "EU Safety Gate":["European Commission Safety Gate","https://ec.europa.eu/safety-gate-alerts/screen/webReport"],
+  "NHTSA":["US National Highway Traffic Safety Administration","https://www.nhtsa.gov/recalls"],
+  "USDA FSIS":["USDA Food Safety and Inspection Service","https://www.fsis.usda.gov/recalls"],
+  "EU RASFF":["EU Rapid Alert System for Food and Feed","https://webgate.ec.europa.eu/rasff-window/screen/consumers"]};
+const SLUG=c=>c==="all"?"":c==="GB"?"uk":c.toLowerCase();
+const $=s=>document.querySelector(s);
+const PAGE=40;
+let DATA=null, state={country:"all",cat:"all",q:"",euAll:false,limit:PAGE};
+
+async function load(){
+  const raw=$("#recall-data").textContent.trim();
+  if(raw && !raw.startsWith("/*")) return JSON.parse(raw);
+  const r=await fetch("/data/recalls.json",{cache:"no-cache"}); return r.json();
+}
+
+function buildCountries(){
+  const counts={};DATA.recalls.forEach(r=>new Set([r.country,...(r.countries||[])]).forEach(c=>counts[c]=(counts[c]||0)+1));
+  const eu=[...new Set(DATA.recalls.filter(r=>r.region==="EU").flatMap(r=>[r.country,...(r.countries||[])]))]
+    .concat(PRESET&&!["US","CA","GB","EU"].includes(PRESET)?[PRESET]:[]).filter((c,i,a)=>NAMES[c]&&a.indexOf(c)===i)
+    .map(c=>[c,NAMES[c]]).sort((a,b)=>a[1].localeCompare(b[1]));
+  const euTotal=DATA.recalls.filter(r=>r.region==="EU").length;
+  const o=(v,t,n)=>`<option value="${v}">${t}${n!=null?` (${n})`:""}</option>`;
+  $("#country").innerHTML=o("all","All countries",DATA.recalls.length)
+    +`<optgroup label="North America">${o("US","United States",counts.US||0)}${o("CA","Canada",counts.CA||0)}</optgroup>`
+    +`<optgroup label="United Kingdom">${o("GB","United Kingdom",counts.GB||0)}</optgroup>`
+    +`<optgroup label="Europe">${o("EU","All EU & EEA countries",euTotal)}${eu.map(([c,n])=>o(c,n,counts[c])).join("")}</optgroup>`;
+}
+function matchCountry(r){
+  const c=state.country;
+  if(c==="all") return true;
+  if(c==="EU") return r.region==="EU";
+  if(r.country===c||(r.countries||[]).includes(c)) return true;
+  return state.euAll && r.region==="EU" && isEU(c);
+}
+const isEU=c=>!["all","US","CA","GB"].includes(c);
+function filtered(ignoreCat){
+  const q=state.q.toLowerCase().split(/\s+/).filter(Boolean);
+  return DATA.recalls.filter(r=>matchCountry(r)
+    &&(ignoreCat||state.cat==="all"||r.category===state.cat)
+    &&q.every(w=>(r.title+" "+r.hazard+" "+r.brand+" "+(r.product||"")).toLowerCase().includes(w)));
+}
+function sevClass(s){s=(s||"").toLowerCase();
+  if(/class i\b|class 1|type i\b|serious|death|electric shock|fire|drowning|strangulation/.test(s))return"high";
+  if(/class ii|class 2|type ii|chemical|choking|injur|burn/.test(s))return"mid";return"";}
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtDay=d=>new Date(d+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"long",year:"numeric"});
+
+function render(){
+  // chips with counts for the current country + search
+  const base=filtered(true),cc={all:base.length};base.forEach(r=>cc[r.category]=(cc[r.category]||0)+1);
+  $("#cats").innerHTML=Object.entries(CATS).filter(([k])=>k==="all"||cc[k])
+    .map(([k,v])=>`<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${v}<span class="n">${cc[k]||0}</span></button>`).join("");
+  const rows=filtered(false);
+  const sel=$("#country").selectedOptions[0];
+  const place=state.country==="all"?"All recalls":"Recalls in "+(NAMES[state.country]||"");
+  $("#heading").textContent=place+(state.cat!=="all"?" · "+CATS[state.cat]:"");
+  $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`;
+  $("#euNote").hidden=!(isEU(state.country)&&state.country!=="EU");
+  let html="",last="";
+  rows.slice(0,state.limit).forEach(r=>{
+    if(r.date!==last){html+=`<li class="day">${fmtDay(r.date)}</li>`;last=r.date;}
+    const sv=sevClass(r.severity+" "+r.hazard);
+    html+=`<li class="item"><div class="cc" title="${esc(r.countryName)}">${r.country==="GB"?"UK":r.country}<small>${r.region==="EU"?"EU":""}</small></div>
+      <div class="body"><div class="tags"><span class="tag cat">${CATS[r.category]||"Other"}</span>${r.severity?`<span class="tag ${sv}">${esc(r.severity)}</span>`:""}</div>
+      <h3><a href="${esc(r.url)}" target="_blank" rel="noopener">${esc(r.title)}</a></h3>
+      ${r.hazard?`<p class="hz">${esc(r.hazard)}</p>`:""}
+      <div class="src"><span>${esc(r.source)}${r.region==="EU"?" · reported by "+esc(r.countryName):""}</span>${r.brand?`<span>${esc(r.brand)}</span>`:""}${r.units?`<span>${esc(r.units)}</span>`:""}<a href="${esc(r.url)}" target="_blank" rel="noopener">Official notice →</a></div></div></li>`;
+  });
+  $("#list").innerHTML=html||`<li class="empty">${!state.q&&state.cat==="all"&&state.country!=="all"?"No recalls reported for "+NAMES[state.country]+" in the last 60 days.":"No recalls match. Try another country or clear the search."}</li>`;
+  $("#more").hidden=rows.length<=state.limit;
+}
+function setCountry(c){location.href="/"+SLUG(c)+(SLUG(c)?"/":"");}
+
+load().then(d=>{
+  DATA=d;
+  $("#updated").textContent=new Date(d.updated.replace("Z",":00Z")).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
+  $("#total").textContent=d.count;
+  $("#sources").innerHTML=Object.entries(d.sources).map(([k,n])=>`<div><span><a href="${SOURCE_INFO[k]?.[1]||"#"}" target="_blank" rel="noopener">${SOURCE_INFO[k]?.[0]||k}</a></span><span>${n}</span></div>`).join("");
+  buildCountries();
+  const h=(location.hash||"").slice(1).toUpperCase(), hc=h==="UK"?"GB":h;
+  if(!PRESET&&hc&&NAMES[hc]){location.replace("/"+SLUG(hc)+"/");return;}
+  const start=PRESET||"all";
+  $("#country").value=[...$("#country").options].some(o=>o.value===start)?start:"all";
+  state.country=$("#country").value;
+  render();
+}).catch(()=>{$("#list").innerHTML=`<li class="empty">The recall list could not load. Refresh the page to try again.</li>`});
+
+$("#country").addEventListener("change",e=>setCountry(e.target.value));
+$("#q").addEventListener("input",e=>{state.q=e.target.value;state.limit=PAGE;render();});
+$("#cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;state.cat=b.dataset.cat;state.limit=PAGE;render();});
+$("#euAll").addEventListener("change",e=>{state.euAll=e.target.checked;render();});
+$("#more").addEventListener("click",()=>{state.limit+=PAGE;render();});
+</script>
+</body>
+</html>
