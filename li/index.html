@@ -107,6 +107,14 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 .srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 24px;margin-bottom:18px}
 .srcgrid div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding-block:4px}
 .srcgrid span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.consent{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:20;max-width:560px;margin:0 auto;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:10px;padding:14px 16px;
+  box-shadow:0 6px 24px rgba(0,0,0,.18);display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px}
+.consent p{margin:0;flex:1 1 260px}
+.consent .btns{display:flex;gap:8px}
+.consent button{font:600 14px var(--body);border-radius:8px;padding:8px 14px;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink)}
+.consent button.yes{background:var(--chip-on);color:var(--chip-on-fg);border-color:var(--chip-on)}
+.linkbtn{font:inherit;color:inherit;background:none;border:0;padding:0;text-decoration:underline;cursor:pointer}
 @media (max-width:700px){.bar{position:static}}
 @media (max-width:520px){.item{grid-template-columns:44px 1fr;gap:10px}#country{min-width:0;width:100%}.field{width:100%}}
 @media (prefers-reduced-motion:no-preference){.item{animation:in .25s ease both}@keyframes in{from{opacity:.4}to{opacity:1}}}
@@ -144,8 +152,35 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
   <h4>Sources</h4>
   <div class="srcgrid" id="sources"></div>
   <p>Recall Atlas collects recalls from official government sources every 6 hours. Always read the official notice before acting; it has the exact models, batch numbers and what to do. Not affiliated with any government agency.</p>
+  <p>Visitor statistics (Google Analytics) are only collected if you accept them. <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p>
 </div></footer>
 
+<div class="consent" id="consent" role="dialog" aria-label="Cookie consent" hidden>
+  <p>Can we count your visit with Google Analytics? It helps us see which countries and recalls people look at. No ads, and the site works either way.</p>
+  <div class="btns"><button type="button" id="cNo">Decline</button><button type="button" class="yes" id="cYes">Accept</button></div>
+</div>
+
+<script>
+(function(){
+  var GA="G-VYHRQZSXSN", KEY="ra-consent";
+  function get(){try{return localStorage.getItem(KEY)}catch(e){return null}}
+  function set(v){try{localStorage.setItem(KEY,v)}catch(e){}}
+  function loadGA(){
+    if(window.__ga)return; window.__ga=1;
+    var s=document.createElement("script"); s.async=true; s.src="https://www.googletagmanager.com/gtag/js?id="+GA; document.head.appendChild(s);
+    window.dataLayer=window.dataLayer||[]; window.gtag=function(){dataLayer.push(arguments)};
+    gtag("js",new Date()); gtag("config",GA,{anonymize_ip:true});
+  }
+  function show(v){document.getElementById("consent").hidden=!v}
+  document.addEventListener("DOMContentLoaded",function(){
+    var c=get();
+    if(c==="yes")loadGA(); else if(c!=="no")show(true);
+    document.getElementById("cYes").onclick=function(){set("yes");show(false);loadGA()};
+    document.getElementById("cNo").onclick=function(){set("no");show(false);if(window.__ga)location.reload()};
+    document.getElementById("privacyBtn").onclick=function(){show(true)};
+  });
+})();
+</script>
 <script id="recall-data" type="application/json">/*DATA*/</script>
 <script>
 const PRESET="LI", NAMES={"US": "United States", "CA": "Canada", "GB": "United Kingdom", "EU": "all EU & EEA countries", "AT": "Austria", "BE": "Belgium", "BG": "Bulgaria", "HR": "Croatia", "CY": "Cyprus", "CZ": "Czechia", "DK": "Denmark", "EE": "Estonia", "FI": "Finland", "FR": "France", "DE": "Germany", "GR": "Greece", "HU": "Hungary", "IE": "Ireland", "IT": "Italy", "LV": "Latvia", "LT": "Lithuania", "LU": "Luxembourg", "MT": "Malta", "NL": "Netherlands", "PL": "Poland", "PT": "Portugal", "RO": "Romania", "SK": "Slovakia", "SI": "Slovenia", "ES": "Spain", "SE": "Sweden", "IS": "Iceland", "NO": "Norway", "LI": "Liechtenstein", "CH": "Switzerland", "XI": "Northern Ireland"};
@@ -195,7 +230,7 @@ function filtered(ignoreCat){
   const q=state.q.toLowerCase().split(/\s+/).filter(Boolean);
   return DATA.recalls.filter(r=>matchCountry(r)
     &&(ignoreCat||state.cat==="all"||r.category===state.cat)
-    &&q.every(w=>(r.title+" "+r.hazard+" "+r.brand+" "+(r.product||"")).toLowerCase().includes(w)));
+    &&q.every(w=>{const t=(r.title+" "+r.hazard+" "+r.brand+" "+(r.product||"")).toLowerCase();return t.includes(w)||t.replace(/[\s-]+/g,"").includes(w)}));
 }
 function sevClass(s){s=(s||"").toLowerCase();
   if(/class i\b|class 1|type i\b|serious|death|electric shock|fire|drowning|strangulation/.test(s))return"high";
