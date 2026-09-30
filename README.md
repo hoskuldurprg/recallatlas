@@ -7,10 +7,12 @@ filterable by country, category and search. A crawler refreshes the data every
 ## Files
 | File | What it does |
 |---|---|
-| `index.html` | The website. Loads `data/recalls.json`. |
+| `template.html` | The page design and script. Edit this, not the generated pages. |
+| `build_site.py` | Builds `index.html`, one page per country (`/us/`, `/uk/`, `/de/` …), `sitemap.xml` and `robots.txt`. |
+| `index.html`, `<country>/index.html` | Generated pages. Each has its newest 40 recalls in the HTML for search engines. |
 | `data/recalls.json` | The recall data, written by the crawler. |
 | `crawl.py` | Fetches all sources and rewrites `data/recalls.json`. |
-| `.github/workflows/crawl.yml` | Runs the crawler every 6 hours on GitHub. |
+| `.github/workflows/crawl.yml` | Every 6 hours: runs the crawler, rebuilds the pages, commits. |
 | `CNAME` | Tells GitHub Pages to serve the site on recallatlas.org. |
 
 ## Hosting (GitHub Pages + recallatlas.org)
@@ -27,18 +29,20 @@ filterable by country, category and search. A crawler refreshes the data every
 ```
 pip install -r requirements.txt
 python crawl.py                 # refresh data
+python build_site.py            # rebuild pages
 python -m http.server 8000      # open http://localhost:8000
 ```
 
 ## Sources
-- US: CPSC (saferproducts.gov API), FDA food/drug/device enforcement (api.fda.gov)
+- US: CPSC (saferproducts.gov API), FDA food/drug/device enforcement (api.fda.gov),
+  NHTSA vehicles/car seats (data.transportation.gov dataset 6axg-epim), USDA FSIS meat & poultry (fsis.usda.gov API)
 - UK: OPSS product safety alerts (gov.uk search API), FSA food alerts (data.food.gov.uk)
 - Canada: Health Canada, CFIA and Transport Canada (recalls-rappels.canada.ca open data)
 - EU/EEA: Safety Gate (ec.europa.eu public API). The EU source is the site's own
   public API rather than a documented one, so it could change without notice.
   If it breaks, the crawler keeps the previous EU rows and the other sources still update.
+- EU/EEA food: RASFF Window consumer notifications (per country where the product was sold)
 
 ## Not yet included
-- US USDA meat/poultry recalls (FSIS API) and NHTSA vehicle recalls
-- EU food alerts (RASFF), Australia (ACCC)
-- Per-country pages (/us, /de …) for search engines, email alerts, ads
+- Australia (ACCC), New Zealand
+- Email alerts, ads
