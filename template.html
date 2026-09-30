@@ -92,6 +92,10 @@ ol.list{list-style:none;margin:0;padding:0 0 40px}
 
 footer{border-top:1px solid var(--line);padding-block:24px 48px;color:var(--muted);font-size:13px}
 footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink);margin:0 0 10px}
+.browse{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px 24px;margin-bottom:26px}
+.browse ul{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:4px 12px}
+.browse a{color:var(--ink);text-decoration:none}
+.browse a:hover{color:var(--accent);text-decoration:underline}
 .srcgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:6px 24px;margin-bottom:18px}
 .srcgrid div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dotted var(--line);padding-block:4px}
 .srcgrid span:last-child{font-family:var(--mono);font-variant-numeric:tabular-nums}
@@ -135,6 +139,7 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 </main>
 
 <footer><div class="wrap">
+  {{BROWSE}}
   <h4>Sources</h4>
   <div class="srcgrid" id="sources"></div>
   <p>Recall Atlas collects recalls from official government sources every 6 hours. Always read the official notice before acting; it has the exact models, batch numbers and what to do. Not affiliated with any government agency.</p>
@@ -169,7 +174,9 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 </script>
 <script id="recall-data" type="application/json">/*DATA*/</script>
 <script>
-const PRESET="{{PRESET}}", NAMES={{NAMES}};
+const PRESET="{{PRESET}}", NAMES={{NAMES}}, PCAT="{{PCAT}}", TOPIC={{TOPIC}}, PAGES=new Set({{PAGES}});
+const CATSLUG={food:"food",kids:"toys-kids",electrical:"electrical",home:"home-garden",sports:"sports-outdoor",tools:"tools-diy",vehicles:"vehicles",medical:"drugs-medical",cosmetics:"cosmetics-chemicals",apparel:"clothing-jewellery",other:"other"};
+const TOPIC_RX=TOPIC?new RegExp("\\b("+TOPIC.words.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","i"):null;
 const CATS={all:"All",food:"Food & drink",kids:"Toys & kids",electrical:"Electrical",home:"Home & garden",
   sports:"Sports & outdoor",tools:"Tools & DIY",vehicles:"Vehicles",medical:"Drugs & medical",cosmetics:"Cosmetics & chemicals",apparel:"Clothing & jewellery",other:"Other"};
 const SOURCE_INFO={"CPSC":["US Consumer Product Safety Commission","https://www.cpsc.gov/Recalls"],
@@ -216,6 +223,7 @@ function filtered(ignoreCat){
   const q=state.q.toLowerCase().split(/\s+/).filter(Boolean);
   return DATA.recalls.filter(r=>matchCountry(r)
     &&(ignoreCat||state.cat==="all"||r.category===state.cat)
+    &&(!TOPIC_RX||TOPIC_RX.test(r.title+" "+r.hazard+" "+(r.product||"")))
     &&q.every(w=>{const t=(r.title+" "+r.hazard+" "+r.brand+" "+(r.product||"")).toLowerCase();return t.includes(w)||t.replace(/[\s-]+/g,"").includes(w)}));
 }
 function sevClass(s){s=(s||"").toLowerCase();
@@ -231,8 +239,9 @@ function render(){
     .map(([k,v])=>`<button class="chip" data-cat="${k}" aria-pressed="${state.cat===k}">${v}<span class="n">${cc[k]||0}</span></button>`).join("");
   const rows=filtered(false);
   const sel=$("#country").selectedOptions[0];
-  const place=state.country==="all"?"All recalls":"Recalls in "+(NAMES[state.country]||"");
-  $("#heading").textContent=place+(state.cat!=="all"?" · "+CATS[state.cat]:"");
+  const where=state.country==="all"?"":" in "+(["US","GB","NL"].includes(state.country)?"the ":"")+(NAMES[state.country]||"");
+  const what=TOPIC?TOPIC.name+" recalls":state.cat!=="all"?CATS[state.cat]+" recalls":"Recalls";
+  $("#heading").textContent=(what==="Recalls"&&!where?"All recalls":what+where);
   $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`;
   $("#euNote").hidden=!(isEU(state.country)&&state.country!=="EU");
   let html="",last="";
@@ -245,10 +254,14 @@ function render(){
       ${r.hazard?`<p class="hz">${esc(r.hazard)}</p>`:""}
       <div class="src"><span>${esc(r.source)}${r.region==="EU"?" · reported by "+esc(r.countryName):""}</span>${r.brand?`<span>${esc(r.brand)}</span>`:""}${r.units?`<span>${esc(r.units)}</span>`:""}<a href="${esc(r.url)}" target="_blank" rel="noopener">Official notice →</a></div></div></li>`;
   });
-  $("#list").innerHTML=html||`<li class="empty">${!state.q&&state.cat==="all"&&state.country!=="all"?"No recalls reported for "+NAMES[state.country]+" in the last 60 days.":"No recalls match. Try another country or clear the search."}</li>`;
+  $("#list").innerHTML=html||`<li class="empty">${!state.q&&(state.cat==="all"||PCAT)?"No "+(TOPIC?TOPIC.name.toLowerCase()+" ":state.cat!=="all"?CATS[state.cat].toLowerCase()+" ":"")+"recalls reported"+where+" in the last 60 days.":"No recalls match. Try another country or clear the search."}</li>`;
   $("#more").hidden=rows.length<=state.limit;
 }
-function setCountry(c){location.href="/"+SLUG(c)+(SLUG(c)?"/":"");}
+function setCountry(c){
+  const inPlace=()=>{state.country=c;state.limit=PAGE;render();$("h1").textContent=$("#heading").textContent;};
+  if(TOPIC) return inPlace();
+  if(PCAT){const p=c==="all"?"/recalls/"+CATSLUG[PCAT]+"/":"/"+SLUG(c)+"/"+CATSLUG[PCAT]+"/";return PAGES.has(p)?(location.href=p):inPlace();}
+  location.href="/"+SLUG(c)+(SLUG(c)?"/":"");}
 
 load().then(d=>{
   DATA=d;
@@ -261,6 +274,7 @@ load().then(d=>{
   const start=PRESET||"all";
   $("#country").value=[...$("#country").options].some(o=>o.value===start)?start:"all";
   state.country=$("#country").value;
+  if(PCAT)state.cat=PCAT;
   render();
 }).catch(()=>{$("#list").innerHTML=`<li class="empty">The recall list could not load. Refresh the page to try again.</li>`});
 

@@ -8,7 +8,7 @@ filterable by country, category and search. A crawler refreshes the data every
 | File | What it does |
 |---|---|
 | `template.html` | The page design and script. Edit this, not the generated pages. |
-| `build_site.py` | Builds `index.html`, one page per country (`/us/`, `/uk/`, `/de/` …), `sitemap.xml` and `robots.txt`. |
+| `build_site.py` | Builds `index.html`, country pages (`/us/`, `/de/` …), product-type pages (`/recalls/food/`, `/us/food/` …), common-search pages (`/recalls/car-seats/` …), `sitemap.xml` and `robots.txt`. Edit `TOPICS` there to add search pages. |
 | `index.html`, `<country>/index.html` | Generated pages. Each has its newest 40 recalls in the HTML for search engines. |
 | `data/recalls.json` | The recall data, written by the crawler. |
 | `crawl.py` | Fetches all sources and rewrites `data/recalls.json`. |
