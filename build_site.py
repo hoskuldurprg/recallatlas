@@ -32,8 +32,9 @@ for r in data["recalls"]:
         r["slug"] = archive[r["id"]]["slug"]
 
 ARCH = sorted((crawl.with_names(r) for r in archive.values()), key=lambda r: (r["date"], r["id"]), reverse=True)
-YEARS = sorted({r["date"][:4] for r in ARCH}, reverse=True)
-FIRST_DAY = ARCH[-1]["date"] if ARCH else ""
+_ycount = Counter(r["date"][:4] for r in ARCH)
+YEARS = sorted((y for y, n in _ycount.items() if n >= 100), reverse=True)  # ignore stray old records
+FIRST_DAY = min((r["date"] for r in ARCH if r["date"][:4] in YEARS), default="")
 MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 BRANDS = {}
 

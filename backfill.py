@@ -69,7 +69,7 @@ KNOWN = set()  # ids already in the archive; filled in main()
 
 
 def eu(since):
-    return crawl.crawl_eu(since, max_pages=6000, known=KNOWN)
+    return crawl.crawl_eu_weekly(since, known=KNOWN)  # official weekly-report XML; the live API only keeps recent alerts
 
 
 def canada(since):

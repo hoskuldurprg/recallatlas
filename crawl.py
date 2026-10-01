@@ -256,6 +256,47 @@ def crawl_eu(since, max_pages=40, known=()):
             time.sleep(0.3)  # be polite
     return out
 
+EU_XML = "https://ec.europa.eu/safety-gate-alerts/api/download/weeklyReport/"
+EU_CODES = {**{v.lower(): k for k, v in EU_NAMES.items()}, "czech republic": "CZ", "the netherlands": "NL",
+            "northern ireland (uk)": "XI", "united kingdom (northern ireland)": "XI"}
+
+
+def norm_eu_xml(n, date):
+    x = lambda tag: clean(n.findtext(tag) or "")
+    product, brand, specific = x("product"), x("brand"), clean(n.findtext("name") or "", 90)
+    alert_url = x("reference")
+    pic = n.find("pictures/picture")
+    title = (product or specific) + (f" ({brand})" if brand else "") + \
+        (f" · {specific}" if specific and product and specific.lower() != product.lower() else "")
+    return rec(
+        id=f"eu-{x('caseNumber')}", date=date, country=EU_CODES.get(x("notifyingCountry").lower(), "EU"), region="EU",
+        source="EU Safety Gate", title=title, product=product or specific, brand=brand,
+        hazard=x("danger") or x("riskType"), severity=x("riskType").lower(),
+        category=categorize(product, specific, hint=x("category")),
+        url=(alert_url + "?lang=en") if alert_url.startswith("http") else "https://ec.europa.eu/safety-gate-alerts/",
+        image=(pic.text or "").strip() if pic is not None else "")
+
+
+def crawl_eu_weekly(since, known=()):
+    """History from Safety Gate's official weekly-report XML (one file per week since 2005)."""
+    import xml.etree.ElementTree as ET
+    out = []
+    for wr in ET.fromstring(get(EU_XML + "list/xml/en").content).findall("weeklyReport"):
+        d, m, y = (wr.findtext("publicationDate") or "").split("/")
+        date = f"{y}-{int(m):02d}-{int(d):02d}"
+        if date < since: continue
+        try:
+            root = ET.fromstring(get(wr.findtext("URL").strip()).content)
+        except Exception as e:
+            print(f"  EU weekly report {wr.findtext('reference')}: {e}, skipped", file=sys.stderr)
+            continue
+        for n in root.findall("notifications"):
+            ref = (n.findtext("caseNumber") or "").strip()
+            if ref and f"eu-{ref}" not in known:
+                out.append(norm_eu_xml(n, date))
+        time.sleep(0.5)
+    return out
+
 # ---------------------------------------------------------------- US: NHTSA (vehicles, tires, car seats, equipment)
 def norm_nhtsa(r):
     typ = r.get("recall_type", "Vehicle")
