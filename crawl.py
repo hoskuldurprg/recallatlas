@@ -14,7 +14,8 @@ Sources (all official, public, no API key needed):
   EU  - Safety Gate (27 EU + EEA)     ec.europa.eu public API
   EU  - RASFF food alerts             webgate.ec.europa.eu/rasff-window consumer API
 
-Run:  python crawl.py            (writes data/recalls.json)
+Run:  python crawl.py   (updates data/archive/*.json, the permanent store, and
+                         data/recalls.json, the last 60 days used by list pages)
 Deps: requests
 """
 import json, re, sys, time, datetime as dt
@@ -322,39 +323,99 @@ SOURCES = [("CPSC", crawl_cpsc), ("FDA", crawl_fda), ("NHTSA", crawl_nhtsa), ("U
            ("UK OPSS", crawl_opss), ("UK FSA", crawl_fsa), ("Canada", crawl_canada),
            ("EU Safety Gate", crawl_eu), ("EU RASFF", crawl_rasff)]
 
-def finalize(records, sources_ok):
+ARCHIVE = Path(__file__).parent / "data" / "archive"
+
+
+def slugify(text, n=70):
+    import unicodedata
+    t = unicodedata.normalize("NFKD", str(text)).encode("ascii", "ignore").decode().lower()
+    t = re.sub(r"[^a-z0-9]+", "-", t).strip("-")
+    return t[:n].rstrip("-") or "recall"
+
+
+def short_hash(s):
+    import hashlib
+    return hashlib.sha1(s.encode()).hexdigest()[:6]
+
+
+def load_archive():
+    """All recalls ever seen, keyed by id. Stored as one JSON file per month (YYYY-MM.json)."""
+    rows = {}
+    for f in sorted(ARCHIVE.glob("*.json")):
+        for r in json.loads(f.read_text()):
+            rows[r["id"]] = r
+    return rows
+
+
+def save_archive(rows):
+    ARCHIVE.mkdir(parents=True, exist_ok=True)
+    months = {}
+    for r in rows.values():
+        months.setdefault(r["date"][:7], []).append(r)
+    for f in ARCHIVE.glob("*.json"):
+        if f.stem not in months:
+            f.unlink()
+    for m, rs in months.items():
+        rs.sort(key=lambda r: r["id"])
+        (ARCHIVE / f"{m}.json").write_text(
+            "[\n" + ",\n".join(json.dumps(r, ensure_ascii=False, sort_keys=True) for r in rs) + "\n]\n")
+
+
+def merge(archive, records, today):
+    """Insert new recalls and refresh changed ones. A recall keeps its URL slug and first_seen date forever."""
+    added = 0
     for r in records:
-        r.setdefault("region", {"US": "US", "CA": "CA", "GB": "UK"}.get(r["country"], "EU"))
-        r["countryName"] = {"US": "United States", "CA": "Canada", "GB": "United Kingdom"}.get(
-            r["country"], EU_NAMES.get(r["country"], r["country"]))
-    uniq = {r["id"]: r for r in records}
-    rows = sorted(uniq.values(), key=lambda r: r["date"], reverse=True)[:MAX_ITEMS]
+        for k in ("region", "countryName"):
+            r.pop(k, None)
+        old = archive.get(r["id"])
+        if old:
+            r["slug"], r["first_seen"] = old["slug"], old["first_seen"]
+        else:
+            r["slug"] = f'{slugify(r["title"])}-{short_hash(r["id"])}'
+            r["first_seen"] = today
+            added += 1
+        archive[r["id"]] = r
+    return added
+
+
+def with_names(r):
+    r = dict(r)
+    r["region"] = r.get("region") or {"US": "US", "CA": "CA", "GB": "UK"}.get(r["country"], "EU")
+    r["countryName"] = {"US": "United States", "CA": "Canada", "GB": "United Kingdom"}.get(
+        r["country"], EU_NAMES.get(r["country"], r["country"]))
+    return r
+
+
+def window(archive, since, ok, errors):
+    rows = sorted((with_names(r) for r in archive.values() if r["date"] >= since),
+                  key=lambda r: (r["date"], r["id"]), reverse=True)[:MAX_ITEMS]
+    counts = {name: sum(1 for r in rows if r.get("feed") == name) for name, _ in SOURCES}
     return {"updated": dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%MZ"),
-            "sources": sources_ok, "count": len(rows), "recalls": rows}
+            "sources": counts, "count": len(rows), "stale_sources": errors, "recalls": rows}
+
 
 def main():
+    today = dt.date.today().isoformat()
     since = (dt.date.today() - dt.timedelta(days=DAYS_BACK)).isoformat()
-    old = json.loads(OUT.read_text()) if OUT.exists() else {"recalls": []}
-    records, ok, errors = [], {}, []
+    archive = load_archive()
+    if not archive and OUT.exists():  # first run after the archive was introduced: seed it
+        merge(archive, json.loads(OUT.read_text())["recalls"], today)
+    ok, errors = {}, []
     for name, fn in SOURCES:
         try:
             rows = fn(since)
             for r in rows: r["feed"] = name
-            records += rows
+            new = merge(archive, rows, today)
             ok[name] = len(rows)
-            print(f"{name}: {len(rows)}")
+            print(f"{name}: {len(rows)} ({new} new)")
         except Exception as e:
-            # keep yesterday's rows for a failing source rather than dropping them
-            prev = [r for r in old["recalls"] if r.get("feed") == name]
-            records += prev
-            ok[name] = len(prev)
-            errors.append(name)
+            errors.append(name)  # archive keeps this source's earlier rows
             print(f"{name}: FAILED {e}", file=sys.stderr)
+    save_archive(archive)
     OUT.parent.mkdir(exist_ok=True)
-    data = finalize(records, ok)
-    data["stale_sources"] = errors  # sources that failed this run (old rows kept)
-    OUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
-    print(f"wrote {OUT}")
+    OUT.write_text(json.dumps(window(archive, since, ok, errors), ensure_ascii=False, separators=(",", ":")))
+    print(f"archive: {len(archive)} recalls; wrote {OUT}")
+
 
 if __name__ == "__main__":
     main()
