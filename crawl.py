@@ -227,17 +227,28 @@ def norm_eu(d, photo_id=None):
         image=f"{EU_API}image/{photo_id}" if photo_id else "")
 
 def crawl_eu(since, max_pages=40):
-    out = []
+    """Safety Gate pages sometimes fail on one broken record (HTTP 404); skip that page or item
+    and carry on, giving up only after 5 failed pages in a row."""
+    out, bad = [], 0
     for page in range(max_pages):
         r = requests.post(EU_API + "carousel/", json={"language": "en", "page": page},
                           headers=UA, timeout=60)
-        r.raise_for_status()
+        if not r.ok:
+            bad += 1
+            print(f"  EU Safety Gate page {page}: HTTP {r.status_code}, skipped", file=sys.stderr)
+            if bad >= 5: raise RuntimeError(f"5 failed pages in a row (last HTTP {r.status_code})")
+            continue
+        bad = 0
         items = r.json().get("content", [])
         if not items: break
         for it in items:
             if it["publicationDate"][:10] < since:
                 return out
-            d = get(f"{EU_API}{it['id']}?language=en").json()
+            try:
+                d = get(f"{EU_API}{it['id']}?language=en").json()
+            except Exception as e:
+                print(f"  EU Safety Gate alert {it.get('id')}: {e}, skipped", file=sys.stderr)
+                continue
             photo = next((ph["id"] for ph in it["product"].get("photos", []) if ph.get("mainPicture")), None)
             out.append(norm_eu(d, photo))
             time.sleep(0.3)  # be polite
