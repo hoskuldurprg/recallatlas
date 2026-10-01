@@ -20,8 +20,8 @@ jobs:
     env:
       PYTHONUNBUFFERED: "1"
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
         with: { python-version: "3.12" }
       - run: pip install -r requirements.txt
       - run: python crawl.py
@@ -37,11 +37,11 @@ jobs:
           git diff --cached --quiet || git commit -m "Update recalls $(date -u +%Y-%m-%dT%H:%MZ)"
           git pull --rebase -q && git push
       - run: python build_site.py --indexnow
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
         with: { path: _site }
       - id: deploy
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
       - name: Post to Bluesky, Mastodon and X (dry run until the secrets are set)
         continue-on-error: true   # a social media hiccup must never fail the site update
         env:
