@@ -1,0 +1,38 @@
+name: Backfill archive
+on:
+  workflow_dispatch:
+    inputs:
+      days:
+        description: "How many days of history to load"
+        default: "730"
+      sources:
+        description: "Only these sources, comma-separated (blank = all)"
+        default: ""
+permissions:
+  contents: write
+  actions: write    # start "Update recalls" when done, to rebuild the site
+concurrency:
+  group: recallatlas-data
+  cancel-in-progress: false
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    env:
+      PYTHONUNBUFFERED: "1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: python backfill.py "${{ inputs.days }}" ${{ inputs.sources && format('"{0}"', inputs.sources) || '' }}
+      - name: Commit archive
+        if: always()
+        run: |
+          git config user.name "recall-bot"
+          git config user.email "recall-bot@users.noreply.github.com"
+          git add -A data
+          git diff --cached --quiet || git commit -m "Backfill archive (${{ inputs.days }} days)"
+          git pull --rebase -q && git push
+      - run: gh workflow run crawl.yml --ref main
