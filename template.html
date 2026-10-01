@@ -132,6 +132,15 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 .more-link{display:inline-block;margin-top:12px;color:var(--accent);font-weight:600;text-decoration:none}
 .brands{columns:3 220px;padding:0;list-style:none;margin:0 0 30px}.brands li{padding:3px 0;break-inside:avoid}
 .brands a{text-decoration:none;color:var(--ink)}.brands a:hover{color:var(--accent)}.brands span{color:var(--muted);font:12px var(--mono);margin-left:6px}
+.prose p{max-width:70ch;line-height:1.6}
+.ystats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px 28px;padding:18px 0 4px;border-bottom:1px solid var(--line)}
+.ystats h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
+.ystats .big{font:800 40px/1 var(--display);font-stretch:80%}
+.months{display:flex;align-items:flex-end;gap:3px;height:56px}
+.months span{flex:1;background:var(--accent);opacity:.75;border-radius:2px 2px 0 0;min-height:2px}
+.mlab{display:flex;justify-content:space-between;font:11px var(--mono);color:var(--muted);margin-top:4px}
+.ystats ol{margin:0;padding:0;list-style:none;font-size:14px}.ystats li{display:flex;justify-content:space-between;gap:8px;padding:2px 0}
+.ystats li span{font:12px var(--mono);color:var(--muted)}.ystats a{color:var(--ink)}
 @media (max-width:520px){.facts{grid-template-columns:1fr;gap:2px}.facts dd{margin-bottom:8px}}
 </style>
 
@@ -148,6 +157,8 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
   <div class="row">
     <div class="field"><label for="country">Country</label>
       <select id="country"></select></div>
+    <div class="field"><label for="period">Period</label>
+      <select id="period"></select></div>
     <div class="field grow"><label for="q">Search</label>
       <input id="q" type="search" placeholder="Product, brand or hazard, e.g. power bank, salmonella" autocomplete="off"></div>
   </div>
@@ -156,6 +167,7 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 </div></div>
 
 <main class="wrap">
+  {{STATS}}
   <div class="summary"><h2 id="heading">{{H2}}</h2><span class="meta" id="shown"></span></div>
   <ol class="list" id="list">{{PRERENDER}}</ol>
   <button class="more" id="more" hidden>Show more</button>
@@ -165,7 +177,7 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
   {{BROWSE}}
   <h4>Sources</h4>
   <div class="srcgrid" id="sources"></div>
-  <p>Recall Atlas collects recalls from official government sources every 6 hours. Always read the official notice before acting; it has the exact models, batch numbers and what to do. Not affiliated with any government agency.</p>
+  <p>Recall Atlas is an independent site that collects recalls automatically from official government sources every 6 hours. The information may be incomplete, delayed or contain errors, and a product not appearing here does not mean it is safe. Always check the official notice and contact the manufacturer or seller before acting. Recall Atlas is not affiliated with any government agency and accepts no liability for decisions made using this site. <a href="/disclaimer/">Full disclaimer</a></p>
   <p>Visitor statistics (Google Analytics) are only collected if you accept them. <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p>
 </div></footer>
 
@@ -197,7 +209,7 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 </script>
 <script id="recall-data" type="application/json">/*DATA*/</script>
 <script>
-const PRESET="{{PRESET}}", NAMES={{NAMES}}, PCAT="{{PCAT}}", TOPIC={{TOPIC}}, PAGES=new Set({{PAGES}});
+const PRESET="{{PRESET}}", NAMES={{NAMES}}, PCAT="{{PCAT}}", TOPIC={{TOPIC}}, PAGES=new Set({{PAGES}}), YEARS={{YEARS}}, PYEAR="{{PYEAR}}";
 const CATSLUG={food:"food",kids:"toys-kids",electrical:"electrical",home:"home-garden",sports:"sports-outdoor",tools:"tools-diy",vehicles:"vehicles",medical:"drugs-medical",cosmetics:"cosmetics-chemicals",apparel:"clothing-jewellery",other:"other"};
 const TOPIC_RX=TOPIC?new RegExp("\\b("+TOPIC.words.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")","i"):null;
 const CATS={all:"All",food:"Food & drink",kids:"Toys & kids",electrical:"Electrical",home:"Home & garden",
@@ -214,7 +226,24 @@ const SOURCE_INFO={"CPSC":["US Consumer Product Safety Commission","https://www.
 const SLUG=c=>c==="all"?"":c==="GB"?"uk":c.toLowerCase();
 const $=s=>document.querySelector(s);
 const PAGE=40;
-let DATA=null, state={country:"all",cat:"all",q:"",euAll:false,limit:PAGE};
+let DATA=null, RECENT=null, state={country:"all",cat:"all",q:"",euAll:false,limit:PAGE,period:PYEAR||"recent"};
+const YCACHE={};
+async function loadYear(y){
+  if(!YCACHE[y]) YCACHE[y]=fetch("/data/years/"+y+".json").then(r=>r.json()).then(d=>d.recalls);
+  return YCACHE[y];
+}
+async function setPeriod(p){
+  state.period=p; state.limit=PAGE;
+  if(p==="recent"){DATA.recalls=RECENT;}
+  else{
+    $("#list").innerHTML=`<li class="empty">Loading ${p==="all"?"all years":p}…</li>`;
+    const ys=p==="all"?YEARS:[+p];
+    DATA.recalls=(await Promise.all(ys.map(loadYear))).flat();
+  }
+  buildCountries(); $("#country").value=[...$("#country").options].some(o=>o.value===state.country)?state.country:"all";
+  render(); $("h1").textContent=$("#heading").textContent;
+}
+const periodText=()=>state.period==="recent"?"in the last 60 days":state.period==="all"?"since "+YEARS[YEARS.length-1]:"in "+state.period;
 
 async function load(){
   const raw=$("#recall-data").textContent.trim();
@@ -264,7 +293,8 @@ function render(){
   const sel=$("#country").selectedOptions[0];
   const where=state.country==="all"?"":" in "+(["US","GB","NL"].includes(state.country)?"the ":"")+(NAMES[state.country]||"");
   const what=TOPIC?TOPIC.name+" recalls":state.cat!=="all"?CATS[state.cat]+" recalls":"Recalls";
-  $("#heading").textContent=(what==="Recalls"&&!where?"All recalls":what+where);
+  const yr=/^\d{4}$/.test(state.period)?" in "+state.period:state.period==="all"?" (all years)":"";
+  $("#heading").textContent=(what==="Recalls"&&!where?"All recalls":what+where)+yr;
   $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`;
   $("#euNote").hidden=!(isEU(state.country)&&state.country!=="EU");
   let html="",last="";
@@ -277,17 +307,23 @@ function render(){
       ${r.hazard?`<p class="hz">${esc(r.hazard)}</p>`:""}
       <div class="src"><span>${esc(r.source)}${r.region==="EU"?" · reported by "+esc(r.countryName):""}</span>${r.brand?`<span>${esc(r.brand)}</span>`:""}${r.units?`<span>${esc(r.units)}</span>`:""}<a href="${esc(r.url)}" target="_blank" rel="noopener">Official notice →</a></div></div></li>`;
   });
-  $("#list").innerHTML=html||`<li class="empty">${!state.q&&(state.cat==="all"||PCAT)?"No "+(TOPIC?TOPIC.name.toLowerCase()+" ":state.cat!=="all"?CATS[state.cat].toLowerCase()+" ":"")+"recalls reported"+where+" in the last 60 days.":"No recalls match. Try another country or clear the search."}</li>`;
+  $("#list").innerHTML=html||`<li class="empty">${!state.q&&(state.cat==="all"||PCAT)?"No "+(TOPIC?TOPIC.name.toLowerCase()+" ":state.cat!=="all"?CATS[state.cat].toLowerCase()+" ":"")+"recalls reported"+where+" "+periodText()+".":"No recalls match "+periodText()+"."}${state.period!=="all"?` <button class="linkbtn" type="button" data-period="all">Search all years</button>`:""}</li>`;
   $("#more").hidden=rows.length<=state.limit;
 }
 function setCountry(c){
   const inPlace=()=>{state.country=c;state.limit=PAGE;render();$("h1").textContent=$("#heading").textContent;};
   if(TOPIC) return inPlace();
-  if(PCAT){const p=c==="all"?"/recalls/"+CATSLUG[PCAT]+"/":"/"+SLUG(c)+"/"+CATSLUG[PCAT]+"/";return PAGES.has(p)?(location.href=p):inPlace();}
-  location.href="/"+SLUG(c)+(SLUG(c)?"/":"");}
+  const y=/^\d{4}$/.test(state.period)?state.period+"/":"";
+  let p=PCAT?(c==="all"?"/recalls/"+CATSLUG[PCAT]+"/":"/"+SLUG(c)+"/"+CATSLUG[PCAT]+"/"):(c==="all"?(y?"/recalls/":"/"):"/"+SLUG(c)+"/");
+  p+=y;
+  if(PCAT||y) return PAGES.has(p)?(location.href=p):inPlace();
+  location.href=p;}
 
-load().then(d=>{
-  DATA=d;
+load().then(async d=>{
+  DATA=d; RECENT=d.recalls;
+  $("#period").innerHTML=`<option value="recent">Last 60 days</option>`+YEARS.map(y=>`<option value="${y}">${y}</option>`).join("")+`<option value="all">All years</option>`;
+  $("#period").value=state.period;
+  if(state.period!=="recent"){DATA.recalls=(await Promise.all((state.period==="all"?YEARS:[+state.period]).map(loadYear))).flat();}
   $("#updated").textContent=new Date(d.updated.replace("Z",":00Z")).toLocaleString(undefined,{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
   $("#total").textContent=d.count;
   $("#sources").innerHTML=Object.entries(d.sources).map(([k,n])=>`<div><span><a href="${SOURCE_INFO[k]?.[1]||"#"}" target="_blank" rel="noopener">${SOURCE_INFO[k]?.[0]||k}</a></span><span>${n}</span></div>`).join("");
@@ -302,6 +338,8 @@ load().then(d=>{
 }).catch(()=>{$("#list").innerHTML=`<li class="empty">The recall list could not load. Refresh the page to try again.</li>`});
 
 $("#country").addEventListener("change",e=>setCountry(e.target.value));
+$("#period").addEventListener("change",e=>setPeriod(e.target.value));
+$("#list").addEventListener("click",e=>{const b=e.target.closest("[data-period]");if(b){$("#period").value=b.dataset.period;setPeriod(b.dataset.period);}});
 $("#q").addEventListener("input",e=>{state.q=e.target.value;state.limit=PAGE;render();});
 $("#cats").addEventListener("click",e=>{const b=e.target.closest(".chip");if(!b)return;state.cat=b.dataset.cat;state.limit=PAGE;render();});
 $("#euAll").addEventListener("change",e=>{state.euAll=e.target.checked;render();});

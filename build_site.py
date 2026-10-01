@@ -19,6 +19,9 @@ ROOT = Path(__file__).parent
 OUT = ROOT / "_site"
 SITE = "https://recallatlas.org"
 INDEXNOW_KEY = "7c1f4e9a2b8d4c6e9f0a3b5d7e1c2a48"
+DISCLAIMER = ("Recall Atlas is an independent site that collects recalls automatically from official government sources every 6 hours. The information may be incomplete, delayed or contain errors, and a product not appearing here does not mean it is safe. Always check the official notice and contact the manufacturer or seller before acting. Recall Atlas is not affiliated with any government agency and accepts no liability for decisions made using this site. <a href=\"/disclaimer/\">Full disclaimer</a>")
+KEEP = ["date", "country", "countries", "region", "countryName", "source", "title", "product", "brand", "hazard",
+        "severity", "units", "category", "url", "slug"]
 STATIC = ["CNAME", "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-image.png"]
 
 data = json.loads((ROOT / "data" / "recalls.json").read_text())
@@ -27,6 +30,12 @@ archive = crawl.load_archive()
 for r in data["recalls"]:
     if not r.get("slug") and r["id"] in archive:
         r["slug"] = archive[r["id"]]["slug"]
+
+ARCH = sorted((crawl.with_names(r) for r in archive.values()), key=lambda r: (r["date"], r["id"]), reverse=True)
+YEARS = sorted({r["date"][:4] for r in ARCH}, reverse=True)
+FIRST_DAY = ARCH[-1]["date"] if ARCH else ""
+MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+BRANDS = {}
 
 tpl = (ROOT / "template.html").read_text()
 CSS = tpl[tpl.index("<style>") + 7:tpl.index("</style>")].strip() + "\n"
@@ -127,16 +136,19 @@ import re as _re
 topic_rx = lambda words: _re.compile(r"\b(" + "|".join(_re.escape(w) for w in words) + ")", _re.I)
 
 
-def select(code="all", cat=None, topic=None):
+def select(code="all", cat=None, topic=None, year=None):
     rx = topic_rx(topic[2]) if topic else None
-    return [r for r in data["recalls"] if matches(r, code) and (not cat or r["category"] == cat)
+    src = [r for r in ARCH if r["date"][:4] == year] if year else data["recalls"]
+    return [r for r in src if matches(r, code) and (not cat or r["category"] == cat)
             and (not rx or rx.search(f'{r["title"]} {r["hazard"]} {r.get("product", "")}'))]
 
 
-def page_path(code="all", cat=None, topic=None):
-    if topic: return f"/recalls/{topic[0]}/"
-    if cat: return f"/recalls/{CATSLUG[cat]}/" if code == "all" else f"/{slug(code)}/{CATSLUG[cat]}/"
-    return "/" if code == "all" else f"/{slug(code)}/"
+def page_path(code="all", cat=None, topic=None, year=None):
+    y = f"{year}/" if year else ""
+    if topic: return f"/recalls/{topic[0]}/{y}"
+    if cat: return (f"/recalls/{CATSLUG[cat]}/" if code == "all" else f"/{slug(code)}/{CATSLUG[cat]}/") + y
+    if code == "all": return f"/recalls/{y}" if year else "/"
+    return f"/{slug(code)}/{y}"
 
 
 def browse_html(country_cat_pages):
@@ -144,9 +156,11 @@ def browse_html(country_cat_pages):
     tops = "".join(f'<li><a href="/recalls/{t[0]}/">{t[1]} recalls</a></li>' for t in TOPICS)
     ctry = "".join(f'<li><a href="/{slug(c)}/">{NAMES[c] if c != "EU" else "EU & EEA"}</a></li>'
                    for c in ["US", "CA", "GB", "EU", "DE", "FR", "IT", "ES", "NL", "SE", "PL", "IE"])
+    yrs = "".join(f'<li><a href="/recalls/{y}/">{y}</a></li>' for y in YEARS)
     return (f'<div class="browse"><div><h4>By country</h4><ul>{ctry}</ul></div>'
             f'<div><h4>By product type</h4><ul>{cats}</ul></div>'
-            f'<div><h4>Common searches</h4><ul>{tops}</ul></div></div>')
+            f'<div><h4>Common searches</h4><ul>{tops}</ul></div>'
+            f'<div><h4>By year</h4><ul>{yrs}<li><a href="/brand/">All brands</a></li></ul></div></div>')
 
 
 def country_label(c):
@@ -181,8 +195,37 @@ def head_html(title, desc, url, kind="website", crumbs=None, image=None, extra_l
 """
 
 
-def page(code="all", cat=None, topic=None, pages=(), browse=""):
-    rows = select(code, cat, topic)
+def year_note(year):
+    if year == FIRST_DAY[:4] and FIRST_DAY[5:7] != "01":
+        return f" (records start {MON[int(FIRST_DAY[5:7]) - 1]} {year})"
+    if year == YEARS[0]: return " so far"
+    return ""
+
+
+def stats_html(rows, code, cat, year):
+    months = [0] * 12
+    for r in rows: months[int(r["date"][5:7]) - 1] += 1
+    mx = max(months) or 1
+    bars = "".join(f'<span style="height:{max(3, round(m / mx * 100))}%" title="{MON[i]} {year}: {m}"></span>'
+                   for i, m in enumerate(months))
+    bc = Counter(r["_brand"] for r in rows if r.get("_brand")).most_common(6)
+    brands = "".join(f'<li><a href="/brand/{k}/">{esc(BRANDS[k][0])}</a><span>{n}</span></li>' for k, n in bc)
+    out = (f'<section class="ystats"><div><h4>Recalls in {year}</h4><div class="big">{len(rows):,}</div>'
+           f'<p class="note">{esc(year_note(year).strip(" ()").capitalize())}</p></div>'
+           f'<div><h4>By month</h4><div class="months">{bars}</div>'
+           f'<div class="mlab"><span>Jan</span><span>Jun</span><span>Dec</span></div></div>')
+    if brands: out += f'<div><h4>Most recalled brands</h4><ol>{brands}</ol></div>'
+    if not cat:
+        cc = Counter(r["category"] for r in rows).most_common(6)
+        def link(c):
+            pth = page_path(code if code in REGION_CODES else "all", c, None, year) if c in CATSLUG else None
+            return f'<a href="{pth}">{CATS[c]}</a>' if pth in BUILT else CATS.get(c, "Other")
+        out += "<div><h4>By product type</h4><ol>" + "".join(f"<li>{link(c)}<span>{n}</span></li>" for c, n in cc) + "</ol></div>"
+    return out + "</section>"
+
+
+def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
+    rows = select(code, cat, topic, year)
     n = len(rows)
     name = ("the " if code in ("US", "GB", "NL") else "") + NAMES.get(code, "")
     where = "" if code == "all" else f" in {name}"
@@ -216,19 +259,31 @@ def page(code="all", cat=None, topic=None, pages=(), browse=""):
         h1 = f"Recalls in {name}"
         lede = (f"Official recalls and safety alerts for {name} from {SOURCES_BY_REGION[region]}, "
                 "updated every 6 hours. Search by product, brand or hazard.")
-    h2 = h1 if not (code == "all" and not cat and not topic) else "All recalls"
-    url = SITE + page_path(code, cat, topic)
+    if year:
+        what = (f"{topic[1]} recalls" if topic else f"{CATS[cat]} recalls" if cat else "Recalls")
+        src = SOURCES_BY_REGION[region] if code != "all" else "government agencies in the US, Canada, the UK and Europe"
+        h1 = f"{what}{where} in {year}" if (where or topic or cat) else f"All recalls in {year}"
+        title = f"{h1} | Recall Atlas"
+        desc = (f"All {n} official {what.lower()}{where} in {year}{year_note(year)}, from {src}: "
+                "month by month, most recalled brands and every official notice.")
+        lede = (f"{n:,} official {what.lower()}{where} reported in {year}{year_note(year)}, from {src}. "
+                "Newest first. Search by product, brand or hazard.")
+    h2 = h1 if (year or not (code == "all" and not cat and not topic)) else "All recalls"
+    url = SITE + page_path(code, cat, topic, year)
     crumbs = [("Recall Atlas", "/")]
     if topic: crumbs.append((topic[1] + " recalls", page_path(code, cat, topic)))
     else:
         if code != "all": crumbs.append((country_label(code), page_path(code)))
         if cat: crumbs.append((CATS[cat], page_path(code, cat)))
+    if year: crumbs.append((year, page_path(code, cat, topic, year)))
     head = head_html(title, desc, url, "website", crumbs if len(crumbs) > 1 else None)
     topic_js = json.dumps({"name": topic[1], "words": topic[2]}) if topic else "null"
     body = (body_tpl.replace("{{H1}}", esc(h1)).replace("{{H2}}", esc(h2)).replace("{{LEDE}}", esc(lede))
             .replace("{{PRERENDER}}", render_rows(rows[:PRERENDER]))
             .replace("{{PRESET}}", "" if code == "all" else code)
             .replace("{{PCAT}}", cat or "").replace("{{TOPIC}}", topic_js)
+            .replace("{{PYEAR}}", year or "").replace("{{YEARS}}", json.dumps([int(y) for y in YEARS]))
+            .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else "")
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
             .replace("{{BROWSE}}", browse)
             .replace("{{NAMES}}", json.dumps({k: (v if k != "EU" else "all EU & EEA countries") for k, v in NAMES.items()}, ensure_ascii=False)))
@@ -238,8 +293,8 @@ def page(code="all", cat=None, topic=None, pages=(), browse=""):
 # ---------- brands ----------
 SUFFIX = re.compile(r"[,.]?\s+(inc|incorporated|llc|l\.l\.c|ltd|limited|co|corp|corporation|company|gmbh|s\.?a|s\.?a\.?s|"
                     r"s\.?r\.?l|b\.?v|ag|plc|pty|lp|usa|us|america|north america|of america|international)\.?$", re.I)
-ALIAS = {"ford motor": "Ford", "general motors": "General Motors", "gm": "General Motors", "fca": "Chrysler (FCA US)",
-         "chrysler fca": "Chrysler (FCA US)", "fca us": "Chrysler (FCA US)", "jaguar land rover": "Jaguar Land Rover",
+ALIAS = {"ford motor": "Ford", "general motors": "General Motors", "gm": "General Motors", "fca": "Chrysler", "chrysler": "Chrysler",
+         "chrysler fca": "Chrysler", "fca us": "Chrysler", "jaguar land rover": "Jaguar Land Rover",
          "mercedes-benz": "Mercedes-Benz", "volkswagen group": "Volkswagen", "volkswagen": "Volkswagen",
          "toyota motor engineering & manufacturing": "Toyota", "toyota motor": "Toyota", "american honda motor": "Honda",
          "honda": "Honda", "hyundai motor": "Hyundai", "kia": "Kia", "nissan": "Nissan", "bmw of": "BMW",
@@ -247,7 +302,7 @@ ALIAS = {"ford motor": "Ford", "general motors": "General Motors", "gm": "Genera
          "porsche cars": "Porsche", "mitsubishi motors": "Mitsubishi", "tesla": "Tesla", "rivian automotive": "Rivian",
          "harley-davidson motor": "Harley-Davidson", "paccar": "PACCAR",
          "forest river": "Forest River", "mack trucks": "Mack", "daimler truck": "Daimler Truck",
-         "daimler trucks": "Daimler Truck", "blue bird body": "Blue Bird", "fiat chrysler automobiles": "Chrysler (FCA US)",
+         "daimler trucks": "Daimler Truck", "blue bird body": "Blue Bird", "fiat chrysler automobiles": "Chrysler",
          "lidl us trading": "Lidl", "shein distribution": "SHEIN", "nova bus": "Nova Bus", "winnebago industries": "Winnebago", "thor motor coach": "Thor Motor Coach"}
 NOT_BRANDS = {"", "unknown", "no brand", "none", "n/a", "various", "generic", "certain", "sold", "multiple",
               "original", "platinum", "wonder", "premium", "classic", "new", "home", "kids", "baby", "pro", "smart"}
@@ -390,6 +445,7 @@ def recall_page(r, brands, by_cc, footer):
 {f'<p class="lede">{esc(r["hazard"])}</p>' if r.get("hazard") else ""}
 <a class="cta" href="{esc(r["url"])}" rel="noopener" target="_blank">Read the official notice →</a>
 {img}{facts_html(r, brands)}
+<p class="note">Copied automatically from {esc(AGENCY.get(r.get("feed"), r["source"]))}. Details may be shortened or out of date; the official notice is the authoritative source. <a href="/disclaimer/">Disclaimer</a></p>
 <h2>What to do</h2>
 <ol class="todo">{"".join(f"<li>{esc(x)}</li>" for x in todo)}</ol>
 <p class="note">General guidance from Recall Atlas. The official notice from {esc(AGENCY.get(r.get("feed"), r["source"]))} has the exact models, batch codes and remedy, and it takes priority.</p>
@@ -401,9 +457,7 @@ def recall_page(r, brands, by_cc, footer):
 
 
 def footer_html(browse):
-    return (f'<footer><div class="wrap">{browse}<p>Recall Atlas collects recalls from official government sources every '
-            '6 hours. Always read the official notice before acting. Not affiliated with any government agency. '
-            '<a href="/brand/">All brands</a></p><p>Visitor statistics (Google Analytics) are only collected if you accept '
+    return (f'<footer><div class="wrap">{browse}<p>{DISCLAIMER}</p><p>Visitor statistics (Google Analytics) are only collected if you accept '
             'them. <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
 
 
@@ -421,6 +475,7 @@ def brand_page(k, name, rs, footer):
 <article class="recall">
 <h1>{esc(name)} recalls</h1>
 <p class="lede">{len(rs)} official recalls and safety alerts involving {esc(name)} since {rs[-1]['date'][:7]}, from {esc(', '.join(srcs))}. Newest first. Check the official notice for exact models and batch codes.</p>
+<p class="note">This list only includes recalls Recall Atlas has collected since {esc(FIRST_DAY[:7])}. A product not listed here may still be affected; check with {esc(name)} or the relevant agency.</p>
 <ol class="list">{render_rows(rs[:500])}</ol>
 </article>
 </div>
@@ -442,6 +497,41 @@ def brands_index_page(brands, footer):
     return head_html("Product recalls by brand A–Z | Recall Atlas",
                      f"Recall history for {len(items)} brands, from official sources in the US, Canada, the UK and Europe.",
                      f"{SITE}/brand/", "website", crumbs) + body + "</body>\n</html>\n"
+
+
+DISCLAIMER_FULL = [
+    ("What this site is", "Recall Atlas is an independent website that gathers product, food, drug and vehicle recalls "
+     "published by government agencies in the United States, Canada, the United Kingdom and the European Union, and shows "
+     "them in one searchable list. It is not run by, endorsed by or affiliated with any of those agencies."),
+    ("Information is provided as is", "Recalls are collected automatically and may be incomplete, delayed, out of date or "
+     "contain errors, including errors made when copying, shortening, translating or categorising them. Product categories, "
+     "brand groupings, summaries and the \"What to do\" guidance are added by Recall Atlas, are general in nature and are not "
+     "part of the official notice. Information is provided without any warranty of accuracy, completeness or fitness for a "
+     "particular purpose."),
+    ("Always check the official notice", "The official notice from the agency, manufacturer or seller is the only authoritative "
+     "source. It has the exact models, batch codes, dates and remedy. Check it, and contact the manufacturer or seller, before "
+     "you act. A product not appearing on Recall Atlas does not mean it is safe or has never been recalled."),
+    ("Not professional advice", "Nothing on this site is medical, legal or safety advice. If someone is unwell or injured, "
+     "contact a doctor or your local emergency services. Do not stop taking a prescribed medicine without talking to a "
+     "doctor or pharmacist."),
+    ("Limitation of liability", "To the extent permitted by law, Recall Atlas and its operators accept no liability for any "
+     "loss, damage, injury or cost arising from use of, or reliance on, the information on this site or on linked websites."),
+    ("Trademarks and links", "Brand and product names belong to their owners and are used only to identify recalled products; "
+     "their use does not imply any connection with Recall Atlas. Links to official notices and other websites are provided for "
+     "convenience, and Recall Atlas is not responsible for their content."),
+]
+
+
+def disclaimer_page(footer):
+    secs = "".join(f"<h2>{h}</h2><p>{esc(b)}</p>" for h, b in DISCLAIMER_FULL)
+    crumbs = [("Recall Atlas", "/"), ("Disclaimer", "/disclaimer/")]
+    body = f"""<div class="wrap">
+<header class="top slim">{BRAND_A}</header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/disclaimer/">Disclaimer</a></nav>
+<article class="recall prose"><h1>Disclaimer</h1>{secs}</article></div>
+{footer}{CONSENT}"""
+    return head_html("Disclaimer | Recall Atlas", "How Recall Atlas collects recall information and the limits of that information.",
+                     f"{SITE}/disclaimer/", "website", crumbs) + body + "</body>\n</html>\n"
 
 
 # ---------- output ----------
@@ -476,24 +566,34 @@ def indexnow(urls):
 
 
 def main():
+    global BRANDS
     if OUT.exists(): shutil.rmtree(OUT)
     OUT.mkdir()
-    specs = [("all", None, None), *[(c, None, None) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)]]
-    specs += [("all", c, None) for c in CATSLUG]
-    specs += [(code, c, None) for code in REGION_CODES for c in CATSLUG if len(select(code, c)) >= MIN_COUNTRY_CAT]
-    specs += [("all", None, t) for t in TOPICS]
-    cat_pages = [page_path(*s) for s in specs if s[1]]
+    BRANDS = brand_index(ARCH)
+    specs = [("all", None, None, None), *[(c, None, None, None) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)]]
+    specs += [("all", c, None, None) for c in CATSLUG]
+    specs += [(code, c, None, None) for code in REGION_CODES for c in CATSLUG if len(select(code, c)) >= MIN_COUNTRY_CAT]
+    specs += [("all", None, t, None) for t in TOPICS]
+    for y in YEARS:  # year archive pages, only where there is enough to show
+        specs.append(("all", None, None, y))
+        specs += [(c, None, None, y) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)
+                  if len(select(c, None, None, y)) >= (1 if c in REGION_CODES else MIN_COUNTRY_CAT)]
+        specs += [("all", c, None, y) for c in CATSLUG if len(select("all", c, None, y)) >= MIN_COUNTRY_CAT]
+        specs += [(code, c, None, y) for code in REGION_CODES for c in CATSLUG
+                  if len(select(code, c, None, y)) >= MIN_COUNTRY_CAT]
+        specs += [("all", None, t, y) for t in TOPICS if len(select("all", None, t, y)) >= MIN_COUNTRY_CAT]
     BUILT.update(page_path(*s) for s in specs)
-    browse = browse_html(cat_pages)
+    nav_pages = sorted(p for p in BUILT if p != "/")
+    browse = browse_html(nav_pages)
     lastmod = data["updated"][:10]
     page_urls = []
     for spec in specs:
         path = page_path(*spec)
-        write(path, page(*spec, pages=cat_pages, browse=browse))
-        page_urls.append((SITE + path, lastmod))
+        write(path, page(*spec, pages=nav_pages, browse=browse))
+        y = spec[3]
+        page_urls.append((SITE + path, lastmod if not y or y == YEARS[0] else f"{y}-12-31"))
 
-    rows = sorted((crawl.with_names(r) for r in archive.values()), key=lambda r: (r["date"], r["id"]), reverse=True)
-    brands = brand_index(rows)
+    rows, brands = ARCH, BRANDS
     by_cc = defaultdict(list)
     for r in rows: by_cc[(r["category"], r["country"])].append(r)
     footer = footer_html(browse)
@@ -520,6 +620,14 @@ def main():
         if (ROOT / f).exists(): shutil.copy(ROOT / f, OUT / f)
     (OUT / "data").mkdir(exist_ok=True)
     (OUT / "data" / "recalls.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "data" / "years").mkdir(exist_ok=True)
+    for y in YEARS:  # loaded by the Period filter
+        yr = [{k: r.get(k, "") for k in KEEP if r.get(k) or k in ("hazard", "brand", "severity", "product")}
+              for r in rows if r["date"][:4] == y]
+        (OUT / "data" / "years" / f"{y}.json").write_text(
+            json.dumps({"year": y, "count": len(yr), "recalls": yr}, ensure_ascii=False, separators=(",", ":")))
+    write("/disclaimer/", disclaimer_page(footer))
+    page_urls.append((f"{SITE}/disclaimer/", lastmod))
     (OUT / "404.html").write_text(
         head_html("Page not found | Recall Atlas", "This page does not exist.", SITE + "/")
         + f'<div class="wrap"><header class="top slim">{BRAND_A}</header><article class="recall"><h1>Page not found</h1>'

@@ -199,12 +199,12 @@ def norm_canada(r):
         title=title, product=clean(r.get("Product"), 120), hazard=r.get("Issue", ""),
         severity=r.get("Recall class", ""), category=cat, url=r["URL"])
 
-def crawl_canada(since):
+def crawl_canada(since, archived=False):
     url = "https://recalls-rappels.canada.ca/sites/default/files/opendata-donneesouvertes/HCRSAMOpenData.json"
     rows = get(url).json()
     return [norm_canada(r) for r in rows
             if "/en/" in (r.get("URL") or "") and (r.get("Last updated") or "") >= since
-            and r.get("Archived") != "1"]
+            and (archived or r.get("Archived") != "1")]
 
 # ---------------------------------------------------------------- EU Safety Gate
 EU_API = "https://ec.europa.eu/safety-gate-alerts/public/api/notification/"
@@ -226,7 +226,7 @@ def norm_eu(d, photo_id=None):
         url=f"https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/{d['id']}?lang=en",
         image=f"{EU_API}image/{photo_id}" if photo_id else "")
 
-def crawl_eu(since, max_pages=40):
+def crawl_eu(since, max_pages=40, known=()):
     """Safety Gate pages sometimes fail on one broken record (HTTP 404); skip that page or item
     and carry on, giving up only after 5 failed pages in a row."""
     out, bad = [], 0
@@ -244,6 +244,8 @@ def crawl_eu(since, max_pages=40):
         for it in items:
             if it["publicationDate"][:10] < since:
                 return out
+            if f"eu-{it.get('reference')}" in known:
+                continue  # already archived (backfill): skip the detail request
             try:
                 d = get(f"{EU_API}{it['id']}?language=en").json()
             except Exception as e:

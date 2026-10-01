@@ -2,7 +2,7 @@
 """One-off history load: fetches older recalls from sources that keep history and adds them
 to the permanent archive (data/archive). Run from the "Backfill archive" GitHub workflow.
 
-  python backfill.py 730        # last 730 days (default)
+  python backfill.py 1825       # last 5 years (default)
 
 Each source runs separately; one failing does not stop the others. Safe to run again:
 existing recalls keep their URL and first_seen date.
@@ -11,7 +11,7 @@ import sys, time, datetime as dt
 import crawl
 from crawl import get, requests, UA
 
-DAYS = int(sys.argv[1]) if len(sys.argv) > 1 else 730
+DAYS = int(sys.argv[1]) if len(sys.argv) > 1 else 1825
 SINCE = (dt.date.today() - dt.timedelta(days=DAYS)).isoformat()
 FIRST_SEEN = "backfill"  # marks rows loaded from history (not "new" for alerts or IndexNow)
 
@@ -65,17 +65,25 @@ def fsa(since):
     return [crawl.norm_fsa(r) for r in get(url).json()["items"]]
 
 
+KNOWN = set()  # ids already in the archive; filled in main()
+
+
 def eu(since):
-    return crawl.crawl_eu(since, max_pages=3000)
+    return crawl.crawl_eu(since, max_pages=6000, known=KNOWN)
+
+
+def canada(since):
+    return crawl.crawl_canada(since, archived=True)  # include recalls Canada has since archived
 
 
 SOURCES = [("CPSC", crawl.crawl_cpsc), ("FDA", fda), ("NHTSA", nhtsa), ("UK OPSS", opss),
-           ("UK FSA", fsa), ("Canada", crawl.crawl_canada), ("EU Safety Gate", eu)]
+           ("UK FSA", fsa), ("Canada", canada), ("EU Safety Gate", eu)]
 
 
 def main():
     archive = crawl.load_archive()
     before = len(archive)
+    KNOWN.update(archive)
     only = sys.argv[2].split(",") if len(sys.argv) > 2 else None
     for name, fn in SOURCES:
         if only and name not in only:
