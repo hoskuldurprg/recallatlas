@@ -209,7 +209,10 @@ def main():
         live = None
         if creds:
             try: live = cls(*creds)
-            except Exception as e: summary.append(f"- **{name}**: login failed ({e}); dry run this time")
+            except Exception as e:
+                # keep this platform's queue untouched, so the posts go out once the login works
+                summary.append(f"- **{name}**: login failed ({e}); nothing posted, will retry next run")
+                continue
         mode = "live" if live else "dry run"
         todo = [(kind, k, it) for kind, k, it in items if k not in done and not (getattr(cls, "weekly_only", False) and kind != "weekly")]
         recalls = [x for x in todo if x[0] == "recall"][:MAX_SERIOUS]
