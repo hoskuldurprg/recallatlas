@@ -42,3 +42,19 @@ jobs:
         with: { path: _site }
       - id: deploy
         uses: actions/deploy-pages@v4
+      - name: Post to Bluesky, Mastodon and X (dry run until the secrets are set)
+        continue-on-error: true   # a social media hiccup must never fail the site update
+        env:
+          BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
+          BSKY_APP_PASSWORD: ${{ secrets.BSKY_APP_PASSWORD }}
+          MASTODON_TOKEN: ${{ secrets.MASTODON_TOKEN }}
+          MASTODON_INSTANCE: ${{ vars.MASTODON_INSTANCE }}
+          X_API_KEY: ${{ secrets.X_API_KEY }}
+          X_API_SECRET: ${{ secrets.X_API_SECRET }}
+          X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
+          X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+        run: |
+          python social.py
+          git add data/social
+          git diff --cached --quiet || git commit -q -m "Social posts $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase -q && git push
