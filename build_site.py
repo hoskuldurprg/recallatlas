@@ -20,8 +20,6 @@ OUT = ROOT / "_site"
 SITE = "https://recallatlas.org"
 INDEXNOW_KEY = "7c1f4e9a2b8d4c6e9f0a3b5d7e1c2a48"
 DISCLAIMER = ("Recall Atlas is an independent site that collects recalls automatically from official government sources every 6 hours. The information may be incomplete, delayed or contain errors, and a product not appearing here does not mean it is safe. Always check the official notice and contact the manufacturer or seller before acting. Recall Atlas is not affiliated with any government agency and accepts no liability for decisions made using this site. <a href=\"/disclaimer/\">Full disclaimer</a>")
-KEEP = ["date", "country", "countries", "region", "countryName", "source", "title", "product", "brand", "hazard",
-        "severity", "units", "category", "url", "slug"]
 STATIC = ["CNAME", "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-image.png"]
 
 data = json.loads((ROOT / "data" / "recalls.json").read_text())
@@ -46,6 +44,7 @@ split = tpl.index('<div class="wrap">')
 head_tpl, body_tpl = tpl[:split], tpl[split:]
 CONSENT = tpl[tpl.index('<div class="consent"'):tpl.index('<script id="recall-data"')]
 BRAND_A = re.search(r'<a class="brand".*?</a>', tpl, re.S).group(0)
+TOPLINE = re.search(r'<div class="topline">.*?</div>', tpl, re.S).group(0)  # logo + light/dark toggle
 
 NAMES = {"US": "United States", "CA": "Canada", "GB": "United Kingdom", "EU": "the EU & EEA", **EU_NAMES}
 CATS = {"food": "Food & drink", "kids": "Toys & kids", "electrical": "Electrical", "home": "Home & garden",
@@ -161,14 +160,14 @@ def browse_html(country_cat_pages):
     return (f'<div class="browse"><div><h4>By country</h4><ul>{ctry}</ul></div>'
             f'<div><h4>By product type</h4><ul>{cats}</ul></div>'
             f'<div><h4>Common searches</h4><ul>{tops}</ul></div>'
-            f'<div><h4>By year</h4><ul>{yrs}<li><a href="/brand/">All brands</a></li></ul></div></div>')
+            f'<div><h4>By year</h4><ul>{yrs}<li><a href="/weekly/">Weekly roundups</a></li><li><a href="/brand/">All brands</a></li></ul></div></div>')
 
 
 def country_label(c):
     return "EU & EEA" if c == "EU" else NAMES.get(c, c)
 
 
-def head_html(title, desc, url, kind="website", crumbs=None, image=None, extra_ld=None):
+def head_html(title, desc, url, kind="website", crumbs=None, image=None, extra_ld=None, feeds=()):
     ld = []
     if crumbs:
         ld.append({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
@@ -191,7 +190,7 @@ def head_html(title, desc, url, kind="website", crumbs=None, image=None, extra_l
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-{ld_html}{head_tpl}</head>
+{"".join(f'<link rel="alternate" type="application/rss+xml" title="{esc(t)}" href="{SITE}{p}">' + chr(10) for p, t in feeds)}{ld_html}{head_tpl}</head>
 <body>
 """
 
@@ -277,7 +276,8 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
         if code != "all": crumbs.append((country_label(code), page_path(code)))
         if cat: crumbs.append((CATS[cat], page_path(code, cat)))
     if year: crumbs.append((year, page_path(code, cat, topic, year)))
-    head = head_html(title, desc, url, "website", crumbs if len(crumbs) > 1 else None)
+    feeds = page_feeds(code, cat)
+    head = head_html(title, desc, url, "website", crumbs if len(crumbs) > 1 else None, feeds=feeds)
     topic_js = json.dumps({"name": topic[1], "words": topic[2]}) if topic else "null"
     body = (body_tpl.replace("{{H1}}", esc(h1)).replace("{{H2}}", esc(h2)).replace("{{LEDE}}", esc(lede))
             .replace("{{PRERENDER}}", render_rows(rows[:PRERENDER]))
@@ -287,6 +287,8 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
             .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else "")
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
             .replace("{{BROWSE}}", browse)
+            .replace("{{WEEKLY}}", f'<a class="rss" href="/weekly/{LATEST_WEEK}/">This week\'s roundup</a>' if LATEST_WEEK and code == "all" and not cat and not topic and not year else "")
+            .replace("{{FEED}}", f'<a class="rss" href="{feeds[0][0]}" title="{esc(feeds[0][1])}">RSS feed</a>')
             .replace("{{NAMES}}", json.dumps({k: (v if k != "EU" else "all EU & EEA countries") for k, v in NAMES.items()}, ensure_ascii=False)))
     return head + body + "</body>\n</html>\n"
 
@@ -438,7 +440,7 @@ def recall_page(r, brands, by_cc, footer):
                      f'<a class="more-link" href="{crumbs[-1][1]}">See all {esc(crumbs[-1][0].lower())} recalls →</a>')
     nav = " › ".join(f'<a href="{p}">{esc(n)}</a>' for n, p in crumbs)
     body = f"""<div class="wrap">
-<header class="top slim">{BRAND_A}</header>
+<header class="top slim">{TOPLINE}</header>
 <nav class="crumbs" aria-label="Breadcrumb">{nav}</nav>
 <article class="recall">
 <div class="tags"><span class="tag cat">{CATS.get(r["category"], "Other")}</span>{sev}</div>
@@ -459,7 +461,7 @@ def recall_page(r, brands, by_cc, footer):
 
 def footer_html(browse):
     return (f'<footer><div class="wrap">{browse}<p>{DISCLAIMER}</p><p>Visitor statistics (Google Analytics) are only collected if you accept '
-            'them. <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
+            'them. <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
 
 
 def brand_page(k, name, rs, footer):
@@ -471,7 +473,7 @@ def brand_page(k, name, rs, footer):
     crumbs = [("Recall Atlas", "/"), ("Brands", "/brand/"), (name, f"/brand/{k}/")]
     nav = " › ".join(f'<a href="{p}">{esc(n)}</a>' for n, p in crumbs)
     body = f"""<div class="wrap">
-<header class="top slim">{BRAND_A}</header>
+<header class="top slim">{TOPLINE}</header>
 <nav class="crumbs" aria-label="Breadcrumb">{nav}</nav>
 <article class="recall">
 <h1>{esc(name)} recalls</h1>
@@ -489,7 +491,7 @@ def brands_index_page(brands, footer):
     lis = "".join(f'<li><a href="/brand/{k}/">{esc(n)}</a><span>{len(rs)}</span></li>' for k, (n, rs) in items)
     crumbs = [("Recall Atlas", "/"), ("Brands", "/brand/")]
     body = f"""<div class="wrap">
-<header class="top slim">{BRAND_A}</header>
+<header class="top slim">{TOPLINE}</header>
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/brand/">Brands</a></nav>
 <article class="recall"><h1>Recalls by brand</h1>
 <p class="lede">{len(items)} brands with more than one official recall. Pick a brand to see every recall in one list.</p>
@@ -527,12 +529,375 @@ def disclaimer_page(footer):
     secs = "".join(f"<h2>{h}</h2><p>{esc(b)}</p>" for h, b in DISCLAIMER_FULL)
     crumbs = [("Recall Atlas", "/"), ("Disclaimer", "/disclaimer/")]
     body = f"""<div class="wrap">
-<header class="top slim">{BRAND_A}</header>
+<header class="top slim">{TOPLINE}</header>
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/disclaimer/">Disclaimer</a></nav>
 <article class="recall prose"><h1>Disclaimer</h1>{secs}</article></div>
 {footer}{CONSENT}"""
     return head_html("Disclaimer | Recall Atlas", "How Recall Atlas collects recall information and the limits of that information.",
                      f"{SITE}/disclaimer/", "website", crumbs) + body + "</body>\n</html>\n"
+
+
+# ---------- RSS feeds ----------
+FEED_ITEMS = 50
+LATEST_WEEK = None  # newest weekly roundup, linked from the home page
+FEEDS = {"/feed.xml"} | {f"/recalls/{v}/feed.xml" for v in CATSLUG.values()} | {f"/{slug(c)}/feed.xml" for c in NAMES
+                                                                              if any(matches(r, c) for r in ARCH)}
+
+
+def feed_path(code="all", cat=None):
+    if cat: return f"/recalls/{CATSLUG[cat]}/feed.xml"
+    return "/feed.xml" if code == "all" else f"/{slug(code)}/feed.xml"
+
+
+def feed_title(code="all", cat=None):
+    if cat: return f"Recall Atlas: {CATS[cat].lower()} recalls"
+    if code == "all": return "Recall Atlas: all recalls"
+    return f"Recall Atlas: recalls in {'the ' if code in ('US', 'GB', 'NL') else ''}{country_label(code)}"
+
+
+def page_feeds(code="all", cat=None):
+    """Feeds offered on a list page: the most specific first (country, then product type), else the all-recalls feed."""
+    out = []
+    if code != "all" and feed_path(code) in FEEDS: out.append((feed_path(code), feed_title(code)))
+    if cat: out.append((feed_path("all", cat), feed_title("all", cat)))
+    return out or [(feed_path(), feed_title())]
+
+
+def seen_date(r):
+    fs = r.get("first_seen") or ""
+    return fs if re.match(r"\d{4}-\d\d-\d\d$", fs) else r["date"]
+
+
+def rfc822(day):
+    import email.utils
+    return email.utils.format_datetime(dt.datetime.fromisoformat(day + "T12:00:00+00:00"))
+
+
+def feed_xml(code, cat, rows, updated):
+    rows = sorted(rows, key=lambda r: (seen_date(r), r["date"], r["id"]), reverse=True)[:FEED_ITEMS]
+    page = SITE + page_path(code, cat)
+    where = "" if code == "all" else f" affecting {('the ' if code in ('US', 'GB', 'NL') else '')}{NAMES.get(code, code)}"
+    what = f"{CATS[cat].lower()} recalls" if cat else "product, food, drug and vehicle recalls"
+    items = []
+    for r in rows:
+        u = f"{SITE}/recall/{r['slug']}/"
+        body = ((f"<p>{esc(r['hazard'])}</p>" if r.get("hazard") else "")
+                + f"<p>{esc(AGENCY.get(r.get('feed'), r['source']))[:1].upper()}{esc(AGENCY.get(r.get('feed'), r['source']))[1:]} · {esc(r.get('countryName') or r['country'])} · {esc(r['date'])}</p>"
+                + f'<p><a href="{esc(r["url"])}">Official notice</a> · <a href="{u}">On Recall Atlas</a></p>')
+        items.append(f"<item><title>{esc(r['title'])}</title><link>{u}</link><guid isPermaLink=\"true\">{u}</guid>"
+                     f"<pubDate>{rfc822(seen_date(r))}</pubDate><category>{esc(CATS.get(r['category'], 'Other'))}</category>"
+                     f"<description>{esc(body)}</description></item>")
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n'
+            f"<title>{esc(feed_title(code, cat))}</title><link>{page}</link>\n"
+            f"<description>{esc(f'Official {what}{where}, collected from government sources by Recall Atlas every 6 hours.')}</description>\n"
+            f'<language>en</language><ttl>360</ttl><lastBuildDate>{email_date(updated)}</lastBuildDate>\n'
+            f'<atom:link href="{SITE}{feed_path(code, cat)}" rel="self" type="application/rss+xml"/>\n'
+            f"<image><url>{SITE}/apple-touch-icon.png</url><title>{esc(feed_title(code, cat))}</title><link>{page}</link></image>\n"
+            + "\n".join(items) + "\n</channel>\n</rss>\n")
+
+
+def email_date(updated):
+    import email.utils
+    return email.utils.format_datetime(dt.datetime.strptime(updated, "%Y-%m-%dT%H:%MZ").replace(tzinfo=dt.timezone.utc))
+
+
+def feeds_page(feeds, footer):
+    def ul(fs): return "<ul class=\"feeds\">" + "".join(f'<li><a href="{p}">{esc((lambda x: x[:1].upper() + x[1:])(t.replace("Recall Atlas: ", "")))}</a> <code>{SITE}{p}</code></li>' for p, t in fs) + "</ul>"
+    groups = [("Everything", [f for f in feeds if f[0] == "/feed.xml"]),
+              ("By country", [f for f in feeds if f[0] != "/feed.xml" and not f[0].startswith("/recalls/")]),
+              ("By product type", [f for f in feeds if f[0].startswith("/recalls/")])]
+    crumbs = [("Recall Atlas", "/"), ("RSS feeds", "/feeds/")]
+    body = f"""<div class="wrap">
+<header class="top slim">{TOPLINE}</header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/feeds/">RSS feeds</a></nav>
+<article class="recall prose"><h1>RSS feeds</h1>
+<p class="lede">Follow new recalls in a feed reader, or use a feed to post recalls to your own site, newsletter or chat. Each feed has the {FEED_ITEMS} newest recalls and updates every 6 hours. Copy a feed address into your reader.</p>
+{"".join(f"<h2>{h}</h2>{ul(fs)}" for h, fs in groups)}
+<p class="note">Feeds are free to use. Please link to the official notice, and keep in mind the <a href="/disclaimer/">disclaimer</a>.</p>
+</article></div>
+{footer}{CONSENT}"""
+    return head_html("RSS feeds | Recall Atlas", "Free RSS feeds of official recalls: all recalls, by country and by product type. Updated every 6 hours.",
+                     f"{SITE}/feeds/", "website", crumbs, feeds=[(p, t) for p, t in feeds if p == "/feed.xml"]) + body + "</body>\n</html>\n"
+
+
+# ---------- weekly roundups (/weekly/YYYY-wNN/) ----------
+# One page per ISO week (Monday-Sunday) by the date the agency published the recall. The current week is "so far".
+REGION_ORDER = [("US", "United States"), ("CA", "Canada"), ("GB", "United Kingdom"), ("EU", "EU & EEA")]
+
+
+def week_key(day):
+    y, w, _ = dt.date.fromisoformat(day).isocalendar()
+    return f"{y}-w{w:02d}"
+
+
+def week_range(key):
+    y, w = int(key[:4]), int(key[6:])
+    mon = dt.date.fromisocalendar(y, w, 1)
+    return mon, mon + dt.timedelta(days=6)
+
+
+def fmt_day(d, year=True):
+    return f"{d.day} {MON[d.month - 1]}" + (f" {d.year}" if year else "")
+
+
+def week_label(key):
+    mon, sun = week_range(key)
+    return f"{fmt_day(mon, mon.year != sun.year)} – {fmt_day(sun)}"
+
+
+def region_of(r):
+    return "EU" if r.get("region") == "EU" else r["country"]
+
+
+def week_groups(rows, today):
+    g = defaultdict(list)
+    for r in rows:
+        if r["date"] >= FIRST_DAY and r["date"] <= today: g[week_key(r["date"])].append(r)
+    first = week_key(FIRST_DAY)
+    return {k: v for k, v in sorted(g.items()) if k >= first and len(v) >= 20}
+
+
+def week_topics(rows):
+    out = []
+    for t in TOPICS:
+        rx = topic_rx(t[2])
+        n = sum(1 for r in rows if rx.search(f'{r["title"]} {r["hazard"]} {r.get("product", "")}'))
+        if n: out.append((t, n))
+    return sorted(out, key=lambda x: -x[1])
+
+
+def week_summary(key, rows, prev, current):
+    n = len(rows)
+    s = f"{n:,} official recalls and safety alerts {'so far in' if current else 'were published in'} the week of {week_label(key)}"
+    if prev and not current:
+        ch = round((n - len(prev)) / len(prev) * 100)
+        s += f", {'up' if ch > 0 else 'down'} {abs(ch)}% on the week before ({len(prev):,})" if ch else ", the same as the week before"
+    cats = Counter(r["category"] for r in rows).most_common(2)
+    s += ". Most were " + " and ".join(f"{CATS.get(c, 'Other').lower()} ({k})" for c, k in cats)
+    tops = [f"{t[1].lower()} ({k})" for t, k in week_topics(rows)[:3]]
+    if tops: s += "; common issues included " + ", ".join(tops)
+    hi = sum(1 for r in rows if sev_class((r.get("severity") or "") + " " + (r.get("hazard") or "")) == "high")
+    return s + f". {hi} {'was' if hi == 1 else 'were'} flagged as serious." if hi else s + "."
+
+
+def serious(rows, n=10):
+    return [r for r in rows if sev_class((r.get("severity") or "") + " " + (r.get("hazard") or "")) == "high"][:n]
+
+
+def week_page(key, rows, prev_key, next_key, prev_rows, current, footer):
+    rows = sorted(rows, key=lambda r: (r["date"], r["id"]), reverse=True)
+    y, w = key[:4], int(key[6:])
+    label = week_label(key)
+    h1 = f"Recall roundup: {label}" + (" (so far)" if current else "")
+    summ = week_summary(key, rows, prev_rows, current)
+    reg = Counter(region_of(r) for r in rows)
+    eu = Counter(r["country"] for r in rows if region_of(r) == "EU" and r["country"] in EU_NAMES).most_common(5)
+    lis = lambda pairs: "<ol>" + "".join(f"<li>{a}<span>{n}</span></li>" for a, n in pairs) + "</ol>"
+    blocks = [f'<div><h4>Recalls this week</h4><div class="big">{len(rows):,}</div><p class="note">{"So far" if current else esc(label)}</p></div>',
+              "<div><h4>By country</h4>" + lis([(f'<a href="{page_path(c)}">{esc(n)}</a>', reg[c]) for c, n in REGION_ORDER if reg[c]]
+                                             + [(f'<a href="{page_path(c)}">{esc(EU_NAMES[c])}</a>', k) for c, k in eu]) + "</div>",
+              "<div><h4>By product type</h4>" + lis([(f'<a href="{page_path("all", c)}">{CATS[c]}</a>' if c in CATSLUG else CATS.get(c, "Other"), k)
+                                                  for c, k in Counter(r["category"] for r in rows).most_common(6)]) + "</div>"]
+    bc = [(k, n) for k, n in Counter(r["_brand"] for r in rows if r.get("_brand")).most_common(6) if n > 1]
+    if bc: blocks.append("<div><h4>Most recalled brands</h4>" + lis([(f'<a href="/brand/{k}/">{esc(BRANDS[k][0])}</a>', n) for k, n in bc]) + "</div>")
+    tp = week_topics(rows)[:6]
+    if tp: blocks.append("<div><h4>Common searches</h4>" + lis([(f'<a href="/recalls/{t[0]}/">{esc(t[1])}</a>', n) for t, n in tp]) + "</div>")
+    ser = serious(rows)
+    parts = [f'<section class="ystats wk">{"".join(blocks)}</section>']
+    if ser: parts.append(f'<h2>Most serious</h2><p class="note">Recalls the agency classed as serious, or with a risk of death, fire, electric shock, drowning or strangulation.</p><ol class="list">{render_rows(ser)}</ol>')
+    for c, n in REGION_ORDER:
+        rs = [r for r in rows if region_of(r) == c]
+        if rs: parts.append(f'<h2>{esc(n)} <span class="cnt">{len(rs)}</span></h2><ol class="list">{render_rows(rs)}</ol>')
+    nav = ('<nav class="wknav">' + (f'<a href="/weekly/{prev_key}/">← {esc(week_label(prev_key))}</a>' if prev_key else "<span></span>")
+           + '<a href="/weekly/">All weeks</a>' + (f'<a href="/weekly/{next_key}/">{esc(week_label(next_key))} →</a>' if next_key else "<span></span>") + "</nav>")
+    crumbs = [("Recall Atlas", "/"), ("Weekly roundups", "/weekly/"), (f"Week {w}, {y}", f"/weekly/{key}/")]
+    body = f"""<div class="wrap">
+<header class="top slim">{TOPLINE}</header>
+<nav class="crumbs" aria-label="Breadcrumb">{" › ".join(f'<a href="{p}">{esc(n)}</a>' for n, p in crumbs)}</nav>
+<article class="recall weekly">
+<h1>{esc(h1)}</h1>
+<p class="lede">{esc(summ)}</p>
+{"".join(parts)}
+{nav}
+<p class="note">Collected automatically from official sources. Check each official notice for exact models, batch codes and remedies. <a href="/disclaimer/">Disclaimer</a></p>
+</article></div>
+{footer}{CONSENT}"""
+    title = f"Recall roundup, week {w} {y} ({label}) | Recall Atlas"
+    desc = summ[:155].rsplit(" ", 1)[0] + "…" if len(summ) > 158 else summ
+    return head_html(title, desc, f"{SITE}/weekly/{key}/", "article", crumbs,
+                     feeds=[("/weekly/feed.xml", "Recall Atlas: weekly roundups")]) + body + "</body>\n</html>\n"
+
+
+def weekly_index(weeks, current_key, footer):
+    by_year = defaultdict(list)
+    for k, rs in weeks.items(): by_year[k[:4]].append((k, len(rs)))
+    secs = "".join(f"<h2>{y}</h2><ul class=\"weeks\">" + "".join(
+        f'<li><a href="/weekly/{k}/">Week {int(k[6:])}</a><span>{esc(week_label(k))}</span><span>{n:,} recalls{" so far" if k == current_key else ""}</span></li>'
+        for k, n in sorted(items, reverse=True)) + "</ul>" for y, items in sorted(by_year.items(), reverse=True))
+    crumbs = [("Recall Atlas", "/"), ("Weekly roundups", "/weekly/")]
+    body = f"""<div class="wrap">
+<header class="top slim">{TOPLINE}</header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/weekly/">Weekly roundups</a></nav>
+<article class="recall"><h1>Weekly recall roundups</h1>
+<p class="lede">Every week's official recalls from the US, Canada, the UK and Europe on one page: the most serious ones, counts by country and product type, and the brands recalled most. Weeks run Monday to Sunday. Follow new roundups with the <a href="/weekly/feed.xml">weekly RSS feed</a>.</p>
+{secs}</article></div>
+{footer}{CONSENT}"""
+    return head_html("Weekly recall roundups | Recall Atlas",
+                     "Every week's official product, food and vehicle recalls from the US, Canada, the UK and Europe, summarised on one page.",
+                     f"{SITE}/weekly/", "website", crumbs, feeds=[("/weekly/feed.xml", "Recall Atlas: weekly roundups")]) + body + "</body>\n</html>\n"
+
+
+def weekly_feed(weeks, done, updated):
+    items = []
+    for k in done[-30:][::-1]:
+        rs = weeks[k]; u = f"{SITE}/weekly/{k}/"
+        prev = weeks.get(done[done.index(k) - 1]) if done.index(k) else None
+        ser = serious(sorted(rs, key=lambda r: (r["date"], r["id"]), reverse=True), 5)
+        body = f"<p>{esc(week_summary(k, rs, prev, False))}</p>" + (
+            "<p>Most serious:</p><ul>" + "".join(f'<li><a href="{SITE}/recall/{r["slug"]}/">{esc(r["title"])}</a></li>' for r in ser) + "</ul>" if ser else "")
+        sun = week_range(k)[1] + dt.timedelta(days=1)
+        items.append(f"<item><title>{esc(f'Recall roundup: {week_label(k)}')}</title><link>{u}</link><guid isPermaLink=\"true\">{u}</guid>"
+                     f"<pubDate>{rfc822(sun.isoformat())}</pubDate><description>{esc(body)}</description></item>")
+    return ('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n'
+            f"<title>Recall Atlas: weekly roundups</title><link>{SITE}/weekly/</link>\n"
+            "<description>A weekly summary of official recalls from the US, Canada, the UK and Europe.</description>\n"
+            f'<language>en</language><ttl>360</ttl><lastBuildDate>{email_date(updated)}</lastBuildDate>\n'
+            f'<atom:link href="{SITE}/weekly/feed.xml" rel="self" type="application/rss+xml"/>\n'
+            + "\n".join(items) + "\n</channel>\n</rss>\n")
+
+
+# ---------- privacy and cookies ----------
+OPERATOR = "Frostinn ehf."
+PRIVACY_UPDATED = "2026-10-01"
+# Contact form on /privacy/ (no email address is published). The form lives at Tally and is linked, not embedded,
+# so nothing loads from Tally until a visitor opens it. Paste the form's share link (https://tally.so/r/xxxxxx) into "url".
+CONTACT_FORM = {"provider": "Tally (Tally BV, Belgium)", "url": "", "privacy_url": "https://tally.so/privacy"}
+GA_COOKIES = "<code>_ga</code> and <code>_ga_VYHRQZSXSN</code>"
+
+
+def privacy_sections():
+    f = CONTACT_FORM
+    form_proc = (f'The contact form is run by {esc(f["provider"])}, which processes your message on our behalf '
+                 f'(<a href="{esc(f["privacy_url"])}" rel="noopener" target="_blank">Tally\'s privacy policy</a>). '
+                 "Nothing is loaded from Tally until you open the form.")
+    return [
+        ("Who runs Recall Atlas",
+         f"<p>Recall Atlas is run by {OPERATOR}, a company registered in Iceland, which is the data controller for this "
+         "website. You can reach us with the contact form at the bottom of this page.</p>" if f["url"] else
+         "website.</p>"),
+        ("The short version",
+         "<p>You can use Recall Atlas without an account and without being tracked. We do not show ads, sell data or build "
+         "profiles. Visitor statistics are only collected if you click <b>Accept</b> in the cookie banner, and you can "
+         "change that at any time.</p>"),
+        ("Visitor statistics (Google Analytics)",
+         "<p>If you accept, we load Google Analytics 4 to count visits: pages viewed, the site that referred you, your "
+         "approximate location (country and city, worked out from your IP address), device and browser type, and language. "
+         "Google Analytics 4 does not store IP addresses. Google sets two cookies, "
+         f"{GA_COOKIES}, which keep a random ID for up to two years so repeat visits can be counted. We use the reports "
+         "only to see which countries, recalls and pages people use, so we can improve the site.</p>"
+         "<p>The legal basis is your consent (GDPR Article 6(1)(a)). Google Ireland Limited processes the data on our "
+         "behalf, and it may be transferred to Google LLC in the United States, which is certified under the EU–US Data "
+         "Privacy Framework. Google keeps the data for no more than 14 months. If you decline, or never answer the "
+         "banner, Google Analytics is not loaded at all and no request is sent to Google. "
+         '<a href="https://policies.google.com/privacy" rel="noopener" target="_blank">Google\'s privacy policy</a>.</p>'),
+        ("What is stored in your browser",
+         "<p>Without your consent we set no cookies. The site keeps two small settings in your browser's local storage. "
+         "They never leave your device and we cannot read them:</p><ul>"
+         "<li><code>ra-consent</code>: whether you accepted or declined visitor statistics, so we do not ask again</li>"
+         "<li><code>ra-theme</code>: light or dark theme, only if you picked one that differs from your device setting</li>"
+         f"</ul><p>If you accept statistics, Google Analytics adds the cookies {GA_COOKIES} described above. "
+         "Clearing your browser's site data removes all of these.</p>"),
+        ("Change or withdraw your consent",
+         '<p>Use <button class="linkbtn" type="button" data-consent>Change cookie settings</button> (also at the bottom of '
+         "every page) and choose <b>Decline</b>. Google Analytics then stops loading. Withdrawing consent does not affect "
+         "statistics already collected.</p>"),
+        ("Hosting and other services",
+         "<p>The site is hosted on GitHub Pages (GitHub, Inc., USA). Like any web server, GitHub receives your IP address "
+         "when you load a page and logs it for security purposes; we do not receive these logs. "
+         '<a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" rel="noopener" target="_blank">GitHub\'s privacy statement</a>.</p>'
+         "<p>Fonts are served from recallatlas.org itself, not from Google. Some recall pages show a product photo that "
+         "is loaded directly from the government agency that published the recall, so that agency's server sees your IP "
+         "address. Links to official notices take you to the agency's own website, where its privacy policy applies.</p>"
+         + (f"<p>{form_proc}</p>" if f["url"] else "")),
+        ("If you contact us",
+         "<p>We use your name, email address and message only to reply to you, and delete them within 12 months after "
+         "the conversation ends unless we need them for a legal claim. The legal basis is our legitimate interest in "
+         "answering messages (GDPR Article 6(1)(f)).</p>"),
+        ("Your rights",
+         "<p>Under the GDPR and the UK GDPR you can ask for access to, correction or deletion of personal data we hold "
+         "about you, ask us to restrict or stop processing it, and receive it in a portable format. Where processing is "
+         "based on consent you can withdraw it at any time. Because we hold almost nothing about visitors, most "
+         "statistics data can only be found through Google. You can also complain to a data protection authority: in "
+         'Iceland that is <a href="https://www.personuvernd.is/" rel="noopener" target="_blank">Persónuvernd</a>, '
+         "or the authority where you live or work.</p>"),
+        ("Children",
+         "<p>Recall Atlas is a general information site and is not aimed at children. We do not knowingly collect data "
+         "about children.</p>"),
+        ("Changes",
+         f"<p>We will update this page if anything changes, and change the date below. Last updated {PRIVACY_UPDATED}.</p>"),
+    ]
+
+
+def contact_form_html():
+    f = CONTACT_FORM
+    if not f["url"]:
+        return ""
+    return ('<h2 id="contact">Contact us</h2><p>Questions about this page, your data or a recall listed on Recall Atlas: '
+            'use our contact form. It opens on tally.so.</p>'
+            f'<a class="cta" href="{esc(f["url"])}" rel="noopener" target="_blank">Open the contact form →</a>')
+
+
+def privacy_page(footer):
+    secs = "".join(f"<h2>{h}</h2>{b}" for h, b in privacy_sections())
+    crumbs = [("Recall Atlas", "/"), ("Privacy and cookies", "/privacy/")]
+    body = f"""<div class="wrap">
+<header class="top slim">{TOPLINE}</header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/privacy/">Privacy and cookies</a></nav>
+<article class="recall prose"><h1>Privacy and cookies</h1>{secs}{contact_form_html()}</article></div>
+{footer}{CONSENT}"""
+    return head_html("Privacy and cookies | Recall Atlas",
+                     "What Recall Atlas collects (nothing unless you accept statistics), the cookies and storage it uses, and your rights.",
+                     f"{SITE}/privacy/", "website", crumbs) + body + "</body>\n</html>\n"
+
+
+# ---------- year files (/data/years/<year>.json) ----------
+# Format v2: one array per recall instead of an object, with everything the list view can rebuild left out.
+#   {"v":2, "year":"2025", "count":N, "src":[sources], "cat":[categories], "u":[url prefixes], "r":[rows]}
+#   "h": hazard texts used more than once; a row's hazard is either the text or an index into "h"
+#   row = [MMDD, country, src index, cat index, title, hazard, brand, severity, units,
+#          url prefix index (-1 = none), url rest (0 = slugified title), slug (6-char id = slugified title + id),
+#          product ("" when its words are already in title/hazard), countries]
+#   Trailing empty values are dropped. region and countryName are derived from country.
+YCATS = list(CATS)
+_norm = lambda s: re.sub(r"\s+", " ", (s or "").lower()).strip()
+
+
+def year_file(y, rs):
+    pre = Counter(r["url"][:r["url"].rfind("/") + 1] for r in rs)
+    prefixes = [p for p, n in pre.most_common() if n >= 20 and len(p) > 12]
+    pidx = {p: i for i, p in enumerate(prefixes)}
+    srcs = sorted({r["source"] for r in rs})
+    sidx = {s: i for i, s in enumerate(srcs)}
+    hz = [h for h, n in Counter(r.get("hazard") or "" for r in rs).most_common() if n > 1 and len(h) > 3]
+    hidx = {h: i for i, h in enumerate(hz)}
+    out = []
+    for r in rs:
+        t = r["title"]
+        ts = crawl.slugify(t)
+        p = r["url"][:r["url"].rfind("/") + 1]
+        pi = pidx.get(p, -1)
+        rest = r["url"][len(p):] if pi >= 0 else r["url"]
+        if pi >= 0 and rest == ts: rest = 0
+        sl = r["slug"][len(ts) + 1:] if r.get("slug", "").startswith(ts + "-") and len(r["slug"]) == len(ts) + 7 else r.get("slug", "")
+        prod = r.get("product") or ""
+        if _norm(prod) in _norm(t + " " + (r.get("hazard") or "")): prod = ""
+        row = [r["date"][5:7] + r["date"][8:10], r["country"], sidx[r["source"]],
+               YCATS.index(r["category"]) if r["category"] in YCATS else YCATS.index("other"),
+               t, hidx.get(r.get("hazard") or "", r.get("hazard") or ""), r.get("brand") or "", r.get("severity") or "", r.get("units") or "",
+               pi, rest, sl, prod, r.get("countries") or ""]
+        while row and row[-1] in ("", None): row.pop()
+        out.append(row)
+    return {"v": 2, "year": y, "count": len(out), "src": srcs, "cat": YCATS, "u": prefixes, "h": hz, "r": out}
 
 
 # ---------- output ----------
@@ -584,6 +949,8 @@ def main():
                   if len(select(code, c, None, y)) >= MIN_COUNTRY_CAT]
         specs += [("all", None, t, y) for t in TOPICS if len(select("all", None, t, y)) >= MIN_COUNTRY_CAT]
     BUILT.update(page_path(*s) for s in specs)
+    global LATEST_WEEK
+    LATEST_WEEK = max(week_groups(ARCH, data["updated"][:10]), default=None)
     nav_pages = sorted(p for p in BUILT if p != "/")
     browse = browse_html(nav_pages)
     lastmod = data["updated"][:10]
@@ -604,8 +971,46 @@ def main():
         write(f"/brand/{k}/", brand_page(k, name, rs, footer))
     write("/brand/", brands_index_page(brands, footer))
 
+    (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n")
+    (OUT / f"{INDEXNOW_KEY}.txt").write_text(INDEXNOW_KEY)
+    (OUT / "assets").mkdir(exist_ok=True)
+    (OUT / "assets" / "site.css").write_text(CSS)
+    shutil.copytree(ROOT / "assets" / "fonts", OUT / "assets" / "fonts")
+    for f in STATIC:
+        if (ROOT / f).exists(): shutil.copy(ROOT / f, OUT / f)
+    (OUT / "data").mkdir(exist_ok=True)
+    (OUT / "data" / "recalls.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+    (OUT / "data" / "years").mkdir(exist_ok=True)
+    for y in YEARS:  # loaded by the Period filter; compact format, decoded by decodeYear() in template.html
+        (OUT / "data" / "years" / f"{y}.json").write_text(
+            json.dumps(year_file(y, [r for r in rows if r["date"][:4] == y]), ensure_ascii=False, separators=(",", ":")))
+    write("/disclaimer/", disclaimer_page(footer))
+    page_urls.append((f"{SITE}/disclaimer/", lastmod))
+    feeds = [("all", None)] + [(c, None) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)
+                               if any(matches(r, c) for r in rows)] + [("all", c) for c in CATSLUG]
+    FEEDS.update(feed_path(c, k) for c, k in feeds)
+    for code, cat in feeds:
+        (OUT / feed_path(code, cat).lstrip("/")).parent.mkdir(parents=True, exist_ok=True)
+        (OUT / feed_path(code, cat).lstrip("/")).write_text(
+            feed_xml(code, cat, [r for r in rows if matches(r, code) and (not cat or r["category"] == cat)], data["updated"]))
+    write("/feeds/", feeds_page([(feed_path(c, k), feed_title(c, k)) for c, k in feeds], footer))
+    page_urls.append((f"{SITE}/feeds/", lastmod))
+    weeks = week_groups(rows, data["updated"][:10])
+    keys = list(weeks)
+    current_key = week_key(data["updated"][:10])
+    for i, k in enumerate(keys):
+        write(f"/weekly/{k}/", week_page(k, weeks[k], keys[i - 1] if i else None, keys[i + 1] if i + 1 < len(keys) else None,
+                                         weeks[keys[i - 1]] if i else None, k == current_key, footer))
+    write("/weekly/", weekly_index(weeks, current_key, footer))
+    done = [k for k in keys if k != current_key]
+    (OUT / "weekly" / "feed.xml").write_text(weekly_feed(weeks, done, data["updated"]))
+    weekly_urls = [(f"{SITE}/weekly/", lastmod)] + [
+        (f"{SITE}/weekly/{k}/", min(lastmod, (week_range(k)[1] + dt.timedelta(days=1)).isoformat())) for k in keys]
+    write("/privacy/", privacy_page(footer))
+    page_urls.append((f"{SITE}/privacy/", PRIVACY_UPDATED))
     maps = [sitemap("sitemap-pages.xml", page_urls + [(f"{SITE}/brand/", lastmod)])]
     maps.append(sitemap("sitemap-brands.xml", [(f"{SITE}/brand/{k}/", rs[0]["date"]) for k, (n, rs) in brands.items()]))
+    maps.append(sitemap("sitemap-weekly.xml", weekly_urls))
     for year in sorted({r["date"][:4] for r in rows}):
         maps.append(sitemap(f"sitemap-recalls-{year}.xml",
                             [(f"{SITE}/recall/{r['slug']}/", r["date"]) for r in rows if r["date"][:4] == year]))
@@ -613,28 +1018,12 @@ def main():
         '<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
         + "".join(f"  <sitemap><loc>{SITE}/{m}</loc><lastmod>{lastmod}</lastmod></sitemap>\n" for m in maps)
         + "</sitemapindex>\n")
-    (OUT / "robots.txt").write_text(f"User-agent: *\nAllow: /\nSitemap: {SITE}/sitemap.xml\n")
-    (OUT / f"{INDEXNOW_KEY}.txt").write_text(INDEXNOW_KEY)
-    (OUT / "assets").mkdir(exist_ok=True)
-    (OUT / "assets" / "site.css").write_text(CSS)
-    for f in STATIC:
-        if (ROOT / f).exists(): shutil.copy(ROOT / f, OUT / f)
-    (OUT / "data").mkdir(exist_ok=True)
-    (OUT / "data" / "recalls.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
-    (OUT / "data" / "years").mkdir(exist_ok=True)
-    for y in YEARS:  # loaded by the Period filter
-        yr = [{k: r.get(k, "") for k in KEEP if r.get(k) or k in ("hazard", "brand", "severity", "product")}
-              for r in rows if r["date"][:4] == y]
-        (OUT / "data" / "years" / f"{y}.json").write_text(
-            json.dumps({"year": y, "count": len(yr), "recalls": yr}, ensure_ascii=False, separators=(",", ":")))
-    write("/disclaimer/", disclaimer_page(footer))
-    page_urls.append((f"{SITE}/disclaimer/", lastmod))
     (OUT / "404.html").write_text(
         head_html("Page not found | Recall Atlas", "This page does not exist.", SITE + "/")
-        + f'<div class="wrap"><header class="top slim">{BRAND_A}</header><article class="recall"><h1>Page not found</h1>'
+        + f'<div class="wrap"><header class="top slim">{TOPLINE}</header><article class="recall"><h1>Page not found</h1>'
           '<p class="lede">That page does not exist or has moved. <a href="/">Search all recalls</a>.</p></article></div>'
         + footer + CONSENT + "</body>\n</html>\n")
-    print(f"built {len(page_urls)} list pages, {len(rows)} recall pages, {len(brands)} brand pages")
+    print(f"built {len(specs)} list pages, {len(rows)} recall pages, {len(brands)} brand pages, {len(keys)} weekly roundups, {len(feeds) + 1} feeds")
 
     if "--indexnow" in sys.argv:
         today = dt.date.today().isoformat()

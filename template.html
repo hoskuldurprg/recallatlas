@@ -2,10 +2,21 @@
 <link rel="icon" href="/favicon.ico" sizes="48x48">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="theme-color" content="#b8480f">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=Public+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script>try{var t=localStorage.getItem("ra-theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>
+<link rel="preload" href="/assets/fonts/public-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/archivo-latin-wdth-normal.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* Fonts are self-hosted (assets/fonts/, SIL OFL) so no request goes to Google before consent. */
+@font-face{font-family:"Archivo";font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;src:url(/assets/fonts/archivo-latin-ext-wdth-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Archivo";font-style:normal;font-weight:100 900;font-stretch:62% 125%;font-display:swap;src:url(/assets/fonts/archivo-latin-wdth-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Public Sans";font-style:normal;font-weight:100 900;font-display:swap;src:url(/assets/fonts/public-sans-latin-ext-wght-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Public Sans";font-style:normal;font-weight:100 900;font-display:swap;src:url(/assets/fonts/public-sans-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Public Sans";font-style:italic;font-weight:100 900;font-display:swap;src:url(/assets/fonts/public-sans-latin-ext-wght-italic.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Public Sans";font-style:italic;font-weight:100 900;font-display:swap;src:url(/assets/fonts/public-sans-latin-wght-italic.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(/assets/fonts/ibm-plex-mono-latin-ext-400-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:400;font-display:swap;src:url(/assets/fonts/ibm-plex-mono-latin-400-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(/assets/fonts/ibm-plex-mono-latin-ext-500-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"IBM Plex Mono";font-style:normal;font-weight:500;font-display:swap;src:url(/assets/fonts/ibm-plex-mono-latin-500-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
 /* Layout: one reading column; a sticky filter bar; each recall is a dated notice row with a source stripe. */
 :root{
   --bg:#f2f4f6; --surface:#ffffff; --ink:#15212c; --muted:#5b6875; --line:#dde2e7;
@@ -21,6 +32,7 @@
   --accent:#f08a4b; --accent-soft:#3a2417;
   --sev-high:#ff8a80; --sev-high-soft:#3b1a19; --sev-mid:#f2b35a; --sev-mid-soft:#352713;
   --chip:#202a34; --chip-on:#e7ecf1; --chip-on-fg:#0f151b; color-scheme:dark}}
+:root[data-theme="light"]{color-scheme:light}
 :root[data-theme="dark"]{
   --bg:#0f151b; --surface:#161e26; --ink:#e7ecf1; --muted:#98a5b2; --line:#26313c;
   --accent:#f08a4b; --accent-soft:#3a2417;
@@ -38,12 +50,23 @@ header.top{padding-block:40px 20px}
 .brand{display:flex;align-items:center;gap:10px;font-family:var(--display);font-weight:800;font-stretch:80%;
   letter-spacing:.02em;text-transform:uppercase;font-size:14px}
 .brand .mark{width:24px;height:24px;display:block}
+.topline{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.theme{flex:none;width:40px;height:40px;display:inline-grid;place-items:center;padding:0;cursor:pointer;
+  background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:999px}
+.theme:hover{color:var(--accent);border-color:var(--accent)}
+.theme svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.theme .i-sun{display:none}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .theme .i-sun{display:block}:root:not([data-theme="light"]) .theme .i-moon{display:none}}
+:root[data-theme="dark"] .theme .i-sun{display:block}:root[data-theme="dark"] .theme .i-moon{display:none}
 .brand .mark path{fill:var(--accent)}
 h1{font-family:var(--display);font-stretch:72%;font-weight:800;font-size:clamp(34px,6.4vw,56px);line-height:1;
   margin:18px 0 12px;text-wrap:balance;letter-spacing:-.01em}
 .lede{color:var(--muted);max-width:60ch;margin:0}
 .stamp{margin-top:14px;font:12px/1.4 var(--mono);color:var(--muted);display:flex;gap:14px;flex-wrap:wrap}
 .stamp b{color:var(--ink);font-weight:500}
+.stamp .rss{color:var(--accent);text-decoration:none;font-weight:500}.stamp .rss:hover{text-decoration:underline}
+.prose ul.feeds{list-style:none;padding:0}.feeds li{padding:4px 0;display:flex;flex-wrap:wrap;gap:2px 12px;align-items:baseline}
+.feeds code{color:var(--muted);overflow-wrap:anywhere}
 .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#2f9e62;margin-right:6px;vertical-align:1px}
 
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
@@ -133,6 +156,17 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 .brands{columns:3 220px;padding:0;list-style:none;margin:0 0 30px}.brands li{padding:3px 0;break-inside:avoid}
 .brands a{text-decoration:none;color:var(--ink)}.brands a:hover{color:var(--accent)}.brands span{color:var(--muted);font:12px var(--mono);margin-left:6px}
 .prose p{max-width:70ch;line-height:1.6}
+.weekly .ystats{margin:6px 0 10px}.weekly h2 .cnt{font:500 13px var(--mono);color:var(--muted);margin-left:6px}
+.wknav{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:28px 0 8px;font-weight:600}
+.wknav a{color:var(--accent);text-decoration:none}.wknav a:hover{text-decoration:underline}
+.weeks{list-style:none;padding:0;margin:0 0 10px;columns:2 300px}.weeks li{display:flex;gap:10px;padding:3px 0;break-inside:avoid;font-size:14px}
+.weeks li a{min-width:64px;color:var(--ink)}.weeks li span{color:var(--muted)}.weeks li span:last-child{margin-left:auto;font:12px var(--mono)}
+.prose ul{max-width:70ch;padding-left:20px;line-height:1.6}.prose code{font:13px var(--mono)}
+.cform{display:grid;gap:12px;max-width:520px;margin-top:8px}
+.cform label{display:grid;gap:4px;font:600 12px/1.2 var(--body);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.cform input,.cform textarea{font:15px/1.4 var(--body);color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 12px;text-transform:none;letter-spacing:0}
+.cform .cta{border:0;cursor:pointer;justify-self:start;font-size:15px}
+.consent a{color:inherit}
 .ystats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px 28px;padding:18px 0 4px;border-bottom:1px solid var(--line)}
 .ystats h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px}
 .ystats .big{font:800 40px/1 var(--display);font-stretch:80%}
@@ -146,10 +180,10 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 
 <div class="wrap">
   <header class="top">
-    <a class="brand" href="/" style="color:inherit;text-decoration:none"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4C20.4 4 11 13.2 11 24.6 11 40 32 60 32 60s21-20 21-35.4C53 13.2 43.6 4 32 4z"/><rect x="28.5" y="13" width="7" height="17" rx="3.5" fill="#fff"/><circle cx="32" cy="37.5" r="4" fill="#fff"/></svg>Recall Atlas</a>
+    <div class="topline"><a class="brand" href="/" style="color:inherit;text-decoration:none"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4C20.4 4 11 13.2 11 24.6 11 40 32 60 32 60s21-20 21-35.4C53 13.2 43.6 4 32 4z"/><rect x="28.5" y="13" width="7" height="17" rx="3.5" fill="#fff"/><circle cx="32" cy="37.5" r="4" fill="#fff"/></svg>Recall Atlas</a><button class="theme" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></div>
     <h1>{{H1}}</h1>
     <p class="lede">{{LEDE}}</p>
-    <div class="stamp"><span><span class="dot"></span>Updated <b id="updated">–</b></span><span><b id="total">–</b> recalls in the last 60 days</span></div>
+    <div class="stamp"><span><span class="dot"></span>Updated <b id="updated">–</b></span><span><b id="total">–</b> recalls in the last 60 days</span>{{WEEKLY}}{{FEED}}</div>
   </header>
 </div>
 
@@ -178,11 +212,11 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
   <h4>Sources</h4>
   <div class="srcgrid" id="sources"></div>
   <p>Recall Atlas is an independent site that collects recalls automatically from official government sources every 6 hours. The information may be incomplete, delayed or contain errors, and a product not appearing here does not mean it is safe. Always check the official notice and contact the manufacturer or seller before acting. Recall Atlas is not affiliated with any government agency and accepts no liability for decisions made using this site. <a href="/disclaimer/">Full disclaimer</a></p>
-  <p>Visitor statistics (Google Analytics) are only collected if you accept them. <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p>
+  <p>Visitor statistics (Google Analytics) are only collected if you accept them. <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p>
 </div></footer>
 
 <div class="consent" id="consent" role="dialog" aria-label="Cookie consent" hidden>
-  <p>Can we count your visit with Google Analytics? It helps us see which countries and recalls people look at. No ads, and the site works either way.</p>
+  <p>Can we count your visit with Google Analytics? It helps us see which countries and recalls people look at. No ads, and the site works either way. <a href="/privacy/">Privacy and cookies</a></p>
   <div class="btns"><button type="button" id="cNo">Decline</button><button type="button" class="yes" id="cYes">Accept</button></div>
 </div>
 
@@ -203,8 +237,27 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
     if(c==="yes")loadGA(); else if(c!=="no")show(true);
     document.getElementById("cYes").onclick=function(){set("yes");show(false);loadGA()};
     document.getElementById("cNo").onclick=function(){set("no");show(false);if(window.__ga)location.reload()};
-    document.getElementById("privacyBtn").onclick=function(){show(true)};
+    document.querySelectorAll("#privacyBtn,[data-consent]").forEach(function(b){b.onclick=function(){show(true)}});
   });
+})();
+</script>
+<script>
+(function(){
+  // Light/dark: follows the device until the visitor picks the other theme; the choice is kept in localStorage "ra-theme".
+  var K="ra-theme", root=document.documentElement, mq=window.matchMedia?matchMedia("(prefers-color-scheme: dark)"):{matches:false};
+  function device(){return mq.matches?"dark":"light"}
+  function current(){return root.dataset.theme||device()}
+  function label(){var b=document.getElementById("themeBtn");if(!b)return;var t="Switch to "+(current()==="dark"?"light":"dark")+" theme";b.setAttribute("aria-label",t);b.title=t}
+  function pick(t){
+    if(t===device()){delete root.dataset.theme;try{localStorage.removeItem(K)}catch(e){}}  // same as the device: just follow it
+    else{root.dataset.theme=t;try{localStorage.setItem(K,t)}catch(e){}}
+    label();
+  }
+  document.addEventListener("DOMContentLoaded",function(){
+    label();
+    var b=document.getElementById("themeBtn"); if(b)b.addEventListener("click",function(){pick(current()==="dark"?"light":"dark")});
+  });
+  if(mq.addEventListener)mq.addEventListener("change",label);
 })();
 </script>
 <script id="recall-data" type="application/json">/*DATA*/</script>
@@ -228,20 +281,49 @@ const $=s=>document.querySelector(s);
 const PAGE=40;
 let DATA=null, RECENT=null, state={country:"all",cat:"all",q:"",euAll:false,limit:PAGE,period:PYEAR||"recent"};
 const YCACHE={};
+// Same as crawl.slugify() in Python; year files leave out slugs/URLs that equal the slugified title.
+const slugify=t=>String(t).normalize("NFKD").replace(/[^\x00-\x7f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70).replace(/-+$/,"")||"recall";
+// Compact year file (v2, see year_file() in build_site.py) -> the same row objects as recalls.json
+function decodeYear(d){
+  if(!d.v) return d.recalls;
+  return d.r.map(a=>{
+    const c=a[1],t=a[4],up=a[9]??-1,ur=a[10]??"",sl=a[11]??"";
+    let ts="";const tsl=()=>ts||(ts=slugify(t));
+    return {date:d.year+"-"+a[0].slice(0,2)+"-"+a[0].slice(2),country:c,
+      region:c==="GB"?"UK":c==="US"||c==="CA"?c:"EU",countryName:c==="EU"?"EU":NAMES[c]||c,
+      source:d.src[a[2]],category:d.cat[a[3]],title:t,hazard:(typeof a[5]==="number"?d.h[a[5]]:a[5])||"",brand:a[6]||"",severity:a[7]||"",units:a[8]||"",
+      url:(up>=0?d.u[up]:"")+(ur===0?tsl():ur),slug:sl.length===6?tsl()+"-"+sl:sl,product:a[12]||"",
+      ...(a[13]?{countries:a[13]}:{})};
+  });
+}
 async function loadYear(y){
-  if(!YCACHE[y]) YCACHE[y]=fetch("/data/years/"+y+".json").then(r=>r.json()).then(d=>d.recalls);
+  if(!YCACHE[y]) YCACHE[y]=fetch("/data/years/"+y+".json").then(r=>r.json()).then(decodeYear);
   return YCACHE[y];
 }
+function showPeriod(){
+  buildCountries(); $("#country").value=[...$("#country").options].some(o=>o.value===state.country)?state.country:"all";
+  render(); $("h1").textContent=$("#heading").textContent;
+}
 async function setPeriod(p){
-  state.period=p; state.limit=PAGE;
+  const target=pathFor(TOPIC?"all":state.country,p);
+  if(p!=="all"&&target!==location.pathname&&hasPage(target)&&(!TOPIC||state.country==="all")){location.href=target;return;}
+  state.period=p; state.limit=PAGE; state.loading=false;
   if(p==="recent"){DATA.recalls=RECENT;}
   else{
     $("#list").innerHTML=`<li class="empty">Loading ${p==="all"?"all years":p}…</li>`;
     const ys=p==="all"?YEARS:[+p];
-    DATA.recalls=(await Promise.all(ys.map(loadYear))).flat();
+    if(ys.length>1){  // show the newest year as soon as it arrives, add older years when they are in
+      state.loading=true;
+      loadYear(ys[0]).then(rs=>{if(state.period===p&&state.loading){DATA.recalls=rs;showPeriod();}}).catch(()=>{});
+    }
+    let all;
+    try{all=(await Promise.all(ys.map(loadYear))).flat();}
+    catch(e){ys.forEach(y=>delete YCACHE[y]);state.loading=false;
+      if(state.period===p)$("#list").innerHTML=`<li class="empty">Older recalls could not load. Check your connection and pick the period again.</li>`;return;}
+    if(state.period!==p) return;  // the visitor picked another period meanwhile
+    DATA.recalls=all; state.loading=false;
   }
-  buildCountries(); $("#country").value=[...$("#country").options].some(o=>o.value===state.country)?state.country:"all";
-  render(); $("h1").textContent=$("#heading").textContent;
+  showPeriod();
 }
 const periodText=()=>state.period==="recent"?"in the last 60 days":state.period==="all"?"since "+YEARS[YEARS.length-1]:"in "+state.period;
 
@@ -295,7 +377,13 @@ function render(){
   const what=TOPIC?TOPIC.name+" recalls":state.cat!=="all"?CATS[state.cat]+" recalls":"Recalls";
   const yr=/^\d{4}$/.test(state.period)?" in "+state.period:state.period==="all"?" (all years)":"";
   $("#heading").textContent=(what==="Recalls"&&!where?"All recalls":what+where)+yr;
-  $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`;
+  // the year stats and description are built for this page's own country and period; when the list shows
+  // something else (filtered in place), hide the stats and describe what is shown instead
+  const own=state.period===(PYEAR||"recent")&&state.country===(PRESET||"all");
+  const st=$(".ystats"); if(st) st.hidden=!own;
+  const ld=$(".top .lede"); if(ld){if(ld.dataset.orig==null)ld.dataset.orig=ld.textContent;
+    ld.textContent=own?ld.dataset.orig:`${rows.length.toLocaleString()} official ${what.toLowerCase()}${where} ${periodText()}. Newest first. Search by product, brand or hazard.`;}
+  $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`+(state.loading?" · loading older years…":"");
   $("#euNote").hidden=!(isEU(state.country)&&state.country!=="EU");
   let html="",last="";
   rows.slice(0,state.limit).forEach(r=>{
@@ -310,13 +398,19 @@ function render(){
   $("#list").innerHTML=html||`<li class="empty">${!state.q&&(state.cat==="all"||PCAT)?"No "+(TOPIC?TOPIC.name.toLowerCase()+" ":state.cat!=="all"?CATS[state.cat].toLowerCase()+" ":"")+"recalls reported"+where+" "+periodText()+".":"No recalls match "+periodText()+"."}${state.period!=="all"?` <button class="linkbtn" type="button" data-period="all">Search all years</button>`:""}</li>`;
   $("#more").hidden=rows.length<=state.limit;
 }
+// URL of the list page for a country + period (year pages carry the stats block, so prefer them)
+function pathFor(c,period){
+  const y=/^\d{4}$/.test(period)?period+"/":"";
+  if(TOPIC) return location.pathname.replace(/\d{4}\/$/,"")+y;
+  const p=PCAT?(c==="all"?"/recalls/"+CATSLUG[PCAT]+"/":"/"+SLUG(c)+"/"+CATSLUG[PCAT]+"/"):(c==="all"?(y?"/recalls/":"/"):"/"+SLUG(c)+"/");
+  return p+y;
+}
+const hasPage=p=>p==="/"||PAGES.has(p);
 function setCountry(c){
   const inPlace=()=>{state.country=c;state.limit=PAGE;render();$("h1").textContent=$("#heading").textContent;};
   if(TOPIC) return inPlace();
-  const y=/^\d{4}$/.test(state.period)?state.period+"/":"";
-  let p=PCAT?(c==="all"?"/recalls/"+CATSLUG[PCAT]+"/":"/"+SLUG(c)+"/"+CATSLUG[PCAT]+"/"):(c==="all"?(y?"/recalls/":"/"):"/"+SLUG(c)+"/");
-  p+=y;
-  if(PCAT||y) return PAGES.has(p)?(location.href=p):inPlace();
+  const p=pathFor(c,state.period);
+  if(PCAT||/^\d{4}$/.test(state.period)) return hasPage(p)?(location.href=p):inPlace();
   location.href=p;}
 
 load().then(async d=>{
