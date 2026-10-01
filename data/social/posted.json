@@ -1,0 +1,44 @@
+{
+ "bluesky": {
+  "recall:opss-2609-0079": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2609-0154": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2609-0156": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  },
+  "weekly:2026-w39": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  }
+ },
+ "mastodon": {
+  "recall:opss-2609-0079": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2609-0154": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2609-0156": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  },
+  "weekly:2026-w39": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  }
+ },
+ "x": {
+  "weekly:2026-w39": {
+   "at": "2026-10-01T15:49+00:00",
+   "dry_run": true
+  }
+ }
+}
