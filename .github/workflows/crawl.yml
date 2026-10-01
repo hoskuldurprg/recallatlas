@@ -42,7 +42,7 @@ jobs:
         with: { path: _site }
       - id: deploy
         uses: actions/deploy-pages@v5
-      - name: Post to Bluesky, Mastodon and X (dry run until the secrets are set)
+      - name: Post to Bluesky, Mastodon, X and Facebook (dry run until the secrets are set)
         continue-on-error: true   # a social media hiccup must never fail the site update
         env:
           BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
@@ -53,6 +53,8 @@ jobs:
           X_API_SECRET: ${{ secrets.X_API_SECRET }}
           X_ACCESS_TOKEN: ${{ secrets.X_ACCESS_TOKEN }}
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
+          FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
         run: |
           python social.py
           git add data/social
