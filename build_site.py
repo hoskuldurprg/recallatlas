@@ -210,8 +210,8 @@ def stats_html(rows, code, cat, year):
                    for i, m in enumerate(months))
     bc = Counter(r["_brand"] for r in rows if r.get("_brand")).most_common(6)
     brands = "".join(f'<li><a href="/brand/{k}/">{esc(BRANDS[k][0])}</a><span>{n}</span></li>' for k, n in bc)
-    out = (f'<section class="ystats"><div><h4>Recalls in {year}</h4><div class="big">{len(rows):,}</div>'
-           f'<p class="note">{esc(year_note(year).strip(" ()").capitalize())}</p></div>'
+    out = (f'<section class="ystats" id="ystats"><div><h4>Recalls in {year}</h4><div class="big">{len(rows):,}</div>'
+           f'<p class="note">{esc((lambda t: t[:1].upper() + t[1:])(year_note(year).strip(" ()")))}</p></div>'
            f'<div><h4>By month</h4><div class="months">{bars}</div>'
            f'<div class="mlab"><span>Jan</span><span>Jun</span><span>Dec</span></div></div>')
     if brands: out += f'<div><h4>Most recalled brands</h4><ol>{brands}</ol></div>'
@@ -284,7 +284,7 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
             .replace("{{PRESET}}", "" if code == "all" else code)
             .replace("{{PCAT}}", cat or "").replace("{{TOPIC}}", topic_js)
             .replace("{{PYEAR}}", year or "").replace("{{YEARS}}", json.dumps([int(y) for y in YEARS]))
-            .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else "")
+            .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else '<section class="ystats" id="ystats" hidden></section>')
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
             .replace("{{BROWSE}}", browse)
             .replace("{{WEEKLY}}", f'<a class="rss" href="/weekly/{LATEST_WEEK}/">This week\'s roundup</a>' if LATEST_WEEK and code == "all" and not cat and not topic and not year else "")
@@ -537,6 +537,44 @@ def disclaimer_page(footer):
                      f"{SITE}/disclaimer/", "website", crumbs) + body + "</body>\n</html>\n"
 
 
+# ---------- fonts ----------
+# Self-hosted fonts live in assets/fonts/. Any that are missing from the repo are downloaded from the npm registry
+# (pinned Fontsource packages, checked against these hashes); if that fails the site falls back to system fonts.
+FONT_PKGS = {"archivo": "@fontsource-variable/archivo/-/archivo-5.3.0.tgz",
+             "public-sans": "@fontsource-variable/public-sans/-/public-sans-5.3.0.tgz",
+             "ibm-plex-mono": "@fontsource/ibm-plex-mono/-/ibm-plex-mono-5.3.0.tgz"}
+FONT_FILES = {
+    "archivo-latin-ext-wdth-normal.woff2": "5717f37059660ca5", "archivo-latin-wdth-normal.woff2": "e3a28eade21a900c",
+    "ibm-plex-mono-latin-400-normal.woff2": "08949f728dc52d52", "ibm-plex-mono-latin-500-normal.woff2": "01d285447409c8a5",
+    "ibm-plex-mono-latin-ext-400-normal.woff2": "6bc0f226a5b7884a", "ibm-plex-mono-latin-ext-500-normal.woff2": "6bb06407c97584b0",
+    "public-sans-latin-ext-wght-italic.woff2": "a071e35bbfc9c627", "public-sans-latin-ext-wght-normal.woff2": "3a00a32f0242b723",
+    "public-sans-latin-wght-italic.woff2": "16dc93252adb7878", "public-sans-latin-wght-normal.woff2": "5ed4d31c988e73b2"}
+
+
+def ensure_fonts():
+    import io, tarfile
+    d = ROOT / "assets" / "fonts"
+    d.mkdir(parents=True, exist_ok=True)
+    missing = [f for f in FONT_FILES if not (d / f).exists()]
+    if not missing and (d / "LICENSE.txt").exists(): return
+    licenses = []
+    for pkg, path in FONT_PKGS.items():
+        need = [f for f in missing if f.startswith(pkg)]
+        try:
+            with urllib.request.urlopen("https://registry.npmjs.org/" + path, timeout=60) as res:
+                tar = tarfile.open(fileobj=io.BytesIO(res.read()))
+            licenses.append(tar.extractfile("package/LICENSE").read().decode())
+            for f in need:
+                data_ = tar.extractfile("package/files/" + f).read()
+                if hashlib.sha256(data_).hexdigest()[:16] != FONT_FILES[f]: raise ValueError(f"hash mismatch {f}")
+                (d / f).write_bytes(data_)
+        except Exception as e:
+            print(f"fonts: could not fetch {pkg} ({e}); pages fall back to system fonts", file=sys.stderr)
+    if licenses and not (d / "LICENSE.txt").exists():
+        (d / "LICENSE.txt").write_text("Self-hosted web fonts from Fontsource, SIL Open Font License 1.1.\n\n" + "\n\n".join(licenses))
+    print(f"fonts: fetched {len([f for f in missing if (d / f).exists()])} of {len(missing)} missing files")
+
+
 # ---------- RSS feeds ----------
 FEED_ITEMS = 50
 LATEST_WEEK = None  # newest weekly roundup, linked from the home page
@@ -771,7 +809,7 @@ OPERATOR = "Frostinn ehf."
 PRIVACY_UPDATED = "2026-10-01"
 # Contact form on /privacy/ (no email address is published). The form lives at Tally and is linked, not embedded,
 # so nothing loads from Tally until a visitor opens it. Paste the form's share link (https://tally.so/r/xxxxxx) into "url".
-CONTACT_FORM = {"provider": "Tally (Tally BV, Belgium)", "url": "", "privacy_url": "https://tally.so/privacy"}
+CONTACT_FORM = {"provider": "Tally (Tally BV, Belgium)", "url": "https://tally.so/r/rjzg1N", "privacy_url": "https://tally.so/privacy"}
 GA_COOKIES = "<code>_ga</code> and <code>_ga_VYHRQZSXSN</code>"
 
 
@@ -866,7 +904,7 @@ def privacy_page(footer):
 #   "h": hazard texts used more than once; a row's hazard is either the text or an index into "h"
 #   row = [MMDD, country, src index, cat index, title, hazard, brand, severity, units,
 #          url prefix index (-1 = none), url rest (0 = slugified title), slug (6-char id = slugified title + id),
-#          product ("" when its words are already in title/hazard), countries]
+#          product ("" when its words are already in title/hazard), countries, brand index into "b" ([slug, name])]
 #   Trailing empty values are dropped. region and countryName are derived from country.
 YCATS = list(CATS)
 _norm = lambda s: re.sub(r"\s+", " ", (s or "").lower()).strip()
@@ -880,6 +918,8 @@ def year_file(y, rs):
     sidx = {s: i for i, s in enumerate(srcs)}
     hz = [h for h, n in Counter(r.get("hazard") or "" for r in rs).most_common() if n > 1 and len(h) > 3]
     hidx = {h: i for i, h in enumerate(hz)}
+    bt = sorted({r["_brand"] for r in rs if r.get("_brand")})
+    bidx = {k: i for i, k in enumerate(bt)}
     out = []
     for r in rs:
         t = r["title"]
@@ -894,10 +934,10 @@ def year_file(y, rs):
         row = [r["date"][5:7] + r["date"][8:10], r["country"], sidx[r["source"]],
                YCATS.index(r["category"]) if r["category"] in YCATS else YCATS.index("other"),
                t, hidx.get(r.get("hazard") or "", r.get("hazard") or ""), r.get("brand") or "", r.get("severity") or "", r.get("units") or "",
-               pi, rest, sl, prod, r.get("countries") or ""]
+               pi, rest, sl, prod, r.get("countries") or "", bidx.get(r.get("_brand"), "")]
         while row and row[-1] in ("", None): row.pop()
         out.append(row)
-    return {"v": 2, "year": y, "count": len(out), "src": srcs, "cat": YCATS, "u": prefixes, "h": hz, "r": out}
+    return {"v": 2, "year": y, "count": len(out), "src": srcs, "cat": YCATS, "u": prefixes, "h": hz, "b": [[k, BRANDS[k][0]] for k in bt], "r": out}
 
 
 # ---------- output ----------
@@ -975,11 +1015,15 @@ def main():
     (OUT / f"{INDEXNOW_KEY}.txt").write_text(INDEXNOW_KEY)
     (OUT / "assets").mkdir(exist_ok=True)
     (OUT / "assets" / "site.css").write_text(CSS)
+    ensure_fonts()
     shutil.copytree(ROOT / "assets" / "fonts", OUT / "assets" / "fonts")
     for f in STATIC:
         if (ROOT / f).exists(): shutil.copy(ROOT / f, OUT / f)
     (OUT / "data").mkdir(exist_ok=True)
-    (OUT / "data" / "recalls.json").write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")))
+    bkey = {r["id"]: r["_brand"] for r in rows if r.get("_brand")}  # brand page slug, used by the stats block
+    out_data = dict(data, brands={}, recalls=[dict(r, bk=bkey[r["id"]]) if r["id"] in bkey else r for r in data["recalls"]])
+    out_data["brands"] = {k: BRANDS[k][0] for k in {r["bk"] for r in out_data["recalls"] if r.get("bk")}}
+    (OUT / "data" / "recalls.json").write_text(json.dumps(out_data, ensure_ascii=False, separators=(",", ":")))
     (OUT / "data" / "years").mkdir(exist_ok=True)
     for y in YEARS:  # loaded by the Period filter; compact format, decoded by decodeYear() in template.html
         (OUT / "data" / "years" / f"{y}.json").write_text(

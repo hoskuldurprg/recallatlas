@@ -284,8 +284,10 @@ const YCACHE={};
 // Same as crawl.slugify() in Python; year files leave out slugs/URLs that equal the slugified title.
 const slugify=t=>String(t).normalize("NFKD").replace(/[^\x00-\x7f]/g,"").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,70).replace(/-+$/,"")||"recall";
 // Compact year file (v2, see year_file() in build_site.py) -> the same row objects as recalls.json
+const BNAMES={};  // brand page slug -> display name, for the stats block
 function decodeYear(d){
   if(!d.v) return d.recalls;
+  (d.b||[]).forEach(([k,n])=>BNAMES[k]=n);
   return d.r.map(a=>{
     const c=a[1],t=a[4],up=a[9]??-1,ur=a[10]??"",sl=a[11]??"";
     let ts="";const tsl=()=>ts||(ts=slugify(t));
@@ -293,7 +295,7 @@ function decodeYear(d){
       region:c==="GB"?"UK":c==="US"||c==="CA"?c:"EU",countryName:c==="EU"?"EU":NAMES[c]||c,
       source:d.src[a[2]],category:d.cat[a[3]],title:t,hazard:(typeof a[5]==="number"?d.h[a[5]]:a[5])||"",brand:a[6]||"",severity:a[7]||"",units:a[8]||"",
       url:(up>=0?d.u[up]:"")+(ur===0?tsl():ur),slug:sl.length===6?tsl()+"-"+sl:sl,product:a[12]||"",
-      ...(a[13]?{countries:a[13]}:{})};
+      ...(a[13]?{countries:a[13]}:{}),...(typeof a[14]==="number"?{bk:d.b[a[14]][0]}:{})};
   });
 }
 async function loadYear(y){
@@ -366,6 +368,33 @@ function sevClass(s){s=(s||"").toLowerCase();
 const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmtDay=d=>new Date(d+"T12:00:00Z").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"long",year:"numeric"});
 
+// Stats block (total, bars, brands, product types) for whatever the list shows; shown for a year or All years.
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+function renderStats(rows){
+  const st=$("#ystats"); if(!st) return;
+  const p=state.period, yr=/^\d{4}$/.test(p);
+  if(!yr&&p!=="all"){st.hidden=true;return;}
+  st.hidden=false;
+  let bars,labels,head,note;
+  if(yr){
+    const m=Array(12).fill(0); rows.forEach(r=>m[+r.date.slice(5,7)-1]++);
+    bars=m.map((n,i)=>[n,MONTHS[i]+" "+p]); labels=["Jan","Jun","Dec"]; head="By month";
+    note=+p===YEARS[0]?"So far":+p===YEARS[YEARS.length-1]?"Records start "+(rows.length?MONTHS[+rows.map(r=>r.date).sort()[0].slice(5,7)-1]:"")+" "+p:"";
+  }else{
+    const ys=[...YEARS].reverse(), c={}; rows.forEach(r=>c[r.date.slice(0,4)]=(c[r.date.slice(0,4)]||0)+1);
+    bars=ys.map(y=>[c[y]||0,String(y)]); labels=[ys[0],"",ys[ys.length-1]]; head="By year"; note="Since "+ys[0];
+  }
+  const mx=Math.max(1,...bars.map(b=>b[0]));
+  const top=(f)=>{const c={};rows.forEach(r=>{const k=f(r);if(k)c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6)};
+  const reg=["US","CA","GB","EU"].includes(state.country)?"/"+SLUG(state.country)+"/":"/recalls/";
+  const catLink=k=>{const u=CATSLUG[k]&&k!=="other"?reg+CATSLUG[k]+"/"+(yr?p+"/":""):null;return u&&PAGES.has(u)?`<a href="${u}">${CATS[k]}</a>`:(CATS[k]||"Other")};
+  const brands=top(r=>r.bk), cats=state.cat==="all"&&!PCAT?top(r=>r.category):[];
+  st.innerHTML=`<div><h4>Recalls ${yr?"in "+p:"since "+YEARS[YEARS.length-1]}</h4><div class="big">${rows.length.toLocaleString()}</div><p class="note">${esc(note)}</p></div>`
+    +`<div><h4>${head}</h4><div class="months">${bars.map(([n,t])=>`<span style="height:${Math.max(3,Math.round(n/mx*100))}%" title="${t}: ${n}"></span>`).join("")}</div>`
+    +`<div class="mlab">${labels.map(l=>`<span>${l}</span>`).join("")}</div></div>`
+    +(brands.length?`<div><h4>Most recalled brands</h4><ol>${brands.map(([k,n])=>`<li><a href="/brand/${k}/">${esc(BNAMES[k]||k)}</a><span>${n}</span></li>`).join("")}</ol></div>`:"")
+    +(cats.length?`<div><h4>By product type</h4><ol>${cats.map(([k,n])=>`<li>${catLink(k)}<span>${n}</span></li>`).join("")}</ol></div>`:"");
+}
 function render(){
   // chips with counts for the current country + search
   const base=filtered(true),cc={all:base.length};base.forEach(r=>cc[r.category]=(cc[r.category]||0)+1);
@@ -380,7 +409,7 @@ function render(){
   // the year stats and description are built for this page's own country and period; when the list shows
   // something else (filtered in place), hide the stats and describe what is shown instead
   const own=state.period===(PYEAR||"recent")&&state.country===(PRESET||"all");
-  const st=$(".ystats"); if(st) st.hidden=!own;
+  renderStats(rows);
   const ld=$(".top .lede"); if(ld){if(ld.dataset.orig==null)ld.dataset.orig=ld.textContent;
     ld.textContent=own?ld.dataset.orig:`${rows.length.toLocaleString()} official ${what.toLowerCase()}${where} ${periodText()}. Newest first. Search by product, brand or hazard.`;}
   $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`+(state.loading?" · loading older years…":"");
@@ -414,7 +443,7 @@ function setCountry(c){
   location.href=p;}
 
 load().then(async d=>{
-  DATA=d; RECENT=d.recalls;
+  DATA=d; RECENT=d.recalls; Object.assign(BNAMES,d.brands||{});
   $("#period").innerHTML=`<option value="recent">Last 60 days</option>`+YEARS.map(y=>`<option value="${y}">${y}</option>`).join("")+`<option value="all">All years</option>`;
   $("#period").value=state.period;
   if(state.period!=="recent"){DATA.recalls=(await Promise.all((state.period==="all"?YEARS:[+state.period]).map(loadYear))).flat();}
