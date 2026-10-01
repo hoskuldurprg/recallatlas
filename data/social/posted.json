@@ -1,5 +1,17 @@
 {
  "bluesky": {
+  "recall:eu-SR/02788/26": {
+   "at": "2026-10-01T16:29+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2601-0139": {
+   "at": "2026-10-01T16:29+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2608-0035": {
+   "at": "2026-10-01T16:29+00:00",
+   "dry_run": true
+  },
   "recall:opss-2609-0079": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
@@ -18,6 +30,18 @@
   }
  },
  "mastodon": {
+  "recall:eu-SR/02788/26": {
+   "at": "2026-10-01T16:29+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117366597136913521"
+  },
+  "recall:opss-2601-0139": {
+   "at": "2026-10-01T16:29+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117366596973459215"
+  },
+  "recall:opss-2608-0035": {
+   "at": "2026-10-01T16:29+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117366596802615611"
+  },
   "recall:opss-2609-0079": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
