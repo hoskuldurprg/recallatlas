@@ -4,7 +4,7 @@ on:
     inputs:
       days:
         description: "How many days of history to load"
-        default: "730"
+        default: "1825"
       sources:
         description: "Only these sources, comma-separated (blank = all)"
         default: ""
@@ -17,7 +17,7 @@ concurrency:
 jobs:
   backfill:
     runs-on: ubuntu-latest
-    timeout-minutes: 300
+    timeout-minutes: 360   # GitHub's maximum
     env:
       PYTHONUNBUFFERED: "1"
       GH_TOKEN: ${{ github.token }}
