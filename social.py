@@ -2,7 +2,7 @@
 """Posts to Bluesky, Mastodon and X after each deploy (run by the "Update recalls" workflow).
 
 What is posted
-  Bluesky + Mastodon: new recalls flagged serious (first seen in the last 2 days, max 3 per run), and the
+  Bluesky, Mastodon, Facebook: new recalls flagged serious (first seen in the last 2 days, max 3 per run), and the
                       weekly roundup once the week is over (from Monday 12:00 UTC).
   X:                  the weekly roundup only (the X API charges per post).
 Every recall post names the agency that published it and links the official notice and the Recall Atlas page.
@@ -18,6 +18,7 @@ Secrets (repo Settings -> Secrets and variables -> Actions)
   BSKY_HANDLE, BSKY_APP_PASSWORD               Bluesky handle and an app password (Settings -> App passwords)
   MASTODON_TOKEN [, MASTODON_INSTANCE]         access token with write:statuses; instance defaults to mastodon.social
   X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET   X app keys with Read and write permission
+  FB_PAGE_ID, FB_PAGE_TOKEN                    Facebook Page id and a long-lived Page access token (pages_manage_posts)
 """
 import base64, hashlib, hmac, json, os, re, secrets, sys, time, urllib.parse, urllib.request
 import datetime as dt
@@ -192,6 +193,26 @@ class X:
         return "https://x.com/i/web/status/" + r.get("data", {}).get("id", "")
 
 
+class Facebook:
+    """Posts to the Recall Atlas Facebook Page with a Page access token (pages_manage_posts)."""
+    name, limit = "facebook", 2000
+
+    def __init__(self, page_id, token):
+        self.page, self.token = page_id, token
+        me = http("GET", f"https://graph.facebook.com/{page_id}?fields=id,name&access_token={urllib.parse.quote(token)}")
+        if str(me.get("id")) != str(page_id): raise ValueError("token does not belong to this Page")
+
+    @staticmethod
+    def text(kind, item):
+        return recall_text(item, 2000) if kind == "recall" else weekly_text(item, 2000)
+
+    def post(self, text, card):
+        r = http("POST", f"https://graph.facebook.com/{self.page}/feed",
+                 {"message": text, "link": card["uri"], "access_token": self.token}, form=True)
+        pid = r.get("id", "")
+        return f"https://www.facebook.com/{pid}" if pid else ""
+
+
 # ---------- run ----------
 def main():
     state = json.loads(STATE.read_text()) if STATE.exists() else {}
@@ -199,6 +220,7 @@ def main():
         ("bluesky", Bluesky, env("BSKY_HANDLE", "BSKY_APP_PASSWORD")),
         ("mastodon", Mastodon, env("MASTODON_TOKEN") and env("MASTODON_TOKEN") + [os.environ.get("MASTODON_INSTANCE")]),
         ("x", X, env("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_SECRET")),
+        ("facebook", Facebook, env("FB_PAGE_ID", "FB_PAGE_TOKEN")),
     ]
     items = [("recall", k, r) for k, r in serious_items()]
     w = weekly_item()
