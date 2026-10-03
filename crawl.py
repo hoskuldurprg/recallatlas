@@ -372,10 +372,231 @@ def crawl_rasff(since):
     out = [norm_rasff(n, where[i]) for i, n in found.items()]
     return [x for x in out if x["date"] >= since]
 
+# ---------------------------------------------------------------- Australia & New Zealand
+# Pages are plain HTML (no APIs), parsed with small regexes. Detail pages are only fetched for recalls not yet
+# in the archive (KNOWN, filled by main()/backfill), so a normal run makes a handful of requests.
+import html as _html
+KNOWN = set()
+MONTHS = {m: i for i, m in enumerate(["january", "february", "march", "april", "may", "june", "july", "august",
+                                       "september", "october", "november", "december"], 1)}
+BROWSER_UA = {"User-Agent": "Mozilla/5.0 (compatible; RecallAtlas/1.0; +https://recallatlas.org)"}
+
+
+def text_of(fragment):
+    t = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", fragment or "", flags=re.S)
+    t = re.sub(r"<br\s*/?>|</p>|</li>", " ", t)
+    return clean(_html.unescape(re.sub(r"<[^>]+>", " ", t)))
+
+
+def long_date(s):
+    """'2 October 2026' -> '2026-10-02' (or '' if it does not parse)."""
+    m = re.search(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})", s or "")
+    if not m or m.group(2).lower() not in MONTHS: return ""
+    return f"{m.group(3)}-{MONTHS[m.group(2).lower()]:02d}-{int(m.group(1)):02d}"
+
+
+def page(url):
+    return get(url, headers=BROWSER_UA).text
+
+
+ANZ_HINTS = {  # ACCC RSS categories / Product Safety NZ categories -> our category
+    "child car seats": "kids", "prams and strollers": "kids", "cots (folding or portable)": "kids",
+    "change tables": "kids", "baby bathing aids": "kids", "baby feeding aids": "kids", "dummies and soothers": "kids",
+    "rattles and toy teethers": "kids", "toys for babies and toddlers": "kids", "children's toys": "kids",
+    "children's products": "kids", "nursery products": "kids",
+    "car parts and accessories": "vehicles", "heavy vehicle parts and accessories": "vehicles",
+    "dirt bikes and miniature motorbikes": "vehicles", "vehicles": "vehicles", "motor vehicles": "vehicles",
+    "caravan, motorhome and camper accessories": "vehicles",
+    "cosmetic products": "cosmetics", "personal care products": "cosmetics", "cleaning products": "cosmetics",
+    "chemicals": "cosmetics", "clothing (daywear)": "apparel", "clothing (sleepwear)": "apparel",
+    "jewellery and fashion accessories": "apparel", "clothing, footwear, and accessories": "apparel",
+    "tools and machinery": "tools", "tools, equipment, and machinery": "tools", "building materials and supplies": "tools",
+    "garden tools and products": "home", "indoor furniture and furnishings": "home", "kitchenware and containers": "home",
+    "home and garden": "home", "household products": "home", "furniture": "home",
+    "home electrical appliances": "electrical", "lithium-ion batteries": "electrical", "lighting": "electrical",
+    "power supply and storage": "electrical", "heating and cooling products": "electrical", "button batteries": "electrical",
+    "computers, laptops and accessories": "electrical", "phones, cameras and accessories": "electrical",
+    "smart and interconnected devices": "electrical", "electric or gas products": "electrical",
+    "gas products and appliances": "home", "other sports equipment": "sports", "water sports": "sports",
+    "diving": "sports", "camping": "sports", "climbing and abseiling": "sports", "bicycles and scooters (push)": "sports",
+    "sports, recreation, and outdoors": "sports", "food and grocery packaging": "home",
+}
+
+
+def anz_category(cats, *text):
+    for c in cats:
+        if c.strip().lower() in ANZ_HINTS: return ANZ_HINTS[c.strip().lower()]
+    for c in cats:
+        if re.search(r"toy|baby|child|nursery", c, re.I): return "kids"
+    return categorize(*text, " ".join(cats))
+
+
+# Australia: ACCC product safety recalls (consumer products incl. vehicle accessories and off-road vehicles).
+ACCC_RSS = "https://www.productsafety.gov.au/rss/feed.xml/psa_recall"
+ACCC_TOPICS = [10001, 10017, 10024, 10030, 10035, 10042, 10043, 10118, 10044, 10060, 10067, 10087, 10104, 10110, 40159]
+
+
+def accc_field(desc, name):
+    m = re.search(r'field--name-field-psa-recall-' + name + r'.*?<div class="field__item">(.*?)</div>', desc, re.S)
+    return text_of(m.group(1)) if m else ""
+
+
+def norm_accc(item):
+    import xml.etree.ElementTree as ET
+    x = lambda tag: (item.findtext(tag) or "").strip()
+    desc = x("description")
+    when = re.search(r'datetime="(\d{4}-\d\d-\d\d)', desc)
+    date = when.group(1) if when else dt.datetime.strptime(x("pubDate")[5:16], "%d %b %Y").date().isoformat()
+    cats = [c.text or "" for c in item.findall("category")]
+    hazard = accc_field(desc, "hazards") or accc_field(desc, "product-defects")
+    img = re.search(r'<a href="(https://www\.productsafety\.gov\.au/system/files/[^"]+\.(?:jpe?g|png))"', desc, re.I)
+    title = x("title")
+    return rec(id=f"accc-{x('guid')}", date=date, country="AU", source="ACCC", title=title, product=title,
+               hazard=hazard, category=anz_category(cats, title, hazard), url=x("link"),
+               image=_html.unescape(img.group(1)) if img else "")
+
+
+def crawl_accc(since, topics=False):
+    import xml.etree.ElementTree as ET
+    urls = [ACCC_RSS] + ([f"{ACCC_RSS}?f%5B0%5D=topic%3A{t}" for t in ACCC_TOPICS] if topics else [])
+    out = {}
+    for u in urls:
+        try:
+            items = ET.fromstring(get(u, headers=BROWSER_UA).content).findall(".//item")
+        except Exception as e:
+            if u == ACCC_RSS: raise
+            print(f"  ACCC topic feed skipped: {e}", file=sys.stderr); continue
+        for it in items:
+            r = norm_accc(it)
+            if r["date"] >= since: out[r["id"]] = r
+        if topics: time.sleep(1)
+    return list(out.values())
+
+
+# Australia: Food Standards Australia New Zealand food recalls (Australian recalls; NZ ones are on MPI).
+FSANZ = "https://www.foodstandards.gov.au"
+
+
+def fsanz_detail(url):
+    s = page(url)
+    f = lambda name: (m := re.search(r'field-' + name + r'\b.*?<div class="field-item[^"]*">(.*?)</div>', s, re.S)) and text_of(m.group(1)) or ""
+    return f("problem"), f("food-safety-hazard")
+
+
+def crawl_fsanz(since, pages=1):
+    out = []
+    for p in range(pages):
+        s = page(f"{FSANZ}/food-recalls/recall-alert" + (f"?page={p}" if p else ""))
+        cards = re.findall(r'<article class="recall-card.*?</article>', s, re.S)
+        if not cards: break
+        for c in cards:
+            href = re.search(r'recall-card__title"><a href="([^"]+)"[^>]*>(.*?)</a>', c, re.S)
+            date = long_date(text_of((re.search(r'recall-card__date">(.*?)<', c, re.S) or [None, ""])[1]))
+            if not href or not date or date < since: continue
+            slug = href.group(1).rstrip("/").rsplit("/", 1)[-1]
+            rid = f"fsanz-{slug[:90]}"
+            kind = text_of((re.search(r'recall-card__type-label">(.*?)<', c, re.S) or [None, ""])[1])
+            business = text_of((re.search(r'recall-card__business">(.*?)<', c, re.S) or [None, ""])[1])
+            where = ", ".join(text_of(x) for x in re.findall(r'recall-card__location-pill">(.*?)<', c, re.S))
+            problem = hazard = ""
+            if rid not in KNOWN:
+                try:
+                    problem, hazard = fsanz_detail(FSANZ + href.group(1)); time.sleep(0.5)
+                except Exception as e:
+                    print(f"  FSANZ {slug}: {e}", file=sys.stderr)
+            title = text_of(href.group(2))
+            out.append(rec(id=rid, date=date, country="AU", source="FSANZ", title=title, product=title, brand=business,
+                           hazard=problem or kind, severity=kind, units=where, category="food",
+                           url=FSANZ + href.group(1)))
+        if p: time.sleep(1)
+    return out
+
+
+# New Zealand: Product Safety NZ (MBIE) recalls — consumer products and vehicles.
+MBIE = "https://www.productsafety.govt.nz"
+
+
+def mbie_detail(url):
+    s = page(url)
+    m = re.search(r'recall__info--hazard">.*?recall__info-content">(.*?)</div>', s, re.S)
+    t = text_of(m.group(1)) if m else ""
+    t = re.sub(r"^.{0,200}?\bis recalling\b.{0,250}?\bbecause\s+", "", t)  # keep the reason, not the preamble
+    return t[:1].upper() + t[1:]
+
+
+def crawl_mbie(since, pages=1):
+    out = []
+    for p in range(pages):
+        s = page(f"{MBIE}/recalls?resolved=1" + (f"&start={12 * p}" if p else ""))
+        cards = re.findall(r'<article class="recall".*?</article>', s, re.S)
+        if not cards: break
+        older = False
+        for c in cards:
+            href = re.search(r'<a href="(/recalls/[^"]+)"', c)
+            date = (re.search(r'datetime="(\d{4}-\d\d-\d\d)', c) or [None, ""])[1]
+            if not href or not date: continue
+            if date < since: older = True; continue
+            slug = href.group(1).rsplit("/", 1)[-1]
+            rid = f"mbie-{slug[:90]}"
+            title = text_of((re.search(r'recall__title">(.*?)</h1>', c, re.S) or [None, ""])[1])
+            cats = [text_of(x) for x in re.findall(r'recall__category"><a[^>]*>(.*?)</a>', c, re.S)]
+            hazard = ""
+            if rid not in KNOWN:
+                try:
+                    hazard = mbie_detail(MBIE + href.group(1)); time.sleep(0.5)
+                except Exception as e:
+                    print(f"  Product Safety NZ {slug}: {e}", file=sys.stderr)
+            product = re.sub(r"\s+[Ss]old (at|by|through|via|online|in)\b.*$", "", title)
+            out.append(rec(id=rid, date=date, country="NZ", source="Product Safety NZ", title=title, product=product,
+                           hazard=hazard, category=anz_category(cats, title, hazard), url=MBIE + href.group(1)))
+        if older: break
+        if p: time.sleep(1)
+    return out
+
+
+# New Zealand: food recalls from New Zealand Food Safety (MPI). The list has no dates; each recall page does.
+MPI_LIST = "https://www.mpi.govt.nz/food-safety-home/food-recalls-and-complaints/recalled-food-products/"
+
+
+def mpi_detail(url):
+    s = page(url)
+    h1 = text_of((re.search(r"<h1[^>]*>(.*?)</h1>", s, re.S) or [None, ""])[1])
+    m = re.search(r"Recalled on\s+(\d{1,2}\s+[A-Za-z]+\s+\d{4})(?:\s+by\s+([^<.]+))?", text_of(s))
+    return h1, long_date(m.group(1)) if m else "", clean(m.group(2), 60) if m and m.group(2) else ""
+
+
+def crawl_mpi(since, limit=20):
+    s = page(MPI_LIST)
+    out, seen = [], set()
+    # links appear under "2026 recalls", "2025 recalls", ... headings, newest first
+    for year, block in re.findall(r"<h2>\s*(\d{4}) recalls\s*</h2>(.*?)(?=<h2>|$)", s, re.S):
+        if int(year) < int(since[:4]): continue
+        for href, name in re.findall(r'<a href="([^"]*recalled-food-products/[a-z0-9-]+)"[^>]*>(.*?)</a>', block, re.S):
+            slug = href.rstrip("/").rsplit("/", 1)[-1]
+            rid = f"mpi-{slug[:90]}"
+            if slug in seen or rid in KNOWN: continue
+            seen.add(slug)
+            if len(seen) > limit: return out
+            try:
+                h1, date, firm = mpi_detail(href if href.startswith("http") else "https://www.mpi.govt.nz" + href)
+                time.sleep(0.5)
+            except Exception as e:
+                print(f"  NZ Food Safety {slug}: {e}", file=sys.stderr); continue
+            if date and date < since: return out  # the list is newest first: everything after this is older
+            if not date: continue
+            product = text_of(name)
+            why = re.search(r"\b(?:recalled|is being recalled|are being recalled)\s+(?:due to|as|because)\s+(.*)$", h1, re.I)
+            hazard = why.group(1) if why else ""
+            out.append(rec(id=rid, date=date, country="NZ", source="NZ Food Safety", title=product or h1,
+                           product=product, brand=firm, hazard=hazard[:1].upper() + hazard[1:], category="food",
+                           url=href if href.startswith("http") else "https://www.mpi.govt.nz" + href))
+    return out
+
 # ---------------------------------------------------------------- main
 SOURCES = [("CPSC", crawl_cpsc), ("FDA", crawl_fda), ("NHTSA", crawl_nhtsa), ("USDA FSIS", crawl_fsis),
            ("UK OPSS", crawl_opss), ("UK FSA", crawl_fsa), ("Canada", crawl_canada),
-           ("EU Safety Gate", crawl_eu), ("EU RASFF", crawl_rasff)]
+           ("EU Safety Gate", crawl_eu), ("EU RASFF", crawl_rasff),
+           ("AU ACCC", crawl_accc), ("AU FSANZ", crawl_fsanz), ("NZ Product Safety", crawl_mbie), ("NZ Food Safety", crawl_mpi)]
 
 ARCHIVE = Path(__file__).parent / "data" / "archive"
 
@@ -424,6 +645,8 @@ def merge(archive, records, today):
         old = archive.get(r["id"])
         if old:
             r["slug"], r["first_seen"] = old["slug"], old["first_seen"]
+            for f in ("hazard", "brand", "image", "product"):  # keep details a lighter re-crawl did not fetch
+                if not r.get(f) and old.get(f): r[f] = old[f]
         else:
             r["slug"] = f'{slugify(r["title"])}-{short_hash(r["id"])}'
             r["first_seen"] = today
@@ -434,8 +657,9 @@ def merge(archive, records, today):
 
 def with_names(r):
     r = dict(r)
-    r["region"] = r.get("region") or {"US": "US", "CA": "CA", "GB": "UK"}.get(r["country"], "EU")
-    r["countryName"] = {"US": "United States", "CA": "Canada", "GB": "United Kingdom"}.get(
+    r["region"] = r.get("region") or {"US": "US", "CA": "CA", "GB": "UK", "AU": "AU", "NZ": "NZ"}.get(r["country"], "EU")
+    r["countryName"] = {"US": "United States", "CA": "Canada", "GB": "United Kingdom", "AU": "Australia",
+                        "NZ": "New Zealand"}.get(
         r["country"], EU_NAMES.get(r["country"], r["country"]))
     return r
 
@@ -452,6 +676,7 @@ def main():
     today = dt.date.today().isoformat()
     since = (dt.date.today() - dt.timedelta(days=DAYS_BACK)).isoformat()
     archive = load_archive()
+    KNOWN.update(archive)
     if not archive and OUT.exists():  # first run after the archive was introduced: seed it
         merge(archive, json.loads(OUT.read_text())["recalls"], today)
     ok, errors = {}, []

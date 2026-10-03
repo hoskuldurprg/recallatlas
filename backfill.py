@@ -76,14 +76,32 @@ def canada(since):
     return crawl.crawl_canada(since, archived=True)  # include recalls Canada has since archived
 
 
+def accc(since):
+    return crawl.crawl_accc(since, topics=True)  # the feed only shows the latest 100; one feed per topic reaches further back
+
+
+def fsanz(since):
+    return crawl.crawl_fsanz(since, pages=25)  # FSANZ keeps recalls since Oct 2023 (~19 pages of 12)
+
+
+def mbie(since):
+    return crawl.crawl_mbie(since, pages=150)  # stops at the first page older than `since`
+
+
+def mpi(since):
+    return crawl.crawl_mpi(since, limit=3000)  # one detail page per recall (the list has no dates)
+
+
 SOURCES = [("CPSC", crawl.crawl_cpsc), ("FDA", fda), ("NHTSA", nhtsa), ("UK OPSS", opss),
-           ("UK FSA", fsa), ("Canada", canada), ("EU Safety Gate", eu)]
+           ("UK FSA", fsa), ("Canada", canada), ("EU Safety Gate", eu),
+           ("AU ACCC", accc), ("AU FSANZ", fsanz), ("NZ Product Safety", mbie), ("NZ Food Safety", mpi)]
 
 
 def main():
     archive = crawl.load_archive()
     before = len(archive)
     KNOWN.update(archive)
+    crawl.KNOWN.update(archive)  # AU/NZ readers skip detail pages for recalls already archived
     only = sys.argv[2].split(",") if len(sys.argv) > 2 else None
     for name, fn in SOURCES:
         if only and name not in only:
