@@ -16,6 +16,18 @@
    "at": "2026-10-01T21:27+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwtsdw37ag2x"
   },
+  "recall:eu-SR/02699/26": {
+   "at": "2026-10-03T21:18+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwysteo7342d"
+  },
+  "recall:eu-SR/02706/26": {
+   "at": "2026-10-03T21:18+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwystcm3tu2r"
+  },
+  "recall:eu-SR/02707/26": {
+   "at": "2026-10-03T21:18+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwystafslt2g"
+  },
   "recall:eu-SR/02710/26": {
    "at": "2026-10-03T11:45+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwxsr7o7mw2s"
@@ -255,6 +267,18 @@
   "recall:eu-SR/02689/26": {
    "at": "2026-10-01T21:27+00:00",
    "ref": "https://mastodon.social/@recallatlas/117367769084047157"
+  },
+  "recall:eu-SR/02699/26": {
+   "at": "2026-10-03T21:18+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117379062173853556"
+  },
+  "recall:eu-SR/02706/26": {
+   "at": "2026-10-03T21:18+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117379062012804203"
+  },
+  "recall:eu-SR/02707/26": {
+   "at": "2026-10-03T21:18+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117379061862430299"
   },
   "recall:eu-SR/02710/26": {
    "at": "2026-10-03T11:45+00:00",
