@@ -1,108 +1,54 @@
 {
- "au_accc_rss": {
-  "url": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall",
+ "au_accc_rss_p1": {
+  "url": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall?page=1",
   "status": 200,
   "bytes": 382247,
   "type": "application/rss+xml; charset=utf-8"
  },
- "au_accc_list": {
-  "url": "https://www.productsafety.gov.au/recalls",
+ "au_accc_rss_p30": {
+  "url": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall?page=30",
   "status": 200,
-  "bytes": 113267,
-  "type": "text/html; charset=UTF-8"
- },
- "au_accc_list_100_p1": {
-  "url": "https://www.productsafety.gov.au/recalls?items_per_page=100&page=1",
-  "status": 200,
-  "bytes": 103460,
-  "type": "text/html; charset=UTF-8"
- },
- "au_fsanz_list": {
-  "url": "https://www.foodstandards.gov.au/food-recalls/recall-alert",
-  "status": 200,
-  "bytes": 171059,
-  "type": "text/html; charset=utf-8"
- },
- "au_fsanz_list_p1": {
-  "url": "https://www.foodstandards.gov.au/food-recalls/recall-alert?page=1",
-  "status": 200,
-  "bytes": 162982,
-  "type": "text/html; charset=utf-8"
- },
- "au_fsanz_rss1": {
-  "url": "https://www.foodstandards.gov.au/rss.xml",
-  "status": 200,
-  "bytes": 60852,
+  "bytes": 382247,
   "type": "application/rss+xml; charset=utf-8"
  },
- "au_fsanz_rss2": {
-  "url": "https://www.foodstandards.gov.au/food-recalls/recall-alert/rss.xml",
+ "au_accc_rss_vehicle_topic": {
+  "url": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall?f%5B0%5D=topic%3A10104",
+  "status": 200,
+  "bytes": 367616,
+  "type": "application/rss+xml; charset=utf-8"
+ },
+ "au_vehicle_home": {
+  "url": "https://www.vehiclerecalls.gov.au/",
+  "error": "HTTPSConnectionPool(host='www.vehiclerecalls.gov.au', port=443): Read timed out. (read timeout=60)"
+ },
+ "au_accc_vehicle_rss_guess": {
+  "url": "https://www.productsafety.gov.au/rss/feed.xml/psa_vehicle_recall",
+  "status": 200,
+  "bytes": 316,
+  "type": "application/rss+xml; charset=utf-8"
+ },
+ "au_accc_vehicle_list_guess": {
+  "url": "https://www.productsafety.gov.au/recalls/vehicle-recalls",
   "status": 404,
-  "bytes": 143100,
+  "bytes": 62469,
+  "type": "text/html; charset=UTF-8"
+ },
+ "au_fsanz_list_last": {
+  "url": "https://www.foodstandards.gov.au/food-recalls/recall-alert?page=18",
+  "status": 200,
+  "bytes": 158396,
   "type": "text/html; charset=utf-8"
  },
- "nz_mbie_list": {
-  "url": "https://www.productsafety.govt.nz/recalls",
+ "nz_mbie_resolved": {
+  "url": "https://www.productsafety.govt.nz/recalls?resolved=1",
   "status": 200,
-  "bytes": 217787,
+  "bytes": 217875,
   "type": "text/html; charset=utf-8"
  },
- "nz_mbie_list_p2": {
-  "url": "https://www.productsafety.govt.nz/recalls?start=12",
+ "nz_mbie_resolved_old": {
+  "url": "https://www.productsafety.govt.nz/recalls?resolved=1&start=1584",
   "status": 200,
-  "bytes": 217233,
+  "bytes": 215325,
   "type": "text/html; charset=utf-8"
- },
- "nz_mbie_rss": {
-  "url": "https://www.productsafety.govt.nz/recalls/rss",
-  "status": 404,
-  "bytes": 179737,
-  "type": "text/html; charset=utf-8"
- },
- "nz_mpi_list": {
-  "url": "https://www.mpi.govt.nz/food-safety-home/food-recalls-and-complaints/recalled-food-products/",
-  "status": 200,
-  "bytes": 1230552,
-  "type": "text/html; charset=utf-8"
- },
- "au_accc_rss_detail0": {
-  "url": "https://www.productsafety.gov.au/search-consumer-product-recalls/triumph-tf450-rc-and-tf450-x-dirt-bikes",
-  "status": 200,
-  "bytes": 78129
- },
- "au_accc_rss_detail1": {
-  "url": "https://www.productsafety.gov.au/search-consumer-product-recalls/yoyo-m-portable-bluetooth-speakers",
-  "status": 200,
-  "bytes": 80290
- },
- "au_fsanz_list_detail0": {
-  "url": "https://www.foodstandards.gov.au/food-recalls/recall-alert/astor-chocolate-wafer-stick-150g",
-  "status": 200,
-  "bytes": 150876
- },
- "au_fsanz_list_detail1": {
-  "url": "https://www.foodstandards.gov.au/food-recalls/recall-alert/sunlife-import-export-pty-ltd-da-cha-gio-re-net-spring-roll-wrapper-200g",
-  "status": 200,
-  "bytes": 149773
- },
- "nz_mbie_list_detail0": {
-  "url": "https://www.productsafety.govt.nz/recalls/university-of-auckland-graduation-bears-sold-at-auckland-university-campus-bookstore",
-  "status": 200,
-  "bytes": 197630
- },
- "nz_mbie_list_detail1": {
-  "url": "https://www.productsafety.govt.nz/recalls/narva-ultima-wiring-harness-for-use-with-ultima-mk3-215-hybrid-driving-lights-sold-at-various-retailers",
-  "status": 200,
-  "bytes": 210341
- },
- "nz_mpi_list_detail0": {
-  "url": "https://www.mpi.govt.nz/recalled-food-products/tip-top-brand-jelly-tip",
-  "status": 200,
-  "bytes": 1031780
- },
- "nz_mpi_list_detail1": {
-  "url": "https://www.mpi.govt.nz/recalled-food-products/dongwon-brand-fried-bean-curd-recalled-due-to-the-presence-of-undeclared-allergens-egg-milk-sesame",
-  "status": 200,
-  "bytes": 1013246
  }
 }
