@@ -40,9 +40,10 @@ EU_NAMES = {
 
 # ---------------------------------------------------------------- helpers
 def get(url, **kw):
+    kw.setdefault("headers", UA)  # callers may pass their own (AU/NZ sites want a browser UA)
     for attempt in range(3):
         try:
-            r = requests.get(url, headers=UA, timeout=60, **kw)
+            r = requests.get(url, timeout=60, **kw)
             r.raise_for_status()
             return r
         except Exception as e:
