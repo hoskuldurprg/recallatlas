@@ -9,23 +9,18 @@ OUT = Path(__file__).parent / "probe"
 OUT.mkdir(exist_ok=True)
 UA = {"User-Agent": "Mozilla/5.0 (compatible; RecallAtlas/1.0; +https://recallatlas.org)"}
 PAGES = {
-    "au_accc_rss": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall",
-    "au_accc_list": "https://www.productsafety.gov.au/recalls",
-    "au_accc_list_100_p1": "https://www.productsafety.gov.au/recalls?items_per_page=100&page=1",
-    "au_fsanz_list": "https://www.foodstandards.gov.au/food-recalls/recall-alert",
-    "au_fsanz_list_p1": "https://www.foodstandards.gov.au/food-recalls/recall-alert?page=1",
-    "au_fsanz_rss1": "https://www.foodstandards.gov.au/rss.xml",
-    "au_fsanz_rss2": "https://www.foodstandards.gov.au/food-recalls/recall-alert/rss.xml",
-    "nz_mbie_list": "https://www.productsafety.govt.nz/recalls",
-    "nz_mbie_list_p2": "https://www.productsafety.govt.nz/recalls?start=12",
-    "nz_mbie_rss": "https://www.productsafety.govt.nz/recalls/rss",
-    "nz_mpi_list": "https://www.mpi.govt.nz/food-safety-home/food-recalls-and-complaints/recalled-food-products/",
+    "au_accc_rss_p1": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall?page=1",
+    "au_accc_rss_p30": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall?page=30",
+    "au_accc_rss_vehicle_topic": "https://www.productsafety.gov.au/rss/feed.xml/psa_recall?f%5B0%5D=topic%3A10104",
+    "au_vehicle_home": "https://www.vehiclerecalls.gov.au/",
+    "au_accc_vehicle_rss_guess": "https://www.productsafety.gov.au/rss/feed.xml/psa_vehicle_recall",
+    "au_accc_vehicle_list_guess": "https://www.productsafety.gov.au/recalls/vehicle-recalls",
+    "au_fsanz_list_last": "https://www.foodstandards.gov.au/food-recalls/recall-alert?page=18",
+    "nz_mbie_resolved": "https://www.productsafety.govt.nz/recalls?resolved=1",
+    "nz_mbie_resolved_old": "https://www.productsafety.govt.nz/recalls?resolved=1&start=1584",
 }
-DETAIL = {  # list page -> link pattern for detail pages to sample
-    "au_accc_rss": r"https://www\.productsafety\.gov\.au/search-consumer-product-recalls/[a-z0-9-]+",
-    "au_fsanz_list": r"/food-recalls/recall-alert/[a-z0-9-]+",
-    "nz_mbie_list": r"/recalls/[a-z0-9-]{12,}",
-    "nz_mpi_list": r"/recalled-food-products/[a-z0-9-]{8,}",
+DETAIL = {
+    "au_vehicle_home": r"https?://[^\"' ]*(?:recall|search)[^\"' ]*",
 }
 index = {}
 for name, url in PAGES.items():
@@ -38,7 +33,7 @@ for name, url in PAGES.items():
 for name, pat in DETAIL.items():
     f = OUT / f"{name}.html"
     if not f.exists(): continue
-    links = list(dict.fromkeys(re.findall(pat, f.read_text())))[:2]
+    links = list(dict.fromkeys(re.findall(pat, f.read_text())))[:4]
     for i, link in enumerate(links):
         url = urllib.parse.urljoin(PAGES[name], link)
         try:
