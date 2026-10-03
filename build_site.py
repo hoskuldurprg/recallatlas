@@ -46,20 +46,27 @@ CONSENT = tpl[tpl.index('<div class="consent"'):tpl.index('<script id="recall-da
 BRAND_A = re.search(r'<a class="brand".*?</a>', tpl, re.S).group(0)
 TOPLINE = re.search(r'<div class="topline">.*?</div>', tpl, re.S).group(0)  # logo + light/dark toggle
 
-NAMES = {"US": "United States", "CA": "Canada", "GB": "United Kingdom", "EU": "the EU & EEA", **EU_NAMES}
+NAMES = {"US": "United States", "CA": "Canada", "GB": "United Kingdom", "AU": "Australia", "NZ": "New Zealand",
+         "EU": "the EU & EEA", **EU_NAMES}
+COVERAGE = "the US, Canada, the UK, Europe, Australia and New Zealand"
 CATS = {"food": "Food & drink", "kids": "Toys & kids", "electrical": "Electrical", "home": "Home & garden",
         "sports": "Sports & outdoor", "tools": "Tools & DIY", "vehicles": "Vehicles", "medical": "Drugs & medical",
         "cosmetics": "Cosmetics & chemicals", "apparel": "Clothing & jewellery", "other": "Other"}
 SOURCES_BY_REGION = {
     "US": "the CPSC, FDA, NHTSA and USDA", "CA": "Health Canada, the CFIA and Transport Canada",
     "GB": "the Office for Product Safety and Standards and the Food Standards Agency",
+    "AU": "the ACCC and Food Standards Australia New Zealand",
+    "NZ": "Product Safety New Zealand (MBIE) and New Zealand Food Safety (MPI)",
     "EU": "the EU Safety Gate and RASFF food alerts"}
 AGENCY = {"CPSC": "the US Consumer Product Safety Commission", "FDA": "the US Food and Drug Administration",
           "NHTSA": "the US National Highway Traffic Safety Administration",
           "USDA FSIS": "the USDA Food Safety and Inspection Service",
           "UK OPSS": "the UK Office for Product Safety and Standards", "UK FSA": "the UK Food Standards Agency",
           "Canada": "the Government of Canada", "EU Safety Gate": "the European Commission's Safety Gate",
-          "EU RASFF": "the EU Rapid Alert System for Food and Feed"}
+          "EU RASFF": "the EU Rapid Alert System for Food and Feed",
+          "AU ACCC": "the Australian Competition and Consumer Commission (ACCC)",
+          "AU FSANZ": "Food Standards Australia New Zealand",
+          "NZ Product Safety": "Product Safety New Zealand (MBIE)", "NZ Food Safety": "New Zealand Food Safety (MPI)"}
 PRERENDER = 40
 esc = lambda s: html.escape(str(s or ""), quote=True)
 slug = lambda c: "" if c == "all" else "uk" if c == "GB" else c.lower()
@@ -130,7 +137,7 @@ TOPICS = [
     ("e-cigarettes", "E-cigarette", ["e-cigarette", "e-cigarettes", "vape", "vapes", "nicotine"]),
     ("tattoo-inks", "Tattoo ink", ["tattoo"]),
 ]
-REGION_CODES = ["US", "CA", "GB", "EU"]
+REGION_CODES = ["US", "CA", "GB", "AU", "NZ", "EU"]
 MIN_COUNTRY_CAT = 5
 import re as _re
 topic_rx = lambda words: _re.compile(r"\b(" + "|".join(_re.escape(w) for w in words) + ")", _re.I)
@@ -155,7 +162,7 @@ def browse_html(country_cat_pages):
     cats = "".join(f'<li><a href="/recalls/{v}/">{CATS[k]}</a></li>' for k, v in CATSLUG.items())
     tops = "".join(f'<li><a href="/recalls/{t[0]}/">{t[1]} recalls</a></li>' for t in TOPICS)
     ctry = "".join(f'<li><a href="/{slug(c)}/">{NAMES[c] if c != "EU" else "EU & EEA"}</a></li>'
-                   for c in ["US", "CA", "GB", "EU", "DE", "FR", "IT", "ES", "NL", "SE", "PL", "IE"])
+                   for c in ["US", "CA", "GB", "AU", "NZ", "EU", "DE", "FR", "IT", "ES", "NL", "SE", "PL", "IE"])
     yrs = "".join(f'<li><a href="/recalls/{y}/">{y}</a></li>' for y in YEARS)
     return (f'<div class="browse"><div><h4>By country</h4><ul>{ctry}</ul></div>'
             f'<div><h4>By product type</h4><ul>{cats}</ul></div>'
@@ -233,24 +240,25 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
     if topic:
         what = f"{topic[1]} recalls"
         title = f"{what}: latest official recalls | Recall Atlas"
-        desc = (f"{n} current {topic[1].lower()} recalls and safety alerts from the US, Canada, the UK and Europe, "
+        desc = (f"{n} current {topic[1].lower()} recalls and safety alerts from {COVERAGE}, "
                 "from official government sources. Updated every 6 hours.")
         h1 = what
-        lede = (f"The latest official {topic[1].lower()} recalls from the US, Canada, the UK and Europe, "
+        lede = (f"The latest official {topic[1].lower()} recalls from {COVERAGE}, "
                 "updated every 6 hours. Pick your country to narrow the list.")
     elif cat:
         what = f"{CATS[cat]} recalls"
         title = f"{what}{where} | Recall Atlas"
-        src = SOURCES_BY_REGION[region] if code != "all" else "government agencies in the US, Canada, the UK and Europe"
+        src = SOURCES_BY_REGION[region] if code != "all" else "government agencies in " + COVERAGE
         desc = f"{n} current {CATS[cat].lower()} recalls{where}, from {src}. Updated every 6 hours."
         h1 = what + where
         lede = f"Official {CATS[cat].lower()} recalls{where} from {src}, updated every 6 hours."
     elif code == "all":
         title = "Recall Atlas: product, food and vehicle recalls in one list"
-        desc = (f"{data['count']} official product, food, drug and vehicle recalls from the US, Canada, the UK and Europe, "
+        desc = (f"{data['count']} official product, food, drug and vehicle recalls from {COVERAGE}, "
                 "searchable by country. Updated every 6 hours.")
         h1 = "Is anything you own recalled?"
-        lede = ("Official product, food, drug and vehicle recalls from the US, Canada, the UK and 30 European countries, "
+        lede = ("Official product, food, drug and vehicle recalls from the US, Canada, the UK, 30 European countries, "
+                "Australia and New Zealand, "
                 "in one list. Pick your country, then search by product or brand.")
     else:
         title = f"Product recalls in {name} | Recall Atlas"
@@ -261,7 +269,7 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
                 "updated every 6 hours. Search by product, brand or hazard.")
     if year:
         what = (f"{topic[1]} recalls" if topic else f"{CATS[cat]} recalls" if cat else "Recalls")
-        src = SOURCES_BY_REGION[region] if code != "all" else "government agencies in the US, Canada, the UK and Europe"
+        src = SOURCES_BY_REGION[region] if code != "all" else "government agencies in " + COVERAGE
         h1 = f"{what}{where} in {year}" if (where or topic or cat) else f"All recalls in {year}"
         title = f"{h1} | Recall Atlas"
         desc = (f"All {n} official {what.lower()}{where} in {year}{year_note(year)}, from {src}: "
@@ -498,13 +506,14 @@ def brands_index_page(brands, footer):
 <ul class="brands">{lis}</ul></article></div>
 {footer}{CONSENT}"""
     return head_html("Product recalls by brand A–Z | Recall Atlas",
-                     f"Recall history for {len(items)} brands, from official sources in the US, Canada, the UK and Europe.",
+                     f"Recall history for {len(items)} brands, from official sources in {COVERAGE}.",
                      f"{SITE}/brand/", "website", crumbs) + body + "</body>\n</html>\n"
 
 
 DISCLAIMER_FULL = [
     ("What this site is", "Recall Atlas is an independent website that gathers product, food, drug and vehicle recalls "
-     "published by government agencies in the United States, Canada, the United Kingdom and the European Union, and shows "
+     "published by government agencies in the United States, Canada, the United Kingdom, the European Union, Australia and "
+     "New Zealand, and shows "
      "them in one searchable list. It is not run by, endorsed by or affiliated with any of those agencies."),
     ("Information is provided as is", "Recalls are collected automatically and may be incomplete, delayed, out of date or "
      "contain errors, including errors made when copying, shortening, translating or categorising them. Product categories, "
@@ -660,7 +669,8 @@ def feeds_page(feeds, footer):
 
 # ---------- weekly roundups (/weekly/YYYY-wNN/) ----------
 # One page per ISO week (Monday-Sunday) by the date the agency published the recall. The current week is "so far".
-REGION_ORDER = [("US", "United States"), ("CA", "Canada"), ("GB", "United Kingdom"), ("EU", "EU & EEA")]
+REGION_ORDER = [("US", "United States"), ("CA", "Canada"), ("GB", "United Kingdom"), ("AU", "Australia"),
+                ("NZ", "New Zealand"), ("EU", "EU & EEA")]
 
 
 def week_key(day):
@@ -777,11 +787,11 @@ def weekly_index(weeks, current_key, footer):
 <header class="top slim">{TOPLINE}</header>
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/weekly/">Weekly roundups</a></nav>
 <article class="recall"><h1>Weekly recall roundups</h1>
-<p class="lede">Every week's official recalls from the US, Canada, the UK and Europe on one page: the most serious ones, counts by country and product type, and the brands recalled most. Weeks run Monday to Sunday. Follow new roundups with the <a href="/weekly/feed.xml">weekly RSS feed</a>.</p>
+<p class="lede">Every week's official recalls from {COVERAGE} on one page: the most serious ones, counts by country and product type, and the brands recalled most. Weeks run Monday to Sunday. Follow new roundups with the <a href="/weekly/feed.xml">weekly RSS feed</a>.</p>
 {secs}</article></div>
 {footer}{CONSENT}"""
     return head_html("Weekly recall roundups | Recall Atlas",
-                     "Every week's official product, food and vehicle recalls from the US, Canada, the UK and Europe, summarised on one page.",
+                     f"Every week's official product, food and vehicle recalls from {COVERAGE}, summarised on one page.",
                      f"{SITE}/weekly/", "website", crumbs, feeds=[("/weekly/feed.xml", "Recall Atlas: weekly roundups")]) + body + "</body>\n</html>\n"
 
 
@@ -798,7 +808,7 @@ def weekly_feed(weeks, done, updated):
                      f"<pubDate>{rfc822(sun.isoformat())}</pubDate><description>{esc(body)}</description></item>")
     return ('<?xml version="1.0" encoding="UTF-8"?>\n<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">\n<channel>\n'
             f"<title>Recall Atlas: weekly roundups</title><link>{SITE}/weekly/</link>\n"
-            "<description>A weekly summary of official recalls from the US, Canada, the UK and Europe.</description>\n"
+            f"<description>A weekly summary of official recalls from {COVERAGE}.</description>\n"
             f'<language>en</language><ttl>360</ttl><lastBuildDate>{email_date(updated)}</lastBuildDate>\n'
             f'<atom:link href="{SITE}/weekly/feed.xml" rel="self" type="application/rss+xml"/>\n'
             + "\n".join(items) + "\n</channel>\n</rss>\n")
@@ -976,13 +986,13 @@ def main():
     if OUT.exists(): shutil.rmtree(OUT)
     OUT.mkdir()
     BRANDS = brand_index(ARCH)
-    specs = [("all", None, None, None), *[(c, None, None, None) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)]]
+    specs = [("all", None, None, None), *[(c, None, None, None) for c in REGION_CODES + sorted(EU_NAMES)]]
     specs += [("all", c, None, None) for c in CATSLUG]
     specs += [(code, c, None, None) for code in REGION_CODES for c in CATSLUG if len(select(code, c)) >= MIN_COUNTRY_CAT]
     specs += [("all", None, t, None) for t in TOPICS]
     for y in YEARS:  # year archive pages, only where there is enough to show
         specs.append(("all", None, None, y))
-        specs += [(c, None, None, y) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)
+        specs += [(c, None, None, y) for c in REGION_CODES + sorted(EU_NAMES)
                   if len(select(c, None, None, y)) >= (1 if c in REGION_CODES else MIN_COUNTRY_CAT)]
         specs += [("all", c, None, y) for c in CATSLUG if len(select("all", c, None, y)) >= MIN_COUNTRY_CAT]
         specs += [(code, c, None, y) for code in REGION_CODES for c in CATSLUG
@@ -1030,7 +1040,7 @@ def main():
             json.dumps(year_file(y, [r for r in rows if r["date"][:4] == y]), ensure_ascii=False, separators=(",", ":")))
     write("/disclaimer/", disclaimer_page(footer))
     page_urls.append((f"{SITE}/disclaimer/", lastmod))
-    feeds = [("all", None)] + [(c, None) for c in ["US", "CA", "GB", "EU"] + sorted(EU_NAMES)
+    feeds = [("all", None)] + [(c, None) for c in REGION_CODES + sorted(EU_NAMES)
                                if any(matches(r, c) for r in rows)] + [("all", c) for c in CATSLUG]
     FEEDS.update(feed_path(c, k) for c, k in feeds)
     for code, cat in feeds:

@@ -275,8 +275,13 @@ const SOURCE_INFO={"CPSC":["US Consumer Product Safety Commission","https://www.
   "EU Safety Gate":["European Commission Safety Gate","https://ec.europa.eu/safety-gate-alerts/screen/webReport"],
   "NHTSA":["US National Highway Traffic Safety Administration","https://www.nhtsa.gov/recalls"],
   "USDA FSIS":["USDA Food Safety and Inspection Service","https://www.fsis.usda.gov/recalls"],
-  "EU RASFF":["EU Rapid Alert System for Food and Feed","https://webgate.ec.europa.eu/rasff-window/screen/consumers"]};
+  "EU RASFF":["EU Rapid Alert System for Food and Feed","https://webgate.ec.europa.eu/rasff-window/screen/consumers"],
+  "AU ACCC":["Australian Competition and Consumer Commission","https://www.productsafety.gov.au/recalls"],
+  "AU FSANZ":["Food Standards Australia New Zealand","https://www.foodstandards.gov.au/food-recalls/recall-alert"],
+  "NZ Product Safety":["Product Safety New Zealand (MBIE)","https://www.productsafety.govt.nz/recalls"],
+  "NZ Food Safety":["New Zealand Food Safety (MPI)","https://www.mpi.govt.nz/food-safety-home/food-recalls-and-complaints/recalled-food-products/"]};
 const SLUG=c=>c==="all"?"":c==="GB"?"uk":c.toLowerCase();
+const NATIONAL=["US","CA","GB","AU","NZ"];  // countries with their own national sources (everything else is EU/EEA)
 const $=s=>document.querySelector(s);
 const PAGE=40;
 let DATA=null, RECENT=null, state={country:"all",cat:"all",q:"",euAll:false,limit:PAGE,period:PYEAR||"recent"};
@@ -292,7 +297,7 @@ function decodeYear(d){
     const c=a[1],t=a[4],up=a[9]??-1,ur=a[10]??"",sl=a[11]??"";
     let ts="";const tsl=()=>ts||(ts=slugify(t));
     return {date:d.year+"-"+a[0].slice(0,2)+"-"+a[0].slice(2),country:c,
-      region:c==="GB"?"UK":c==="US"||c==="CA"?c:"EU",countryName:c==="EU"?"EU":NAMES[c]||c,
+      region:c==="GB"?"UK":["US","CA","AU","NZ"].includes(c)?c:"EU",countryName:c==="EU"?"EU":NAMES[c]||c,
       source:d.src[a[2]],category:d.cat[a[3]],title:t,hazard:(typeof a[5]==="number"?d.h[a[5]]:a[5])||"",brand:a[6]||"",severity:a[7]||"",units:a[8]||"",
       url:(up>=0?d.u[up]:"")+(ur===0?tsl():ur),slug:sl.length===6?tsl()+"-"+sl:sl,product:a[12]||"",
       ...(a[13]?{countries:a[13]}:{}),...(typeof a[14]==="number"?{bk:d.b[a[14]][0]}:{})};
@@ -338,13 +343,14 @@ async function load(){
 function buildCountries(){
   const counts={};DATA.recalls.forEach(r=>new Set([r.country,...(r.countries||[])]).forEach(c=>counts[c]=(counts[c]||0)+1));
   const eu=[...new Set(DATA.recalls.filter(r=>r.region==="EU").flatMap(r=>[r.country,...(r.countries||[])]))]
-    .concat(PRESET&&!["US","CA","GB","EU"].includes(PRESET)?[PRESET]:[]).filter((c,i,a)=>NAMES[c]&&a.indexOf(c)===i)
+    .concat(PRESET&&!NATIONAL.includes(PRESET)&&PRESET!=="EU"?[PRESET]:[]).filter((c,i,a)=>c!=="EU"&&NAMES[c]&&a.indexOf(c)===i)
     .map(c=>[c,NAMES[c]]).sort((a,b)=>a[1].localeCompare(b[1]));
   const euTotal=DATA.recalls.filter(r=>r.region==="EU").length;
   const o=(v,t,n)=>`<option value="${v}">${t}${n!=null?` (${n})`:""}</option>`;
   $("#country").innerHTML=o("all","All countries",DATA.recalls.length)
     +`<optgroup label="North America">${o("US","United States",counts.US||0)}${o("CA","Canada",counts.CA||0)}</optgroup>`
     +`<optgroup label="United Kingdom">${o("GB","United Kingdom",counts.GB||0)}</optgroup>`
+    +`<optgroup label="Australia & New Zealand">${o("AU","Australia",counts.AU||0)}${o("NZ","New Zealand",counts.NZ||0)}</optgroup>`
     +`<optgroup label="Europe">${o("EU","All EU & EEA countries",euTotal)}${eu.map(([c,n])=>o(c,n,counts[c])).join("")}</optgroup>`;
 }
 function matchCountry(r){
@@ -354,7 +360,7 @@ function matchCountry(r){
   if(r.country===c||(r.countries||[]).includes(c)) return true;
   return state.euAll && r.region==="EU" && isEU(c);
 }
-const isEU=c=>!["all","US","CA","GB"].includes(c);
+const isEU=c=>c!=="all"&&!NATIONAL.includes(c);
 function filtered(ignoreCat){
   const q=state.q.toLowerCase().split(/\s+/).filter(Boolean);
   return DATA.recalls.filter(r=>matchCountry(r)
@@ -386,7 +392,7 @@ function renderStats(rows){
   }
   const mx=Math.max(1,...bars.map(b=>b[0]));
   const top=(f)=>{const c={};rows.forEach(r=>{const k=f(r);if(k)c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,6)};
-  const reg=["US","CA","GB","EU"].includes(state.country)?"/"+SLUG(state.country)+"/":"/recalls/";
+  const reg=[...NATIONAL,"EU"].includes(state.country)?"/"+SLUG(state.country)+"/":"/recalls/";
   const catLink=k=>{const u=CATSLUG[k]&&k!=="other"?reg+CATSLUG[k]+"/"+(yr?p+"/":""):null;return u&&PAGES.has(u)?`<a href="${u}">${CATS[k]}</a>`:(CATS[k]||"Other")};
   const brands=top(r=>r.bk), cats=state.cat==="all"&&!PCAT?top(r=>r.category):[];
   st.innerHTML=`<div><h4>Recalls ${yr?"in "+p:"since "+YEARS[YEARS.length-1]}</h4><div class="big">${rows.length.toLocaleString()}</div><p class="note">${esc(note)}</p></div>`

@@ -102,7 +102,7 @@ def weekly_text(w, limit, url_len=None, links=True):
             if prev and len(rs) != len(prev) else ""
         cats = " and ".join(B.CATS.get(c, "Other").lower() for c, _ in B.Counter(r["category"] for r in rs).most_common(2))
         hi = len(B.serious(rs, 10 ** 6))
-        s = (f"{len(rs):,} official recalls in the US, Canada, the UK and Europe, {B.week_label(w['key'])}{ch}. "
+        s = (f"{len(rs):,} official recalls in the US, Canada, the UK, Europe, Australia and NZ, {B.week_label(w['key'])}{ch}. "
              f"Most were {cats}; {hi} flagged as serious.")
     end = (f"\n{url}" if links else "") + " #Recall"
     room = limit - (1 + (url_len or len(url)) if links else 0) - len(" #Recall")
