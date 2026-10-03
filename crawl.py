@@ -569,8 +569,8 @@ def mpi_detail(url):
 def crawl_mpi(since, limit=20):
     s = page(MPI_LIST)
     out, seen = [], set()
-    # links appear under "2026 recalls", "2025 recalls", ... headings, newest first
-    for year, block in re.findall(r"<h2>\s*(\d{4}) recalls\s*</h2>(.*?)(?=<h2>|$)", s, re.S):
+    # links appear under "2026 recalls", "2025 recalls", ... headings, newest first (older years in collapsed sections)
+    for year, block in re.findall(r"<h2[^>]*>\s*(\d{4}) recalls\s*</h2>(.*?)(?=<h2|$)", s, re.S):
         if int(year) < int(since[:4]): continue
         for href, name in re.findall(r'<a href="([^"]*recalled-food-products/[a-z0-9-]+)"[^>]*>(.*?)</a>', block, re.S):
             slug = href.rstrip("/").rsplit("/", 1)[-1]
