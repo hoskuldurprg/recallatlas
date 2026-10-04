@@ -33,9 +33,26 @@ LOG = B.ROOT / "data" / "social" / "dry-run.log"
 MAX_SERIOUS = 3
 NOW = (dt.datetime.fromisoformat(os.environ["SOCIAL_NOW"]) if os.environ.get("SOCIAL_NOW")  # for testing
        else dt.datetime.now(dt.timezone.utc))
-TAGS = {"food": "#FoodSafety", "kids": "#ChildSafety", "vehicles": "#CarRecall", "medical": "#DrugRecall",
-        "electrical": "#ProductSafety", "home": "#ProductSafety", "sports": "#ProductSafety", "tools": "#ProductSafety",
+# Hashtags: #Recall + product type + (for food) the hazard + the country. No brand or company tags or @mentions:
+# automated mentions count as spam on every platform, and brand names don't map reliably to the right account.
+TAGS = {"food": "#FoodRecall", "kids": "#ChildSafety", "vehicles": "#CarRecall", "medical": "#DrugRecall",
+        "electrical": "#ElectricalSafety", "home": "#ProductSafety", "sports": "#ProductSafety", "tools": "#ProductSafety",
         "cosmetics": "#ProductSafety", "apparel": "#ProductSafety", "other": "#ProductSafety"}
+HAZARD_TAGS = [(r"listeria", "#Listeria"), (r"salmonella", "#Salmonella"), (r"\be\.?\s?coli\b|stec\b", "#EColi"),
+               (r"allergen|allergy|undeclared (?:milk|egg|peanut|nut|soy|wheat|gluten|sesame|fish|shellfish|crustacean|mustard|celery|lupin|sulphite|sulfite)",
+                "#FoodAllergy")]
+COUNTRY_TAGS = {"US": "#USA", "GB": "#UK", "XI": "#NorthernIreland", "EU": "#EU", "NZ": "#NewZealand", "CZ": "#Czechia"}
+WEEKLY_TAGS = "#Recall #ProductSafety #FoodSafety"
+
+
+def hashtags(r):
+    out = ["#Recall", TAGS.get(r.get("category"), "#ProductSafety")]
+    if r.get("category") == "food":
+        hz = (r.get("hazard") or "").lower()
+        out += [t for pat, t in HAZARD_TAGS if re.search(pat, hz)][:1]
+    c = r.get("country") or ""
+    out.append(COUNTRY_TAGS.get(c) or "#" + re.sub(r"[^A-Za-z0-9]", "", B.NAMES.get(c, c)))
+    return " ".join(dict.fromkeys(t for t in out if len(t) > 2))
 
 
 def env(*names):
@@ -85,7 +102,7 @@ def recall_text(r, limit, url_len=None, links=True):
     tail = f"\n{where(r)} · Source: {agency(r)}"
     lk = f"\nOfficial notice: {notice}\nMore: {page}" if links else ""
     lk_len = (len("\nOfficial notice: \nMore: ") + 2 * url_len) if links and url_len else len(lk)
-    tags = f"\n#Recall {TAGS.get(r['category'], '#ProductSafety')}"
+    tags = "\n" + hashtags(r)
     room = limit - len("Recall: ") - len(tail) - lk_len - len(tags) - 1
     title = cut(r["title"], min(140, room if not r.get("hazard") else max(60, room // 2)))
     left = room - len(title)
@@ -104,8 +121,8 @@ def weekly_text(w, limit, url_len=None, links=True):
         hi = len(B.serious(rs, 10 ** 6))
         s = (f"{len(rs):,} official recalls in the US, Canada, the UK, Europe, Australia and NZ, {B.week_label(w['key'])}{ch}. "
              f"Most were {cats}; {hi} flagged as serious.")
-    end = (f"\n{url}" if links else "") + " #Recall"
-    room = limit - (1 + (url_len or len(url)) if links else 0) - len(" #Recall")
+    end = (f"\n{url}" if links else "") + "\n" + WEEKLY_TAGS
+    room = limit - (1 + (url_len or len(url)) if links else 0) - len("\n" + WEEKLY_TAGS)
     return cut("Weekly recall roundup: " + s, room) + end
 
 
