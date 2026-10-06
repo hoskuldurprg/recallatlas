@@ -164,6 +164,10 @@
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
   },
+  "recall:opss-2609-0094": {
+   "at": "2026-10-06T18:28+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxa2phy7yy2m"
+  },
   "recall:opss-2609-0154": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
@@ -171,6 +175,14 @@
   "recall:opss-2609-0156": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
+  },
+  "recall:opss-2609-0227": {
+   "at": "2026-10-06T18:28+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxa2pfy2wv2x"
+  },
+  "recall:opss-2610-0025": {
+   "at": "2026-10-06T18:28+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxa2pdxscm2g"
   },
   "recall:rasff-2026.8577": {
    "at": "2026-10-02T22:20+00:00",
@@ -480,6 +492,10 @@
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
   },
+  "recall:opss-2609-0094": {
+   "at": "2026-10-06T18:28+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117395379142541776"
+  },
   "recall:opss-2609-0154": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
@@ -487,6 +503,14 @@
   "recall:opss-2609-0156": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
+  },
+  "recall:opss-2609-0227": {
+   "at": "2026-10-06T18:28+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117395378943327224"
+  },
+  "recall:opss-2610-0025": {
+   "at": "2026-10-06T18:28+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117395378784436119"
   },
   "recall:rasff-2026.8577": {
    "at": "2026-10-02T22:20+00:00",
