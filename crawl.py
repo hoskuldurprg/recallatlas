@@ -190,14 +190,33 @@ def crawl_fsa(since):
 # ---------------------------------------------------------------- Canada
 ORG_CAT = {"CFIA": "food", "TC": "vehicles", "Medical devices": "medical",
            "Drugs and health products": "medical"}
+def tc_title(title, product, system):
+    """Transport Canada titles are just "Transport Canada Recall - 2023582 - KIA"; build a readable one from the
+    make, the vehicle type ("Car recalled by KIA") and the system involved ("Powertrain")."""
+    m = re.match(r"Transport Canada Recall\s*-\s*(\d+)\s*-\s*(.+)$", title, re.I)
+    if not m: return title
+    num, make = m.group(1), m.group(2).strip()
+    if make.isupper() and len(make) > 4: make = make.title().replace(" Inc.", " Inc.").replace(" Llc", " LLC")
+    kind = (re.match(r"(.+?)\s+recalled by\b", product or "", re.I) or [None, "vehicle"])[1].strip()
+    kind = " ".join(w if w.isupper() and len(w) <= 4 else w.lower() for w in kind.split())  # keep SUV, ATV, RV
+    what = f": {system.strip().lower()}" if system and system.strip() else ""
+    return f"{make} {kind} recall{what} (Transport Canada {num})"
+
+
 def norm_canada(r):
     title = clean(r["Title"])
     org = r.get("Organization", "")
+    issue = r.get("Issue", "")
+    if org == "TC":
+        title = tc_title(title, clean(r.get("Product")), clean(issue))
+        if issue and len(issue) < 40:  # TC gives only the system ("Powertrain"); say what that means
+            issue = (f"Problem area: {clean(issue).lower()}. The Transport Canada notice lists the "
+                     "affected models and model years, and what the manufacturer will do.")
     cat = ORG_CAT.get(org) or categorize(title, r.get("Product"), r.get("Issue"), hint=r.get("Category"))
     return rec(
         id=f"ca-{r['NID']}", date=r["Last updated"], country="CA",
         source={"CFIA": "CFIA", "TC": "Transport Canada"}.get(org, "Health Canada"),
-        title=title, product=clean(r.get("Product"), 120), hazard=r.get("Issue", ""),
+        title=title, product=clean(r.get("Product"), 120), hazard=issue,
         severity=r.get("Recall class", ""), category=cat, url=r["URL"])
 
 def crawl_canada(since, archived=False):
@@ -481,7 +500,9 @@ FSANZ = "https://www.foodstandards.gov.au"
 def fsanz_detail(url):
     s = page(url)
     f = lambda name: (m := re.search(r'field-' + name + r'\b.*?<div class="field-item[^"]*">(.*?)</div>', s, re.S)) and text_of(m.group(1)) or ""
-    return f("problem"), f("food-safety-hazard")
+    # older notices have no fields, only "<h2>Problem:</h2><p>…</p>" headings inside the summary
+    h = lambda name: (m := re.search(r'<h[23][^>]*>\s*' + name + r'\s*:?(?:&nbsp;|\s)*</h[23]>\s*(.*?)(?=<h[1-6]|</div>)', s, re.S | re.I)) and text_of(m.group(1)) or ""
+    return f("problem") or h("Problem"), f("food-safety-hazard") or h("Food safety hazard")
 
 
 def crawl_fsanz(since, pages=1):
@@ -677,7 +698,7 @@ def main():
     today = dt.date.today().isoformat()
     since = (dt.date.today() - dt.timedelta(days=DAYS_BACK)).isoformat()
     archive = load_archive()
-    KNOWN.update(archive)
+    KNOWN.update(k for k, r in archive.items() if r.get("hazard"))  # recalls without a hazard get their detail page read again
     if not archive and OUT.exists():  # first run after the archive was introduced: seed it
         merge(archive, json.loads(OUT.read_text())["recalls"], today)
     ok, errors = {}, []

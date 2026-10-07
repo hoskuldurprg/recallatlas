@@ -101,7 +101,7 @@ def main():
     archive = crawl.load_archive()
     before = len(archive)
     KNOWN.update(archive)
-    crawl.KNOWN.update(archive)  # AU/NZ readers skip detail pages for recalls already archived
+    crawl.KNOWN.update(k for k, r in archive.items() if r.get("hazard"))  # AU/NZ readers skip detail pages for recalls already archived (unless the hazard is missing)
     only = sys.argv[2].split(",") if len(sys.argv) > 2 else None
     for name, fn in SOURCES:
         if only and name not in only:
