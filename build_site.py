@@ -420,13 +420,189 @@ def facts_html(r, brands):
     return '<dl class="facts">' + "".join(f"<dt>{a}</dt><dd>{b}</dd>" for a, b in rows) + "</dl>"
 
 
+# ---- search-result titles and descriptions for recall pages (MON is defined at the top) ----
+CO_SUFFIX = re.compile(
+    r"(,?\s+(inc\.?|incorporated|llc|l\.l\.c\.|ltd\.?|limited|pty\.?|plc|gmbh|ag|s\.?a\.?|b\.?v\.?|corp\.?|corporation|"
+    r"co\.?|company|usa|u\.s\.a\.|us|north america|america|nz|new zealand|australia|uk|canada|"
+    r"motor|motors|pharmaceuticals usa|holdings|group|international|trading as .*|products?)\s*)+$", re.I)
+
+
+def _short_company(s):
+    """'Teva Pharmaceuticals USA, Inc' -> 'Teva Pharmaceuticals'; '' when too long to be a useful label."""
+    s = re.sub(r"\s+", " ", (s or "").strip(" .,;:-"))
+    s = re.sub(r"\s*\([^)]*\)", "", s)                    # 'Chrysler (FCA US, LLC)'
+    s = re.sub(r",?\s+of\s+[A-Z][\w .]+$", "", s)          # 'X Co., Ltd., of China'
+    prev = None
+    while prev != s:
+        prev, s = s, re.sub(r"\s+(of|and|&)$", "", CO_SUFFIX.sub("", s).strip(" .,;:-"), flags=re.I)
+    return s if 1 < len(s) <= 24 else ""
+
+
+def short_company(s):
+    full = _short_company(s)
+    keep = re.sub(r"[,.]?\s+(inc|llc|ltd|limited|corp|co)\b.*$", "", (s or "").strip(), flags=re.I)
+    if full.lower() in ("general", "american", "united", "national", "western", "the") and len(keep) <= 24:
+        return keep                                # 'General Motors, LLC' -> 'General Motors', not 'General'
+    return full
+
+
+def tidy_case(s):
+    """FDA tall-man lettering ('traZODone') and SHOUTING words become normal case; first letter upper."""
+    def word(m):
+        w = m.group(0)
+        if re.fullmatch(r"[a-z]+[A-Z]{2,}[a-z]*", w):
+            return w.capitalize()
+        return w
+    s = re.sub(r"[A-Za-z]+", word, s)
+    letters = [c for c in s if c.isalpha()]
+    if len(letters) > 8 and sum(c.isupper() for c in letters) > 0.7 * len(letters):   # SHOUTING headline
+        s = re.sub(r"\b[A-Z][A-Z’']{3,}\b", lambda m: m.group(0).capitalize(), s)
+    return s[:1].upper() + s[1:]
+
+
+DANGLING = {"a", "an", "the", "of", "to", "in", "on", "at", "for", "with", "and", "or", "by", "from", "may", "can",
+            "could", "not", "be", "is", "are", "if", "when", "that", "which", "due", "as", "its", "their", "this", "w/"}
+
+
+def clip(s, n):
+    """Cut at a word boundary and drop dangling small words, so a clipped phrase still reads cleanly."""
+    s = s.strip()
+    if len(s) > n:
+        s = s[:n + 1].rsplit(" ", 1)[0]
+    words = s.rstrip(" ,;:-–(&").split(" ")
+    while len(words) > 2 and words[-1].lower().strip(",;:") in DANGLING:
+        words.pop()
+    return " ".join(words).rstrip(" ,;:-–(&")
+
+
+def title_parts(r):
+    """(product/issue, company, reason) pulled out of each agency's headline style."""
+    t = re.sub(r"\s+", " ", r["title"]).strip()
+    t = re.sub(r"^(update \d+|updated?\s*[\d./-]*)\s*[:|]\s*", "", t, flags=re.I)
+    t = re.sub(r"^recall:\s*", "", t, flags=re.I)
+    feed, co, reason = r.get("feed", ""), "", ""
+    if feed == "EU RASFF":                       # "Listeria monocytogenes in truffle salami from France"
+        t, reason = re.sub(r" from [A-Z][\w ,()-]+$", "", t), t
+    elif feed == "NHTSA" and ":" in t:
+        co, t = t.split(":", 1)
+        reason, t = t.strip(), ""
+    elif feed == "EU Safety Gate" and " · " in t:
+        kind, name = t.split(" · ", 1)
+        m = re.match(r"(.+?) \((.+)\)$", kind)
+        kind, co = (m.group(1), m.group(2)) if m else (kind, r.get("brand", ""))
+        name = name.rstrip(". ")
+        if not name or "…" in name or len(name) > 55 or name.isdigit():
+            t = kind
+        elif len(name.split()) <= 2 and not set(kind.lower().split()) & set(name.lower().split()):
+            t = f"{name} {kind.lower()}"             # "Amande" -> "Amande soother holder"
+        else:
+            t = name
+    else:
+        m = re.match(r"(.+?) recalls (.+)$", t, re.I)
+        if m:
+            co, t = m.group(1), m.group(2)
+        m = re.match(r"(.+?) (?:is being |are being )?recalled\b(.*)$", t, re.I)
+        if m:
+            t, rest = m.group(1), m.group(2)
+            if re.match(r"\s*(by|in)\b", rest) is None:
+                reason = rest
+        m = re.match(r"(.+?) (?:due to|because(?: of)?|as (?:it|they) may)\s+(.+)$", t, re.I)
+        if m:
+            t, reason = m.group(1), m.group(2)
+        if feed == "AU FSANZ":                   # "Company Pty Ltd - Product", sometimes "Company Pty Ltd- Product"
+            parts = re.split(r"\s+-\s*|\s*-\s+|(?<=Ltd)-|(?<=Inc)-", t, maxsplit=1)
+            if len(parts) == 2:
+                co, t = parts
+        t = re.sub(r"\s*\(Transport Canada [^)]*\)$", "", t)
+        t = re.sub(r"\s*-?\s*sold (?:at|via|by|through) .+$", "", t, flags=re.I)
+        t = re.sub(r"^product name:\s*", "", t, flags=re.I)
+    # long FDA/medical product strings: keep the name, drop specs, REF and model lists
+    if len(t) > 45:
+        t = re.split(r",|;| REF\b| Model\b| Catalog\b| Item\b| Lot\b| UPC\b| NDC\b| Product Description\b", t, maxsplit=1)[0]
+    reason = re.sub(r"^(the recall is due to |the |a |of |risk of )?", "", reason.strip(" .;:-"), flags=re.I)
+    reason = re.split(r";|, violates", reason)[0]
+    t = re.sub(r"^\(?(\d|[a-z])\)\s*", "", t.strip(" .,;:-"))            # FDA "(1) Gibeck …", "(a) CareFusion …"
+    t = clip(t, 200) if t else ""
+    return tidy_case(t) if t else "", short_company(co or r.get("brand", "")), reason
+
+
+SEO_DUPS = {}   # title -> count, filled in main() so pages that would share a title get a more specific one
+
+
+def seo_title(r, limit=62, detail=0):
+    """detail 0: 'Sep 2026'; 1: '9 Sep 2026, Germany'; 2: also the page's short id (last resort for true duplicates)."""
+    prod, co, reason = title_parts(r)
+    y, m = r["date"][:4], int(r["date"][5:7])
+    when = f"{MON[m - 1]} {y}" if 1 <= m <= 12 else y
+    if detail:
+        when = f"{int(r['date'][8:10])} {when}, {NAMES.get(r['country'], r['country'])}"
+        if detail > 1:
+            when += f", ref {r['slug'][-6:]}"
+        limit += len(when) - 8
+    if not prod:                                   # vehicles: "Ford recall: seat belt buckle may fail"
+        issue = re.sub(r"\b[A-Z][a-z]+\b", lambda m: m.group(0).lower(), reason)   # Title Case -> sentence case
+        head = f"{co or tidy_case(r.get('product') or 'Vehicle')} recall: {issue}"
+        return f"{clip(head, limit + 6 - len(when) - 3)} ({when})"
+    if r.get("feed") == "EU RASFF":                # already reads as hazard + product
+        return f"{clip(prod, limit + 6 - len(when) - 3)} ({when})"
+    if co and co.lower() in prod.lower():
+        co = ""
+    has_recall = re.search(r"\brecall", prod, re.I)
+    for cand in (
+        f"{prod}{'' if has_recall else ' recall'} ({co}, {when})" if co else None,
+        f"{prod}{'' if has_recall else ' recall'} ({when})",
+    ):
+        if cand and len(cand) <= limit:
+            return cand
+    room = limit - len(f" recall ({when})")
+    return f"{clip(prod, room)}{'' if has_recall else ' recall'} ({when})"
+
+
+def first_sentences(s, n):
+    """Whole sentences up to n characters; a clipped single sentence when even the first is too long."""
+    out = ""
+    for sent in re.split(r"(?<=[a-z0-9)]{3}[.!?])\s+(?=[A-Z])", s):
+        if len(out) + len(sent) + 1 > n:
+            break
+        out = f"{out} {sent}".strip()
+    return out or clip(s, n).rstrip(".") + "…"
+
+
+def seo_desc(r, country, limit=158):
+    _, co, reason = title_parts(r)
+    hz = re.sub(r"\s+", " ", (r.get("hazard") or "").rstrip("…")).strip()
+    if r.get("feed") == "EU RASFF" or not hz:
+        hz = reason
+    hz = re.sub(r"^the recall is due to (the )?", "", hz, flags=re.I)
+    if len(hz) < 60:
+        hz = re.sub(r"^(of |it |they )", "", hz, flags=re.I)
+    d = r["date"]
+    day = f"{int(d[8:10])} {MON[int(d[5:7]) - 1]} {d[:4]}" if len(d) >= 10 else d
+    src = r.get("source") or ""
+    tails = [f" Recalled {day} in {country} ({src}). What to do, and the official notice.",
+             f" Recalled {day} in {country} ({src}).",
+             f" Recalled {day}, {country}."]
+    if not hz:
+        return tails[0].strip()
+    hz = tidy_case(hz)
+    lead = ("Reason: " + hz) if len(hz) < 60 else hz
+    if lead[-1] not in ".!?":
+        lead += "."
+    for tail in tails:                              # keep at least ~90 characters of the hazard
+        if len(lead) + len(tail) <= limit or limit - len(tail) >= 90:
+            return first_sentences(lead, limit - len(tail)) + tail
+    return first_sentences(lead, limit - len(tails[-1])) + tails[-1]
+
+
 def recall_page(r, brands, by_cc, footer):
     name = r.get("countryName") or r["country"]
     t = r["title"]
-    title = f"{t[:80].rstrip()}{'…' if len(t) > 80 else ''} – recall {r['date']} | Recall Atlas"
-    desc = (f"{r['source']} recall, {r['date']}, {name}. "
-            + (f"Hazard: {r['hazard'][:140]}. " if r.get("hazard") else "")
-            + "What to do and a link to the official notice.")
+    st = seo_title(r)
+    for level in (1, 2):
+        if SEO_DUPS.get(st, 1) > 1:
+            st = seo_title(r, detail=level)
+    title = f"{st} | Recall Atlas"
+    desc = seo_desc(r, ("the " if r["country"] in ("US", "GB", "NL") else "") + name if r["country"] != "EU" else name)
     url = f"{SITE}/recall/{r['slug']}/"
     crumbs = rec_country_path(r)
     sev = f'<span class="tag {sev_class(r["severity"] + " " + r["hazard"])}">{esc(r["severity"])}</span>' if r.get("severity") else ""
@@ -1014,6 +1190,8 @@ def main():
     rows, brands = ARCH, BRANDS
     by_cc = defaultdict(list)
     for r in rows: by_cc[(r["category"], r["country"])].append(r)
+    SEO_DUPS.update(Counter(seo_title(r) for r in rows))
+    SEO_DUPS.update({k: v for k, v in Counter(seo_title(r, detail=1) for r in rows if SEO_DUPS[seo_title(r)] > 1).items()})
     footer = footer_html(browse)
     for r in rows:
         write(f"/recall/{r['slug']}/", recall_page(r, brands, by_cc, footer))
