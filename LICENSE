@@ -1,0 +1,22 @@
+Copyright (c) 2026 Frostinn ehf. All rights reserved.
+
+The source code and design in this repository (scripts, templates, styles
+and site layout) belong to Frostinn ehf. You may view the code here and
+fork it on GitHub as GitHub's Terms of Service allow, but you may not copy,
+modify, publish or redistribute it without written permission from
+Frostinn ehf. (info@recallatlas.org).
+
+Recall data
+The recall notices in data/ are collected from public government sources
+and remain subject to those sources' own licences and terms, for example
+the Open Government Licence – Canada, the UK Open Government Licence,
+Licence Ouverte / Etalab and the European Commission's reuse policy.
+Frostinn ehf. claims no ownership of that information. Each recall page
+links to its official source.
+
+Fonts
+Fonts in assets/fonts/ are licensed under the SIL Open Font License;
+see assets/fonts/LICENSE.txt.
+
+Recall Atlas is an independent service and is not affiliated with or
+endorsed by any government agency.
