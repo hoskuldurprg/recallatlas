@@ -1,0 +1,44 @@
+name: Catch up identifiers
+on:
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: "Minutes to run before saving and handing over to the next run"
+        default: "100"
+      sources:
+        description: "Only these sources, comma-separated (blank = UK OPSS, Canada, NZ Product Safety, EU Safety Gate)"
+        default: ""
+permissions:
+  contents: write
+  actions: write    # start the next run while notices are left
+concurrency:
+  group: recallatlas-enrich   # separate from "Update recalls": this job only writes data/enrich/
+  cancel-in-progress: false
+jobs:
+  enrich:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      PYTHONUNBUFFERED: "1"
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: python enrich_ids.py "${{ inputs.minutes }}" "${{ inputs.sources }}"
+      - name: Commit catch-up files
+        if: always()
+        run: |
+          git config user.name "recall-bot"
+          git config user.email "recall-bot@users.noreply.github.com"
+          git add data/enrich
+          git diff --cached --quiet || git commit -m "Catch up identifiers $(date -u +%Y-%m-%dT%H:%MZ)"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 10; done
+      - name: Start the next run if notices are left
+        run: |
+          cat enrich-status.txt
+          . ./enrich-status.txt
+          if [ "$remaining" -gt 0 ] && [ "$progress" -gt 0 ]; then
+            gh workflow run enrich.yml --ref main -f minutes="${{ inputs.minutes }}" -f sources="${{ inputs.sources }}"
+          fi
