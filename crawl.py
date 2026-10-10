@@ -91,6 +91,11 @@ def categorize(*parts, hint=""):
             return cat
     return "other"
 
+def opt(**k):
+    """Optional fields: only those with a value (keeps archive rows small)."""
+    return {key: v for key, v in k.items() if v}
+
+
 def rec(**k):
     """Normalized record."""
     k.setdefault("brand", "")
@@ -100,6 +105,57 @@ def rec(**k):
     k["title"] = clean(k.get("title"), 170)
     k["hazard"] = clean(k.get("hazard"), 220)
     return k
+
+
+# ---------------------------------------------------------------- product identifiers
+# Optional field "ids" on a recall: {"model": [...], "barcode": [...], "batch": [...], "listing": [...]}.
+# Kept in the archive for matching (app watchlists, product check); not shipped in the 60-day site file.
+ID_KINDS = ("model", "barcode", "batch", "listing")
+ID_MAX, ID_LEN = 40, 60
+NOT_A_CODE = {"n/a", "na", "none", "unknown", "all", "all lots", "various", "not known", "-", "0"}
+
+
+def ids_of(**kinds):
+    """Clean lists of identifiers per kind -> {"model": [...], ...} or None when there are none."""
+    out = {}
+    for k in ID_KINDS:
+        seen, vals = set(), []
+        for v in kinds.get(k) or []:
+            v = clean(v)
+            if k == "barcode":
+                v = re.sub(r"[\s-]", "", v)
+                if not re.fullmatch(r"\d{8}|\d{12,14}", v): continue
+            if not v or v.lower() in NOT_A_CODE or len(v) > ID_LEN: continue
+            if v.lower() not in seen:
+                seen.add(v.lower()); vals.append(v)
+        if vals: out[k] = vals[:ID_MAX]
+    return out or None
+
+
+def split_codes(values, seps=r"[;,\n]+"):
+    """'A1, A2; A3' -> ['A1', 'A2', 'A3'] (for fields that pack several codes into one string)."""
+    out = []
+    for v in values:
+        out += [x.strip() for x in re.split(seps, str(v or "")) if x.strip()]
+    return out
+
+
+UPC_RX = re.compile(r"\b(?:UPC|EAN|GTIN|barcode)s?\b[^0-9]{0,12}((?:\d[\d\s-]{6,18}\d)(?:\s*(?:,|and|&)\s*\d[\d\s-]{6,18}\d)*)", re.I)
+LOT_RX = re.compile(r"\b(?:lot|batch)(?:es)?\s*(?:numbers?|nos?\.?|codes?|#)?\s*[:#]?\s*((?:[A-Z0-9][A-Z0-9-]{2,24})(?:\s*(?:,|and|&)\s*[A-Z0-9][A-Z0-9-]{2,24})*)", re.I)
+MODEL_RX = re.compile(r"\b(?:model|catalog(?:ue)?|item|sku|ref(?:erence)?|part)\s*(?:numbers?|nos?\.?|#)?\s*[:#]?\s*((?:[A-Z0-9][A-Z0-9./-]{2,24})(?:\s*(?:,|and|&)\s*[A-Z0-9][A-Z0-9./-]{2,24})*)", re.I)
+
+
+def codes_in(text, rx):
+    found = []
+    for m in rx.finditer(text or ""):
+        found += [x.strip(".,:;-/") for x in re.split(r"\s*(?:,|\band\b|&)\s*", m.group(1)) if x and re.search(r"\d", x)]
+    return found
+
+
+def text_ids(text):
+    """Identifiers written out in notice text (FDA code_info, page bodies)."""
+    return ids_of(barcode=codes_in(text, UPC_RX), batch=codes_in(text, LOT_RX), model=codes_in(text, MODEL_RX))
+
 
 # ---------------------------------------------------------------- US: CPSC
 def norm_cpsc(r):
@@ -112,7 +168,8 @@ def norm_cpsc(r):
         brand=clean(first(r.get("Manufacturers"), "Name"), 60), hazard=hazard,
         units=clean(first(r.get("Products"), "NumberOfUnits"), 60),
         category=categorize(r.get("Title"), product, hazard),
-        url=r.get("URL"), image=first(r.get("Images"), "URL"))
+        url=r.get("URL"), image=first(r.get("Images"), "URL"),
+        **opt(ids=ids_of(barcode=[u.get("UPC") for u in r.get("ProductUPCs") or []])))
 
 def crawl_cpsc(since):
     url = f"https://www.saferproducts.gov/RestWebServices/Recall?format=json&RecallDateStart={since}"
@@ -131,7 +188,7 @@ def norm_fda(r, kind):
         product=product, brand=firm, hazard=reason, severity=r.get("classification", ""),
         units=clean(r.get("distribution_pattern"), 80),
         category="food" if kind == "Food" else "medical",
-        url=FDA_LINK)
+        url=FDA_LINK, **opt(ids=text_ids(r.get("code_info", ""))))
 
 def crawl_fda(since):
     out, s, fails = [], since.replace("-", ""), 0
@@ -228,6 +285,19 @@ def crawl_canada(since, archived=False):
 
 # ---------------------------------------------------------------- EU Safety Gate
 EU_API = "https://ec.europa.eu/safety-gate-alerts/public/api/notification/"
+def eu_ids(d):
+    p = d.get("product") or {}
+    return ids_of(model=split_codes([m.get("modelType") for m in p.get("modelTypes") or []], r"[;\n]+"),
+                  barcode=split_codes([b.get("barcode") for b in p.get("barcodes") or []], r"[;,/\s]+"),
+                  batch=split_codes([b.get("batchNumber") for b in p.get("batchNumbers") or []]),
+                  listing=[x.get("uniqueProductIdentifier") for x in d.get("onlineTraderProductIdentifierReference") or []])
+
+
+def eu_counterfeit(p):
+    c = p.get("isCounterfeit") or {}
+    return True if str(c.get("name", "")).upper() == "YES" or str(c.get("key", "")).endswith(".yes") else None
+
+
 def norm_eu(d, photo_id=None):
     p = d.get("product", {})
     v = next((x for x in p.get("versions", []) if x.get("language", {}).get("key") == "EN"), {})
@@ -244,7 +314,7 @@ def norm_eu(d, photo_id=None):
         hazard=rv.get("riskDescription") or risks.capitalize(), severity=risks,
         category=categorize(name, specific, hint=p.get("productCategory", {}).get("name", "")),
         url=f"https://ec.europa.eu/safety-gate-alerts/screen/webReport/alertDetail/{d['id']}?lang=en",
-        image=f"{EU_API}image/{photo_id}" if photo_id else "")
+        image=f"{EU_API}image/{photo_id}" if photo_id else "", **opt(ids=eu_ids(d), counterfeit=eu_counterfeit(p)))
 
 def crawl_eu(since, max_pages=40, known=()):
     """Safety Gate pages sometimes fail on one broken record (HTTP 404); skip that page or item
@@ -667,7 +737,7 @@ def merge(archive, records, today):
         old = archive.get(r["id"])
         if old:
             r["slug"], r["first_seen"] = old["slug"], old["first_seen"]
-            for f in ("hazard", "brand", "image", "product"):  # keep details a lighter re-crawl did not fetch
+            for f in ("hazard", "brand", "image", "product", "ids", "counterfeit"):  # keep details a lighter re-crawl did not fetch
                 if not r.get(f) and old.get(f): r[f] = old[f]
         else:
             r["slug"] = f'{slugify(r["title"])}-{short_hash(r["id"])}'
@@ -687,7 +757,7 @@ def with_names(r):
 
 
 def window(archive, since, ok, errors):
-    rows = sorted((with_names(r) for r in archive.values() if r["date"] >= since),
+    rows = sorted(({k: v for k, v in with_names(r).items() if k != "ids"} for r in archive.values() if r["date"] >= since),
                   key=lambda r: (r["date"], r["id"]), reverse=True)[:MAX_ITEMS]
     counts = {name: sum(1 for r in rows if r.get("feed") == name) for name, _ in SOURCES}
     return {"updated": dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%MZ"),
