@@ -1,0 +1,29 @@
+name: Vehicle recall data
+on:
+  schedule:
+    - cron: "41 3 * * 1"   # Mondays 03:41 UTC
+  workflow_dispatch:
+permissions:
+  contents: write
+concurrency:
+  group: recallatlas-vehicles   # writes only data/enrich/nhtsa.json and data/vehicles/
+  cancel-in-progress: false
+jobs:
+  vehicles:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v7
+        with: { python-version: "3.12" }
+      - run: pip install -r requirements.txt
+      - run: python vehicles.py
+      - name: Commit vehicle data
+        run: |
+          git config user.name "recall-bot"
+          git config user.email "recall-bot@users.noreply.github.com"
+          git add -A data   # only data/enrich/nhtsa.json and data/vehicles/ change in this job
+          git diff --cached --quiet || git commit -m "Vehicle recall data $(date -u +%Y-%m-%d)"
+          for i in 1 2 3; do git pull --rebase -q && git push && break; sleep 10; done
