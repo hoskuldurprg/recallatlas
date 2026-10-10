@@ -157,6 +157,87 @@ def text_ids(text):
     return ids_of(barcode=codes_in(text, UPC_RX), batch=codes_in(text, LOT_RX), model=codes_in(text, MODEL_RX))
 
 
+def merge_ids(*many):
+    """Combine several ids dicts (or None) into one."""
+    return ids_of(**{k: [v for d in many if d for v in d.get(k, [])] for k in ID_KINDS})
+
+
+ID_COLUMNS = [("barcode", r"upc|ean|gtin|bar ?code"), ("batch", r"\blot|batch|serial|^codes?$"),
+              ("model", r"model|catalog|sku|item (?:no|number|#)|style|part (?:no|number)|reference")]
+
+
+def table_ids(page_html):
+    """Identifiers from tables whose header row names a column (UPC, Model number, Lot, Batch...)."""
+    found = {k: [] for k in ID_KINDS}
+    for table in re.findall(r"<table.*?</table>", page_html or "", re.S | re.I):
+        rows = re.findall(r"<tr.*?</tr>", table, re.S | re.I)
+        if len(rows) < 2: continue
+        head = [text_of(c).lower() for c in re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", rows[0], re.S | re.I)]
+        cols = {}
+        for i, h in enumerate(head):
+            for kind, rx in ID_COLUMNS:
+                if re.search(rx, h) and i not in cols: cols[i] = kind
+        if not cols:  # label/value tables: "Batch Number | 202601581A70 TCY063667"
+            for row in rows:
+                cells = re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S | re.I)
+                if len(cells) != 2: continue
+                label = text_of(cells[0]).lower()
+                kind = next((k for k, rx in ID_COLUMNS if re.search(rx, label)), None)
+                if kind:
+                    found[kind] += [v for v in re.split(r"[\s,;]+" if kind != "model" else r"[,;]+", text_of(cells[1]))
+                                    if re.search(r"\d", v)]
+            continue
+        for row in rows[1:]:
+            cells = re.findall(r"<t[hd][^>]*>(.*?)</t[hd]>", row, re.S | re.I)
+            for i, kind in cols.items():
+                if i >= len(cells): continue
+                for part in re.split(r"<br\s*/?>|</p>|</li>|[,;\n]", cells[i], flags=re.I):
+                    v = text_of(part)
+                    if kind != "barcode" and (len(v.split()) > 3 or not (re.search(r"\d", v) or re.fullmatch(r"[A-Z0-9-]{3,}", v))):
+                        continue
+                    found[kind].append(v)
+    return ids_of(**found)
+
+
+def page_ids(page_html):
+    """Identifiers on an official notice page: tables first, then labelled codes in the text."""
+    return merge_ids(table_ids(page_html), text_ids(text_of(page_html)))
+
+
+VEHICLE_RX = re.compile(r"\b((?:19|20)\d\d)\s*\|\s*([A-Z0-9][^|,;]{0,30}?)\s*\|\s*([A-Z0-9][A-Z0-9.&/+-]*(?: [A-Z0-9][A-Z0-9.&/+-]*){0,3})(?=\s*(?:[,;]|$)|\s+[A-Z]?[a-z]|\s(?:19|20)\d\d\s*\|)")
+
+
+def vehicle_lines(text):
+    """'2021 | FORD | EXPLORER, 2021 | LINCOLN | AVIATOR' (Transport Canada pages) -> ['2021|FORD|EXPLORER', ...]."""
+    out = []
+    for y, make, model in VEHICLE_RX.findall(text or ""):
+        v = f"{y}|{make.strip().upper()}|{model.strip().upper()}"
+        if v not in out: out.append(v)
+    return out[:300]
+
+
+DETAIL_MAX = 60  # detail pages read per source per run (new recalls only)
+
+
+def add_page_ids(rows, fetch, vehicles=False):
+    """Read the official page of each new recall once and keep its identifiers."""
+    n = 0
+    for r in rows:
+        if r["id"] in KNOWN or n >= DETAIL_MAX: continue
+        n += 1
+        try:
+            html = fetch(r)
+        except Exception as e:
+            print(f"  ids {r['id']}: {e}", file=sys.stderr); continue
+        ids = page_ids(html)
+        if ids: r["ids"] = ids
+        if vehicles and r.get("category") == "vehicles":
+            v = vehicle_lines(text_of(html))
+            if v: r["vehicles"] = v
+        time.sleep(0.5)
+    return rows
+
+
 # ---------------------------------------------------------------- US: CPSC
 def norm_cpsc(r):
     first = lambda arr, key: (arr or [{}])[0].get(key, "") if arr else ""
@@ -227,7 +308,10 @@ def norm_opss(r):
 def crawl_opss(since):
     url = ("https://www.gov.uk/api/search.json?filter_format=product_safety_alert_report_recall"
            "&order=-public_timestamp&count=200&fields=title,link,public_timestamp,description")
-    return [norm_opss(r) for r in get(url).json()["results"] if r["public_timestamp"][:10] >= since]
+    rows = [norm_opss(r) for r in get(url).json()["results"] if r["public_timestamp"][:10] >= since]
+    body = lambda r: (get(r["url"].replace("https://www.gov.uk/", "https://www.gov.uk/api/content/")).json()
+                      .get("details") or {}).get("body") or ""
+    return add_page_ids(rows, body)
 
 # ---------------------------------------------------------------- UK: FSA
 def norm_fsa(r):
@@ -279,9 +363,10 @@ def norm_canada(r):
 def crawl_canada(since, archived=False):
     url = "https://recalls-rappels.canada.ca/sites/default/files/opendata-donneesouvertes/HCRSAMOpenData.json"
     rows = get(url).json()
-    return [norm_canada(r) for r in rows
-            if "/en/" in (r.get("URL") or "") and (r.get("Last updated") or "") >= since
-            and (archived or r.get("Archived") != "1")]
+    out = [norm_canada(r) for r in rows
+           if "/en/" in (r.get("URL") or "") and (r.get("Last updated") or "") >= since
+           and (archived or r.get("Archived") != "1")]
+    return add_page_ids(out, lambda r: page(r["url"]), vehicles=True)
 
 # ---------------------------------------------------------------- EU Safety Gate
 EU_API = "https://ec.europa.eu/safety-gate-alerts/public/api/notification/"
@@ -737,7 +822,7 @@ def merge(archive, records, today):
         old = archive.get(r["id"])
         if old:
             r["slug"], r["first_seen"] = old["slug"], old["first_seen"]
-            for f in ("hazard", "brand", "image", "product", "ids", "counterfeit"):  # keep details a lighter re-crawl did not fetch
+            for f in ("hazard", "brand", "image", "product", "ids", "counterfeit", "vehicles"):  # keep details a lighter re-crawl did not fetch
                 if not r.get(f) and old.get(f): r[f] = old[f]
         else:
             r["slug"] = f'{slugify(r["title"])}-{short_hash(r["id"])}'
@@ -757,7 +842,7 @@ def with_names(r):
 
 
 def window(archive, since, ok, errors):
-    rows = sorted(({k: v for k, v in with_names(r).items() if k != "ids"} for r in archive.values() if r["date"] >= since),
+    rows = sorted(({k: v for k, v in with_names(r).items() if k not in ("ids", "vehicles")} for r in archive.values() if r["date"] >= since),
                   key=lambda r: (r["date"], r["id"]), reverse=True)[:MAX_ITEMS]
     counts = {name: sum(1 for r in rows if r.get("feed") == name) for name, _ in SOURCES}
     return {"updated": dt.datetime.utcnow().strftime("%Y-%m-%dT%H:%MZ"),
