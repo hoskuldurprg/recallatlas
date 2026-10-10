@@ -799,6 +799,22 @@ def load_archive():
     return rows
 
 
+ENRICH = Path(__file__).parent / "data" / "enrich"
+
+
+def apply_enrich(archive):
+    """Identifiers found later by enrich_ids.py (catch-up for older recalls) -> archive rows that lack them."""
+    n = 0
+    for f in sorted(ENRICH.glob("*.json")):
+        for rid, extra in json.loads(f.read_text()).items():
+            r = archive.get(rid)
+            if not r or not extra: continue
+            for k in ("ids", "vehicles", "counterfeit"):
+                if extra.get(k) and not r.get(k):
+                    r[k] = extra[k]; n += 1
+    return n
+
+
 def save_archive(rows):
     ARCHIVE.mkdir(parents=True, exist_ok=True)
     months = {}
@@ -854,6 +870,7 @@ def main():
     since = (dt.date.today() - dt.timedelta(days=DAYS_BACK)).isoformat()
     archive = load_archive()
     KNOWN.update(k for k, r in archive.items() if r.get("hazard"))  # recalls without a hazard get their detail page read again
+    print(f"identifiers from catch-up files: {apply_enrich(archive)}")
     if not archive and OUT.exists():  # first run after the archive was introduced: seed it
         merge(archive, json.loads(OUT.read_text())["recalls"], today)
     ok, errors = {}, []
