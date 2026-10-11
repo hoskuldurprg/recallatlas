@@ -194,15 +194,25 @@ async function handle(req, env) {
   }
 
   if (path === "/v1/feed" && req.method === "GET") {
-    const target = FEEDS[url.searchParams.get("src")];
+    const src = url.searchParams.get("src"), target = FEEDS[src];
     if (!target) return json({ error: "unknown feed" }, 400);
     let r;
     try {
-      r = await fetch(target, { headers: { "user-agent": "Mozilla/5.0 (compatible; RecallAtlas/1.0; +https://recallatlas.org)" } });
+      // Ordinary request headers (what a normal client sends), with our honest bot name in the user-agent.
+      r = await fetch(target, { headers: {
+        "user-agent": "Mozilla/5.0 (compatible; RecallAtlas/1.0; +https://recallatlas.org)",
+        "accept": src === "usda" ? "application/json, text/plain, */*" : "application/rss+xml, application/xml;q=0.9, text/xml;q=0.8, */*;q=0.5",
+        "accept-language": "en-AU,en-US;q=0.9,en;q=0.8",
+        "accept-encoding": "gzip, deflate, br",
+        "cache-control": "no-cache",
+        "from": "info@recallatlas.org",
+      } });
     } catch (e) {
       return json({ error: "feed unreachable", detail: String(e).slice(0, 200) }, 502);
     }
-    return new Response(r.body, { status: r.status, headers: { "content-type": r.headers.get("content-type") || "text/plain" } });
+    return new Response(r.body, { status: r.status, headers: {
+      "content-type": r.headers.get("content-type") || "text/plain",
+      "x-origin-server": (r.headers.get("server") || "").slice(0, 60) } });
   }
 
   return json({ error: "not found" }, 404);
