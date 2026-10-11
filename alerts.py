@@ -76,7 +76,8 @@ def match(sub, rows, uk):
             if k == "product":
                 tier = M.match_item(r, it.get("brand", ""), it.get("type", ""), it.get("model") or None, it.get("barcode") or None)
                 if tier in ("barcode", "model"):
-                    label = f"Matches your {' '.join(x for x in (it.get('brand'), it.get('model')) if x)}"
+                    name = " ".join(x for x in (it.get("brand"), it.get("model")) if x)
+                    label = f"Matches your {name}" if name else f"Matches barcode {it.get('barcode')}" if tier == "barcode" else "Matches a watched item"
                 elif tier:
                     label = f"{it.get('brand')} {it.get('type')}: {LABEL_TYPE[tier]}"
             elif k == "vehicle":
