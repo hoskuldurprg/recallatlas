@@ -24,6 +24,10 @@
    "at": "2026-10-05T05:44+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mx47jhkrx72m"
   },
+  "recall:ca-82739": {
+   "at": "2026-10-11T05:52+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxlcs7h4mu2u"
+  },
   "recall:ca-82767": {
    "at": "2026-10-10T21:50+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxkhuguzwv2d"
@@ -519,6 +523,10 @@
   "recall:ca-82728": {
    "at": "2026-10-05T05:44+00:00",
    "ref": "https://mastodon.social/@recallatlas/117386710341804267"
+  },
+  "recall:ca-82739": {
+   "at": "2026-10-11T05:52+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117420717553093819"
   },
   "recall:ca-82767": {
    "at": "2026-10-10T21:50+00:00",
