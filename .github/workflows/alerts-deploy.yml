@@ -1,0 +1,68 @@
+name: Deploy alerts server
+# Puts the alerts server (alerts/worker.js + its D1 database) on Cloudflare's free plan.
+# Runs when alerts/ changes, or from the "Run workflow" button.
+# Needs repository secrets CLOUDFLARE_API_TOKEN, CLOUDFLARE_ACCOUNT_ID and ALERTS_KEY.
+on:
+  push:
+    branches: [main]
+    paths: ["alerts/**", ".github/workflows/alerts-deploy.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: recallatlas-alerts-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      ALERTS_KEY: ${{ secrets.ALERTS_KEY }}
+    defaults:
+      run:
+        working-directory: alerts
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the secrets are set
+        id: check
+        run: |
+          missing=""
+          for s in CLOUDFLARE_API_TOKEN CLOUDFLARE_ACCOUNT_ID ALERTS_KEY; do [ -z "${!s}" ] && missing="$missing $s"; done
+          if [ -n "$missing" ]; then
+            echo "Skipped: add these repository secrets, then Run workflow:$missing" | tee -a "$GITHUB_STEP_SUMMARY"
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.check.outputs.ready == 'true'
+        uses: actions/setup-node@v5
+        with: { node-version: "22" }
+      - if: steps.check.outputs.ready == 'true'
+        run: npm install --no-save --silent wrangler@4
+      - if: steps.check.outputs.ready == 'true'
+        name: Create the database (first run only) and fill in its id
+        run: |
+          id=$(npx wrangler d1 list --json | python3 -c "import json,sys; print(next((d['uuid'] for d in json.load(sys.stdin) if d['name']=='recallatlas-alerts'),''))")
+          if [ -z "$id" ]; then
+            npx wrangler d1 create recallatlas-alerts --location weur
+            id=$(npx wrangler d1 list --json | python3 -c "import json,sys; print(next(d['uuid'] for d in json.load(sys.stdin) if d['name']=='recallatlas-alerts'))")
+          fi
+          sed -i "s/DATABASE_ID/$id/" wrangler.toml
+      - if: steps.check.outputs.ready == 'true'
+        name: Create or update the tables
+        run: npx wrangler d1 execute recallatlas-alerts --remote --file schema.sql -y
+      - if: steps.check.outputs.ready == 'true'
+        name: Deploy the Worker
+        run: npx wrangler deploy | tee deploy.log
+      - if: steps.check.outputs.ready == 'true'
+        name: Set the shared key
+        run: printf '%s' "$ALERTS_KEY" | npx wrangler secret put ALERTS_KEY
+      - if: steps.check.outputs.ready == 'true'
+        name: Report the address
+        run: |
+          url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' deploy.log | head -1)
+          echo "Alerts server: ${url:-see the deploy log}" | tee -a "$GITHUB_STEP_SUMMARY"
+          [ -n "$url" ] && curl -fsS "$url/v1/health" | tee -a "$GITHUB_STEP_SUMMARY" || true
+          echo "Next: add a repository variable ALERTS_URL = that address (Settings → Secrets and variables → Actions → Variables)." >> "$GITHUB_STEP_SUMMARY"
