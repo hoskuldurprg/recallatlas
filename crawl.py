@@ -18,7 +18,7 @@ Run:  python crawl.py   (updates data/archive/*.json, the permanent store, and
                          data/recalls.json, the last 60 days used by list pages)
 Deps: requests
 """
-import json, re, sys, time, datetime as dt
+import json, os, re, sys, time, datetime as dt
 from pathlib import Path
 
 try:
@@ -506,12 +506,27 @@ def norm_fsis(r):
         units=("Nationwide" if "Nationwide" in states else clean(", ".join(states), 80)),
         category="food", url=(r.get("field_recall_url") or "").replace("http://", "https://"))
 
+def via_proxy(src, direct):
+    """Fetch a feed directly; if that fails (some agencies block GitHub's servers), fetch it through the
+    alerts Worker on Cloudflare (/v1/feed). Needs ALERTS_URL and ALERTS_KEY; without them the direct error stands."""
+    try:
+        return direct()
+    except Exception as e:
+        base, key = os.environ.get("ALERTS_URL"), os.environ.get("ALERTS_KEY")
+        if not (base and key): raise
+        print(f"  {src}: direct fetch failed ({str(e)[:80]}), using the Cloudflare feed proxy", file=sys.stderr)
+        r = requests.get(base.rstrip("/") + f"/v1/feed?src={src}", headers={"Authorization": "Bearer " + key}, timeout=120)
+        r.raise_for_status()
+        return r.content
+
 def crawl_fsis(since):
     hdr = {**UA, "User-Agent": "Mozilla/5.0 (compatible; RecallAtlas/1.0; +https://recallatlas.org)",
            "Accept": "application/json"}
-    r = requests.get("https://www.fsis.usda.gov/fsis/api/recall/v/1", headers=hdr, timeout=120)
-    r.raise_for_status()
-    return [norm_fsis(x) for x in r.json()
+    def direct():
+        r = requests.get("https://www.fsis.usda.gov/fsis/api/recall/v/1", headers=hdr, timeout=120)
+        r.raise_for_status()
+        return r.content
+    return [norm_fsis(x) for x in json.loads(via_proxy("usda", direct))
             if (x.get("field_recall_date") or "") >= since and x.get("langcode") == "English"]
 
 # ---------------------------------------------------------------- EU: RASFF food alerts for consumers
@@ -637,7 +652,8 @@ def crawl_accc(since, topics=False):
     out = {}
     for u in urls:
         try:
-            items = ET.fromstring(get(u, headers=BROWSER_UA).content).findall(".//item")
+            body = via_proxy("accc", lambda: get(u, headers=BROWSER_UA).content) if u == ACCC_RSS else get(u, headers=BROWSER_UA).content
+            items = ET.fromstring(body).findall(".//item")
         except Exception as e:
             if u == ACCC_RSS: raise
             print(f"  ACCC topic feed skipped: {e}", file=sys.stderr); continue
