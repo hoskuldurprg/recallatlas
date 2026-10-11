@@ -25,6 +25,9 @@ jobs:
         with: { python-version: "3.12" }
       - run: pip install -r requirements.txt
       - run: python crawl.py
+        env:   # Cloudflare feed proxy for the feeds that block GitHub (ACCC, USDA FSIS); unused until set
+          ALERTS_URL: ${{ vars.ALERTS_URL }}
+          ALERTS_KEY: ${{ secrets.ALERTS_KEY }}
       - name: Remove pages committed by the old setup (no-op once they are gone)
         run: |
           old=$(git ls-files | grep -E '^([a-z]{2}|recalls)/|^(index\.html|sitemap\.xml|robots\.txt)$' | cut -d/ -f1 | sort -u)
@@ -42,6 +45,15 @@ jobs:
         with: { path: _site }
       - id: deploy
         uses: actions/deploy-pages@v5
+      - name: Send watchlist alerts (dry run until the Firebase secret is set)
+        continue-on-error: true   # an alerts hiccup must never fail the site update
+        env:
+          ALERTS_URL: ${{ vars.ALERTS_URL }}
+          ALERTS_KEY: ${{ secrets.ALERTS_KEY }}
+          FCM_SERVICE_ACCOUNT: ${{ secrets.FCM_SERVICE_ACCOUNT }}
+        run: |
+          [ -n "$FCM_SERVICE_ACCOUNT" ] && pip install -q google-auth
+          python alerts.py
       - name: Post to Bluesky, Mastodon, X and Facebook (dry run until the secrets are set)
         continue-on-error: true   # a social media hiccup must never fail the site update
         env:
