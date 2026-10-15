@@ -6,6 +6,9 @@
    against each subscriber's watch items with matching.py, in the subscriber's countries.
 3. Sends one push per subscriber per run (several matches are batched into one message) through Firebase Cloud
    Messaging, then tells the Worker what was sent so nothing is sent twice. Quiet hours: matches wait for the next run.
+4. Weekly digest, for subscribers who turned it on in the app (a "digest" watch item): one summary push on Monday
+   from 09:00 local time, outside quiet hours ("12 new recalls in the United Kingdom this week. None matched your
+   things."). It is marked as sent like a recall ("digest-2026-W42"), so it goes out once a week at most.
 
 Settings (GitHub secrets / variables):
   ALERTS_URL            the Worker address, e.g. https://recallatlas-alerts.<account>.workers.dev
@@ -26,6 +29,12 @@ SITE = "https://recallatlas.org"
 ALERT_DAYS = 2
 EU = set(crawl.EU_NAMES) - {"XI"}
 LABEL_TYPE = {"brand+type": "check your model", "accessory": "part made for this brand", "counterfeit": "fake products"}
+DIGEST_DAYS, DIGEST_WEEKDAY, DIGEST_HOUR = 7, 0, 9     # last 7 days, sent on Monday from 09:00 local time
+NAMES = {"US": "the United States", "CA": "Canada", "GB": "the United Kingdom", "AU": "Australia", "NZ": "New Zealand",
+         "EU": "the EU", "NL": "the Netherlands", "CZ": "the Czech Republic", **{k: v for k, v in crawl.EU_NAMES.items() if k not in ("NL", "CZ")}}
+CAT_WORDS = {"food": "food", "kids": "toys and children's products", "electrical": "electrical", "home": "home and garden",
+             "sports": "sports and outdoor", "tools": "tools", "vehicles": "vehicles", "medical": "drugs and medical",
+             "cosmetics": "cosmetics", "apparel": "clothing", "other": "other products"}
 
 
 # ---------------------------------------------------------------- Worker API
@@ -116,6 +125,39 @@ def quiet_now(sub, now):
     return a <= h < b if a < b else (h >= a or h < b)
 
 
+# ---------------------------------------------------------------- weekly digest
+def local_time(sub, now):
+    try:
+        return now.astimezone(ZoneInfo(sub.get("tz") or "UTC"))
+    except Exception:
+        return now
+
+
+def digest_key(sub, now):
+    """'digest-2026-W42' when this subscriber's weekly digest is due now and not sent yet, else None."""
+    if not any(it["kind"] == "digest" for it in sub["items"]): return None
+    t = local_time(sub, now)
+    if t.weekday() != DIGEST_WEEKDAY or t.hour < DIGEST_HOUR or quiet_now(sub, now): return None
+    y, w, _ = t.isocalendar()
+    key = f"digest-{y}-W{w:02d}"
+    return None if key in sub["sent"] else key
+
+
+def digest(sub, week_rows):
+    """The weekly summary push, or None in a week with nothing new in the subscriber's countries."""
+    rows = [r for r in week_rows if in_countries(r, sub["countries"])]
+    if not rows: return None
+    mine = [it for it in sub["items"] if it["kind"] in ("product", "vehicle", "allergen", "child")]   # not whole categories
+    matched = len(match({**sub, "items": mine, "sent": []}, rows, [])) if mine else 0
+    where = NAMES.get(sub["countries"][0], sub["countries"][0]) if len(sub["countries"]) == 1 else "your countries"
+    cats = Counter(r.get("category") or "other" for r in rows).most_common(2)
+    body = f"{len(rows)} new recall{'s' if len(rows) != 1 else ''} in {where} this week."
+    if mine: body += f" {matched} matched your things (you were alerted)." if matched else " None matched your things."
+    if len(rows) > 2:
+        body += " Most were " + " and ".join(f"{CAT_WORDS.get(c, c)} ({n})" for c, n in cats) + "."
+    return {"title": "Your week in recalls", "body": body[:220], "url": f"{SITE}/"}
+
+
 def message(hits):
     if len(hits) == 1:
         rid, label, title, url = hits[0]
@@ -156,10 +198,18 @@ def main():
     now = dt.datetime.now(dt.timezone.utc)
     archive = crawl.load_archive(); crawl.apply_enrich(archive)
     rows, uk = new_recalls(archive, now.date())
+    week_since = (now.date() - dt.timedelta(days=DIGEST_DAYS)).isoformat()
+    week_rows = [r for r in archive.values() if r.get("first_seen", "") != "backfill" and r.get("first_seen", "") >= week_since]
     subs = subscribers()
     fcm = FCM(json.loads(os.environ["FCM_SERVICE_ACCOUNT"])) if os.environ.get("FCM_SERVICE_ACCOUNT") else None
     stats, sent_pairs, invalid = Counter(), [], []
     for sub in subs:
+        if (key := digest_key(sub, now)) and sub["channel"] == "push" and (msg := digest(sub, week_rows)):
+            stats["weekly digests due"] += 1
+            if fcm:
+                result = fcm.send(sub["address"], msg)
+                stats[f"digest push {result}"] += 1
+                if result == "sent": sent_pairs.append((sub["id"], key))
         hits = match(sub, rows, uk)
         if not hits: continue
         stats["subscribers with matches"] += 1

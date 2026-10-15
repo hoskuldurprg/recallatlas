@@ -21,9 +21,29 @@ Tested 10 Oct 2026 against the archive: see claude/watchlist-matching-test.md in
 import re, unicodedata
 
 # ---------------------------------------------------------------- text helpers
+# British and American spellings count as the same word ("jewellery" = "jewelry"), on both sides of every comparison.
+SPELLING = {"jewellery": "jewelry", "colour": "color", "colours": "colors", "coloured": "colored", "grey": "gray",
+            "aluminium": "aluminum", "tyre": "tire", "tyres": "tires", "pyjama": "pajama", "pyjamas": "pajamas",
+            "mould": "mold", "flavour": "flavor", "flavours": "flavors", "flavoured": "flavored", "yoghurt": "yogurt",
+            "yoghurts": "yogurts", "savoury": "savory", "favourite": "favorite", "centre": "center", "fibre": "fiber",
+            "moisturiser": "moisturizer", "sanitiser": "sanitizer", "sanitisers": "sanitizers"}
+
+
 def norm(s):
     s = unicodedata.normalize("NFKD", str(s or "")).encode("ascii", "ignore").decode().lower()
-    return " " + re.sub(r"[^a-z0-9]+", " ", s).strip() + " "
+    words = [SPELLING.get(w, w) for w in re.sub(r"[^a-z0-9]+", " ", s).split()]
+    return " " + " ".join(words) + " "
+
+
+# Company endings a person may type or a notice may add: "Philips Ltd", "Becton, Dickinson & Co.", "Covidien, LP".
+COMPANY_END = re.compile(r"(?:[\s,]+(?:&|and)?\s*(?:inc|incorporated|llc|lp|llp|ltd|limited|plc|gmbh|ag|sa|srl|bv|nv|"
+                         r"co|corp|corporation|company|group)\.?)+\s*$", re.I)
+
+
+def brand_core(brand):
+    """'Becton Dickinson & Co.' -> 'Becton Dickinson'. Left as typed when nothing else would remain."""
+    core = COMPANY_END.sub("", str(brand or "")).strip(" ,.&")
+    return core or str(brand or "").strip()
 
 
 def squash(s):
@@ -123,6 +143,7 @@ def model_in_text(text, model):
 
 
 def match_item(r, brand, ptype, model=None, barcode=None):
+    brand = brand_core(brand)
     ids = r.get("ids") or {}
     if barcode and code_in(ids.get("barcode"), barcode):
         return "barcode"
