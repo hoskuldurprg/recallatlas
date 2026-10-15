@@ -32,6 +32,10 @@
    "at": "2026-10-10T21:50+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxkhuguzwv2d"
   },
+  "recall:cpsc-27-026": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxwkffpxub2s"
+  },
   "recall:cpsc-27005": {
    "at": "2026-10-06T06:25+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mx6sc4letj2m"
@@ -75,6 +79,14 @@
   "recall:cpsc-27021": {
    "at": "2026-10-09T06:18+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxgdbwp3ry2y"
+  },
+  "recall:cpsc-27024": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxwkfdpdqi2y"
+  },
+  "recall:cpsc-27025": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxwkfbo67d2y"
   },
   "recall:eu-OR/00117/26": {
    "at": "2026-10-09T11:34+00:00",
@@ -538,6 +550,18 @@
    "at": "2026-10-11T21:25+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122111955177488772"
   },
+  "recall:cpsc-27-026": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122113526685488772"
+  },
+  "recall:cpsc-27024": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122113526649488772"
+  },
+  "recall:cpsc-27025": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122113526619488772"
+  },
   "recall:eu-OR/00117/26": {
    "at": "2026-10-11T22:06+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122111965161488772"
@@ -792,6 +816,10 @@
    "at": "2026-10-10T21:50+00:00",
    "ref": "https://mastodon.social/@recallatlas/117418822819344442"
   },
+  "recall:cpsc-27-026": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117446022483535337"
+  },
   "recall:cpsc-27005": {
    "at": "2026-10-06T06:25+00:00",
    "ref": "https://mastodon.social/@recallatlas/117392534994370885"
@@ -835,6 +863,14 @@
   "recall:cpsc-27021": {
    "at": "2026-10-09T06:18+00:00",
    "ref": "https://mastodon.social/@recallatlas/117409493437349484"
+  },
+  "recall:cpsc-27024": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117446022325541488"
+  },
+  "recall:cpsc-27025": {
+   "at": "2026-10-15T17:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117446022153943958"
   },
   "recall:eu-OR/00117/26": {
    "at": "2026-10-09T11:34+00:00",
