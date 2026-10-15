@@ -44,6 +44,7 @@ function item(raw) {
   if (kind === "category") return CATEGORIES.includes(raw.category) ? { kind, d: { category: raw.category } } : null;
   if (kind === "allergen") return ALLERGENS.includes(raw.allergen) ? { kind, d: { allergen: raw.allergen } } : null;
   if (kind === "child") return CHILD_TAGS.includes(raw.tag) ? { kind, d: { tag: raw.tag } } : null;
+  if (kind === "digest") return { kind, d: {} };   // weekly summary push turned on (alerts.py)
   return null;
 }
 

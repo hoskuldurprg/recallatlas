@@ -20,7 +20,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS subscribers_address ON subscribers (channel, a
 CREATE TABLE IF NOT EXISTS items (
   subscriber_id TEXT NOT NULL,
   pos           INTEGER NOT NULL,
-  kind          TEXT NOT NULL,   -- 'product' | 'vehicle' | 'category' | 'allergen' | 'child'
+  kind          TEXT NOT NULL,   -- 'product' | 'vehicle' | 'category' | 'allergen' | 'child' | 'digest'
   data          TEXT NOT NULL,   -- JSON, see worker.js (ITEM_FIELDS)
   PRIMARY KEY (subscriber_id, pos)
 );
