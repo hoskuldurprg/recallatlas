@@ -348,6 +348,10 @@
    "at": "2026-10-09T13:23+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxh33g5m252m"
   },
+  "recall:nhtsa-26V648000": {
+   "at": "2026-10-17T10:49+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3my2w62oong2y"
+  },
   "recall:nhtsa-26V652000": {
    "at": "2026-10-09T11:34+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxguy4bikx2z"
@@ -721,6 +725,10 @@
   "recall:nhtsa-26V628000": {
    "at": "2026-10-03T11:45+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122107682553488772"
+  },
+  "recall:nhtsa-26V648000": {
+   "at": "2026-10-17T10:49+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122114055393488772"
   },
   "recall:nhtsa-26V658000": {
    "at": "2026-10-16T11:29+00:00",
@@ -1243,6 +1251,10 @@
   "recall:nhtsa-26V640000": {
    "at": "2026-10-09T13:23+00:00",
    "ref": "https://mastodon.social/@recallatlas/117411167963599942"
+  },
+  "recall:nhtsa-26V648000": {
+   "at": "2026-10-17T10:49+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117455857630932772"
   },
   "recall:nhtsa-26V652000": {
    "at": "2026-10-09T11:34+00:00",
