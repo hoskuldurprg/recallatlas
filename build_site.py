@@ -294,7 +294,8 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
             .replace("{{PYEAR}}", year or "").replace("{{YEARS}}", json.dumps([int(y) for y in YEARS]))
             .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else '<section class="ystats" id="ystats" hidden></section>')
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
-            .replace("{{BROWSE}}", browse)
+            .replace("{{BROWSE}}", app_strip() + browse)
+            .replace("{{APP}}", '<a class="rss" href="/app/">Get the app</a>' if APP_LIVE else "")
             .replace("{{WEEKLY}}", f'<a class="rss" href="/weekly/{LATEST_WEEK}/">This week\'s roundup</a>' if LATEST_WEEK and code == "all" and not cat and not topic and not year else "")
             .replace("{{FEED}}", f'<a class="rss" href="{feeds[0][0]}" title="{esc(feeds[0][1])}">RSS feed</a>')
             .replace("{{NAMES}}", json.dumps({k: (v if k != "EU" else "all EU & EEA countries") for k, v in NAMES.items()}, ensure_ascii=False)))
@@ -636,15 +637,72 @@ def recall_page(r, brands, by_cc, footer):
 <h2>What to do</h2>
 <ol class="todo">{"".join(f"<li>{esc(x)}</li>" for x in todo)}</ol>
 <p class="note">General guidance from Recall Atlas. The official notice from {esc(AGENCY.get(r.get("feed"), r["source"]))} has the exact models, batch codes and remedy, and it takes priority.</p>
-{"".join(parts)}
+{app_box()}{"".join(parts)}
 </article>
 </div>
 {footer}{CONSENT}"""
     return head_html(title, desc, url, "article", crumbs + [(t[:60], f"/recall/{r['slug']}/")]) + body + "</body>\n</html>\n"
 
 
+# ---------- the Android app ----------
+# Flip APP_LIVE to True once Google Play has approved the production release: it adds "Get the app" to every page
+# and builds /app/. While False nothing about the app appears, so no link points at a store page that isn't public yet.
+# social.py reads the same switch for its daily app post.
+APP_LIVE = False
+APP_PLAY = "https://play.google.com/store/apps/details?id=org.recallatlas.app"
+
+
+def app_strip():
+    return ('<p class="appstrip"><b>Recall Atlas for Android:</b> get an alert when something you own is recalled. '
+            '<a href="/app/">Get the app →</a></p>') if APP_LIVE else ""
+
+
+def app_box():
+    return ('<aside class="appbox"><p><b>Own one of these?</b> The Recall Atlas app alerts you when a recall matches '
+            'your things, your car or your family\'s allergens. Free, no account.</p>'
+            f'<a class="cta" href="{APP_PLAY}" rel="noopener" target="_blank">Get it on Google Play →</a></aside>') if APP_LIVE else ""
+
+
+APP_SHOTS = [("phone-1", "Recall feed with official recalls from 36 countries"),
+             ("phone-2", "Possible matches for the things you own"),
+             ("phone-3", "Recall detail with what to do and a link to the official notice"),
+             ("phone-4", "Allergen alerts for your household"),
+             ("phone-5", "Watched car, gear and warranty reminders"),
+             ("phone-6", "Free and Pro features compared")]
+
+
+def app_page(footer):
+    shots = "".join(f'<img src="/assets/app/{f}.webp" width="270" height="480" alt="{esc(a)}" loading="lazy">' for f, a in APP_SHOTS)
+    crumbs = [("Recall Atlas", "/"), ("App", "/app/")]
+    body = f"""<div class="wrap">
+<header class="top slim">{TOPLINE}</header>
+<nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/app/">App</a></nav>
+<article class="recall prose"><h1>Recall Atlas for Android</h1>
+<p class="lede">Know when something you own is recalled. The app watches official recalls from 36 countries and alerts you when one matches your things, your car or your family's allergens.</p>
+<a class="cta" href="{APP_PLAY}" rel="noopener" target="_blank">Get it on Google Play →</a>
+<div class="shots">{shots}</div>
+<h2>What it does</h2>
+<ul>
+<li><b>Watch what you own:</b> add things by brand, product type and model. When a new recall matches, you get one alert that says how close the match is.</li>
+<li><b>Your car:</b> in the US, Canada and the UK, add make, model and year.</li>
+<li><b>Allergens and children's products, free:</b> alerts for undeclared-allergen food recalls and for recalled products that suit your child's age.</li>
+<li><b>Gear that expires:</b> reminders before car seats, smoke and CO alarms, extinguishers and helmets need replacing.</li>
+<li><b>Every recall, offline:</b> browse by country and product type; each recall links the official notice.</li>
+</ul>
+<h2>Free and Pro</h2>
+<p>Safety alerts are always free. Pro adds unlimited watched things and gear reminders, more than one country, barcode scanning, allergens for other people in your household, pet food brands, warranty reminders and filling in a car from its VIN.</p>
+<h2>Private by default</h2>
+<p>No account, no ads, no tracking. Your profile stays on your phone; the alerts server keeps only what it needs to match recalls. <a href="/privacy/#app-data">How the app handles data</a>.</p>
+<p class="note">Android only for now; an iPhone version is planned. Recall Atlas is independent and not affiliated with any government agency. Always check the official notice before you act.</p>
+</article></div>
+{footer}{CONSENT}"""
+    return head_html("Recall Atlas app for Android: recall alerts for things you own",
+                     "Free recall alerts for the things you own, your car and your family's allergens, from official sources in 36 countries. No account.",
+                     f"{SITE}/app/", "website", crumbs) + body + "</body>\n</html>\n"
+
+
 def footer_html(browse):
-    return (f'<footer><div class="wrap">{browse}<p>{DISCLAIMER}</p><p>Visitor statistics (Google Analytics) are only collected if you accept '
+    return (f'<footer><div class="wrap">{app_strip()}{browse}<p>{DISCLAIMER}</p><p>Visitor statistics (Google Analytics) are only collected if you accept '
             'them. <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
 
 
@@ -686,27 +744,41 @@ def brands_index_page(brands, footer):
                      f"{SITE}/brand/", "website", crumbs) + body + "</body>\n</html>\n"
 
 
+DISCLAIMER_UPDATED = "2026-10-17"
 DISCLAIMER_FULL = [
-    ("What this site is", "Recall Atlas is an independent website that gathers product, food, drug and vehicle recalls "
-     "published by government agencies in the United States, Canada, the United Kingdom, the European Union, Australia and "
-     "New Zealand, and shows "
-     "them in one searchable list. It is not run by, endorsed by or affiliated with any of those agencies."),
-    ("Information is provided as is", "Recalls are collected automatically and may be incomplete, delayed, out of date or "
-     "contain errors, including errors made when copying, shortening, translating or categorising them. Product categories, "
-     "brand groupings, summaries and the \"What to do\" guidance are added by Recall Atlas, are general in nature and are not "
-     "part of the official notice. Information is provided without any warranty of accuracy, completeness or fitness for a "
+    ("What Recall Atlas is", "Recall Atlas (the website recallatlas.org and the Recall Atlas app) is an independent service "
+     "run by Frostinn ehf. It gathers product, food, drug and vehicle recalls published by government agencies in 36 countries "
+     "and shows them in one place. It is not run by, endorsed by or affiliated with any of those agencies, or with any "
+     "manufacturer or seller."),
+    ("Information is provided as is", "Recalls are collected automatically from public government sources and may be "
+     "incomplete, delayed, out of date or contain errors, both in the original source and in how they are copied, shortened, "
+     "translated or categorised. Product categories, brand groupings, summaries and the \"What to do\" guidance are added by "
+     "Recall Atlas, are general in nature and are not part of the official notice. Everything is provided \"as is\" and "
+     "\"as available\", without any warranty, express or implied, of accuracy, completeness, timeliness or fitness for a "
      "particular purpose."),
     ("Always check the official notice", "The official notice from the agency, manufacturer or seller is the only authoritative "
      "source. It has the exact models, batch codes, dates and remedy. Check it, and contact the manufacturer or seller, before "
      "you act. A product not appearing on Recall Atlas does not mean it is safe or has never been recalled."),
-    ("Not professional advice", "Nothing on this site is medical, legal or safety advice. If someone is unwell or injured, "
-     "contact a doctor or your local emergency services. Do not stop taking a prescribed medicine without talking to a "
-     "doctor or pharmacist."),
-    ("Limitation of liability", "To the extent permitted by law, Recall Atlas and its operators accept no liability for any "
-     "loss, damage, injury or cost arising from use of, or reliance on, the information on this site or on linked websites."),
+    ("Alerts and matches in the app", "Alerts and \"possible matches\" are made automatically by comparing what you enter "
+     "with recall notices. A match may be wrong, and a recall that affects you may not be matched at all, for example because "
+     "a notice lacks model or batch details, because of how you described the item, or because a country or source is not "
+     "covered. Alerts can be late or fail to arrive: they depend on the agencies publishing on time, on push delivery by "
+     "Google and your phone, and on your settings such as quiet hours. Expiry and warranty reminders are based on general "
+     "lifespans or dates you enter, not on the manufacturer's instructions for your item. The app does not replace "
+     "registering products with their manufacturers or checking official sources yourself. Paying for Pro adds features; it "
+     "does not change any of this."),
+    ("Not professional advice", "Nothing on the website or in the app is medical, legal or safety advice. If someone is "
+     "unwell or injured, contact a doctor or your local emergency services. Do not stop taking a prescribed medicine without "
+     "talking to a doctor or pharmacist. If you have a food allergy, always read the product label."),
+    ("Limitation of liability", "To the fullest extent permitted by law, Frostinn ehf. and the people behind Recall Atlas are "
+     "not liable for any loss, damage, injury or cost, direct or indirect, arising from use of, or reliance on, the website, "
+     "the app, alerts or missing alerts, or linked websites, including errors or omissions in the information. Nothing here "
+     "limits liability that cannot be limited by law, such as for death or personal injury caused by negligence, for fraud, "
+     "or your statutory rights as a consumer."),
     ("Trademarks and links", "Brand and product names belong to their owners and are used only to identify recalled products; "
      "their use does not imply any connection with Recall Atlas. Links to official notices and other websites are provided for "
      "convenience, and Recall Atlas is not responsible for their content."),
+    ("Changes", "We may update this disclaimer; the date below shows the latest version. Last updated " + DISCLAIMER_UPDATED + "."),
 ]
 
 
@@ -718,7 +790,7 @@ def disclaimer_page(footer):
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/disclaimer/">Disclaimer</a></nav>
 <article class="recall prose"><h1>Disclaimer</h1>{secs}</article></div>
 {footer}{CONSENT}"""
-    return head_html("Disclaimer | Recall Atlas", "How Recall Atlas collects recall information and the limits of that information.",
+    return head_html("Disclaimer | Recall Atlas", "How Recall Atlas collects recall information, how app alerts work, and the limits of both.",
                      f"{SITE}/disclaimer/", "website", crumbs) + body + "</body>\n</html>\n"
 
 
@@ -992,7 +1064,7 @@ def weekly_feed(weeks, done, updated):
 
 # ---------- privacy and cookies ----------
 OPERATOR = "Frostinn ehf."
-PRIVACY_UPDATED = "2026-10-01"
+PRIVACY_UPDATED = "2026-10-17"
 # Contact form on /privacy/ (no email address is published). The form lives at Tally and is linked, not embedded,
 # so nothing loads from Tally until a visitor opens it. Paste the form's share link (https://tally.so/r/xxxxxx) into "url".
 CONTACT_FORM = {"provider": "Tally (Tally BV, Belgium)", "url": "https://tally.so/r/rjzg1N", "privacy_url": "https://tally.so/privacy"}
@@ -1043,6 +1115,27 @@ def privacy_sections():
          "is loaded directly from the government agency that published the recall, so that agency's server sees your IP "
          "address. Links to official notices take you to the agency's own website, where its privacy policy applies.</p>"
          + (f"<p>{form_proc}</p>" if f["url"] else "")),
+        ("The Recall Atlas app",
+         "<p>The Recall Atlas app for Android works without an account. What you add to it (your things, cars, gear, "
+         "children's birth months, the names of people and pets in your household, warranty dates and VINs) is stored "
+         "only on your phone.</p>"
+         "<p><b>If you turn on alerts</b>, the app sends our alerts server (run on Cloudflare, Inc.) what it needs to "
+         "match new recalls: a random push token for your phone, your countries, time zone and quiet hours, and the "
+         "things you watch (brand, product type, model, barcode, car make, model and year, product types, allergens, "
+         "child-safety age tags and pet food brands). No names, birth dates, e-mail addresses or VINs are sent. The "
+         "server sends the alert through Firebase Cloud Messaging (Google), which receives the push token and the "
+         "alert text only. The legal basis is that you asked for the service (GDPR Article 6(1)(b)); allergens are sent "
+         "only because you chose them, and are used only to match recalls.</p>"
+         "<p><b>Delete your data:</b> in the app open <b>More → Delete my data from the server</b>. This removes your "
+         "subscription and everything stored with it at once. Turning alerts off stops all sending. If Google tells "
+         "us a push token no longer works, we stop sending to it. Records of which recalls were sent to you are kept "
+         "for 30 days so you are not alerted twice.</p>"
+         "<p><b>Purchases:</b> Recall Atlas Pro is paid through Google Play. RevenueCat, Inc. (USA) checks the "
+         "purchase for us using a random ID; we do not receive your payment details. "
+         "<b>Lookups you start:</b> scanning a barcode sends only that barcode to the Open Food Facts databases to "
+         "find the product's name, and filling in a car from its VIN sends the VIN to the US government's NHTSA "
+         "decoder. The app has no ads, no analytics and no tracking.</p>",
+         "app-data"),
         ("If you contact us",
          "<p>We use your name, email address and message only to reply to you, and delete them within 12 months after "
          "the conversation ends unless we need them for a legal claim. The legal basis is our legitimate interest in "
@@ -1072,7 +1165,7 @@ def contact_form_html():
 
 
 def privacy_page(footer):
-    secs = "".join(f"<h2>{h}</h2>{b}" for h, b in privacy_sections())
+    secs = "".join((f'<h2 id="{s[2]}">' if len(s) > 2 else "<h2>") + f"{s[0]}</h2>{s[1]}" for s in privacy_sections())
     crumbs = [("Recall Atlas", "/"), ("Privacy and cookies", "/privacy/")]
     body = f"""<div class="wrap">
 <header class="top slim">{TOPLINE}</header>
@@ -1240,6 +1333,10 @@ def main():
         (f"{SITE}/weekly/{k}/", min(lastmod, (week_range(k)[1] + dt.timedelta(days=1)).isoformat())) for k in keys]
     write("/privacy/", privacy_page(footer))
     page_urls.append((f"{SITE}/privacy/", PRIVACY_UPDATED))
+    if APP_LIVE:
+        shutil.copytree(ROOT / "assets" / "app", OUT / "assets" / "app")
+        write("/app/", app_page(footer))
+        page_urls.append((f"{SITE}/app/", lastmod))
     maps = [sitemap("sitemap-pages.xml", page_urls + [(f"{SITE}/brand/", lastmod)])]
     maps.append(sitemap("sitemap-brands.xml", [(f"{SITE}/brand/{k}/", rs[0]["date"]) for k, (n, rs) in brands.items()]))
     maps.append(sitemap("sitemap-weekly.xml", weekly_urls))

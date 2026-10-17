@@ -2,11 +2,13 @@
 """Posts to Bluesky, Mastodon and X after each deploy (run by the "Update recalls" workflow).
 
 What is posted
-  Bluesky, Mastodon, Facebook: new recalls flagged serious (first seen in the last 2 days, max 3 per run), and the
-                      weekly roundup once the week is over (from Monday 12:00 UTC).
+  Bluesky, Mastodon, Facebook: new recalls flagged serious (first seen in the last 2 days, max 3 per run), the
+                      weekly roundup once the week is over (from Monday 12:00 UTC), and, once build_site.APP_LIVE is
+                      True, one app post a day (see APP_PROMOS).
   X:                  the weekly roundup only (the X API charges per post).
 Every recall post names the agency that published it and links the official notice and the Recall Atlas page.
-Texts are filled in from the official data with fixed sentences; nothing is AI-written.
+Recall and roundup texts are filled in from the official data with fixed sentences; the app posts are the fixed
+texts in APP_PROMOS.
 
 Dry run
   A platform whose secrets are missing is not posted to; the posts it would have made are written to the
@@ -94,6 +96,43 @@ def weekly_item():
     return ("weekly:" + k, {"key": k, "rows": weeks[k], "prev": prev})
 
 
+# ---------- the app promo ----------
+# Once build_site.APP_LIVE is True, one app post a day goes to Bluesky, Mastodon and Facebook (not X), on the first run
+# at or after APP_HOUR UTC, rotating through APP_PROMOS so the same text comes back only once a week.
+# Recall posts keep their priority: the promo is added after them and counts towards nothing else.
+APP_HOUR = 12
+APP_TAGS = "#Recall #ProductSafety #Android"
+APP_PROMOS = [
+    "Is anything you own recalled? The free Recall Atlas app for Android watches official recalls from 36 countries "
+    "and alerts you when one matches your things.",
+    "Car seats, smoke alarms and helmets expire. Recall Atlas for Android reminds you before they need replacing, and "
+    "alerts you if they are recalled.",
+    "Food allergy at home? Recall Atlas sends a free alert when a food is recalled for an undeclared allergen you "
+    "chose: peanut, milk, egg, sesame and more. Android app, no account.",
+    "Add your car's make, model and year and Recall Atlas alerts you to new recalls for it (US, Canada and UK). "
+    "Free Android app.",
+    "Recall Atlas for Android: official recalls from 36 countries in one calm feed, readable offline, each with what "
+    "to do and a link to the official notice.",
+    "No account, no ads, no tracking. The Recall Atlas app keeps your list on your phone and only alerts you when "
+    "an official recall matches it.",
+    "Safety alerts are always free in Recall Atlas. Pro adds more things, more countries and barcode scanning. "
+    "Get it on Google Play.",
+]
+
+
+def app_item():
+    if not getattr(B, "APP_LIVE", False) or NOW.hour < APP_HOUR: return None
+    day = NOW.date()
+    return ("app:" + day.isoformat(), {"text": APP_PROMOS[day.toordinal() % len(APP_PROMOS)]})
+
+
+def app_text(it, limit, url_len=None, links=True):
+    url = f"{SITE}/app/"
+    end = (f"\n{url}" if links else "") + "\n" + APP_TAGS
+    room = limit - ((1 + (url_len or len(url))) if links else 0) - len("\n" + APP_TAGS)
+    return cut(it["text"], room) + end
+
+
 # ---------- texts ----------
 def recall_text(r, limit, url_len=None, links=True):
     """url_len: characters the platform counts per URL (Mastodon 23). links=False: no URLs in the text (Bluesky,
@@ -152,6 +191,7 @@ class Bluesky:
 
     @staticmethod
     def text(kind, item):
+        if kind == "app": return app_text(item, 300, links=False)
         return recall_text(item, 300, links=False) if kind == "recall" else weekly_text(item, 300, links=False)
 
     def post(self, text, card):
@@ -179,6 +219,7 @@ class Mastodon:
 
     @staticmethod
     def text(kind, item):
+        if kind == "app": return app_text(item, 500, 23)
         return recall_text(item, 500, 23) if kind == "recall" else weekly_text(item, 500, 23)
 
     def post(self, text, card):
@@ -221,6 +262,7 @@ class Facebook:
 
     @staticmethod
     def text(kind, item):
+        if kind == "app": return app_text(item, 2000, links=False)
         return recall_text(item, 2000) if kind == "recall" else weekly_text(item, 2000)
 
     def post(self, text, card):
@@ -242,6 +284,8 @@ def main():
     items = [("recall", k, r) for k, r in serious_items()]
     w = weekly_item()
     if w: items.append(("weekly", w[0], w[1]))
+    a = app_item()
+    if a: items.append(("app", a[0], a[1]))
     summary, log = ["## Social posts"], []
     for name, cls, creds in platforms:
         done = state.setdefault(name, {})
@@ -255,13 +299,16 @@ def main():
         mode = "live" if live else "dry run"
         todo = [(kind, k, it) for kind, k, it in items if k not in done and not (getattr(cls, "weekly_only", False) and kind != "weekly")]
         recalls = [x for x in todo if x[0] == "recall"][:MAX_SERIOUS]
-        todo = recalls + [x for x in todo if x[0] == "weekly"]
+        todo = recalls + [x for x in todo if x[0] in ("weekly", "app")]
         summary.append(f"- **{name}** ({mode}): {len(todo)} post(s)")
         for kind, k, it in todo:
             text = cls.text(kind, it)
             if kind == "recall":
                 card = {"uri": f"{SITE}/recall/{it['slug']}/", "title": cut(it["title"], 120),
                         "description": cut(f"{agency(it)} · {where(it)} · {it.get('hazard') or ''}", 280)}
+            elif kind == "app":
+                card = {"uri": f"{SITE}/app/", "title": "Recall Atlas for Android",
+                        "description": "Free alerts when something you own is recalled. Official sources, 36 countries, no account."}
             else:
                 card = {"uri": f"{SITE}/weekly/{it['key']}/", "title": f"Recall roundup: {B.week_label(it['key'])}",
                         "description": cut(B.week_summary(it["key"], it["rows"], it["prev"], False), 280)}
