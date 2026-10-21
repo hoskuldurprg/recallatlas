@@ -648,7 +648,7 @@ def recall_page(r, brands, by_cc, footer):
 # Flip APP_LIVE to True once Google Play has approved the production release: it adds "Get the app" to every page
 # and builds /app/. While False nothing about the app appears, so no link points at a store page that isn't public yet.
 # social.py reads the same switch for its daily app post.
-APP_LIVE = False
+APP_LIVE = True
 APP_PLAY = "https://play.google.com/store/apps/details?id=org.recallatlas.app"
 
 
