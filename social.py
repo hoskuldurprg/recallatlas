@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""Posts to Bluesky, Mastodon and X after each deploy (run by the "Update recalls" workflow).
+"""Posts to Bluesky, Mastodon, Facebook, Instagram and X after each deploy (run by the "Update recalls" workflow).
 
 What is posted
-  Bluesky, Mastodon, Facebook: new recalls flagged serious (first seen in the last 2 days, max 3 per run), the
-                      weekly roundup once the week is over (from Monday 12:00 UTC), and, once build_site.APP_LIVE is
-                      True, one app post a day (see APP_PROMOS).
+  Bluesky, Mastodon, Facebook, Instagram: new recalls flagged serious (first seen in the last 2 days, max 3 per run),
+                      the weekly roundup once the week is over (from Monday 12:00 UTC), and, once build_site.APP_LIVE
+                      is True, one app post a day (see APP_PROMOS).
   X:                  the weekly roundup only (the X API charges per post).
+  Instagram takes only posts with a picture: each post uses the card that build_site.py drew for it under /social/
+  (social_cards.py). Links in Instagram captions can't be clicked, so captions point to the link in the bio.
 Every recall post names the agency that published it and links the official notice and the Recall Atlas page.
 Recall and roundup texts are filled in from the official data with fixed sentences; the app posts are the fixed
 texts in APP_PROMOS.
@@ -21,6 +23,9 @@ Secrets (repo Settings -> Secrets and variables -> Actions)
   MASTODON_TOKEN [, MASTODON_INSTANCE]         access token with write:statuses; instance defaults to mastodon.social
   X_API_KEY, X_API_SECRET, X_ACCESS_TOKEN, X_ACCESS_SECRET   X app keys with Read and write permission
   FB_PAGE_ID, FB_PAGE_TOKEN                    Facebook Page id and a long-lived Page access token (pages_manage_posts)
+  IG_USER_ID                                   Instagram professional account id linked to the Page; posts with
+                                               FB_PAGE_TOKEN, which then also needs instagram_basic and
+                                               instagram_content_publish (see the Instagram class)
 """
 import base64, hashlib, hmac, json, os, re, secrets, sys, time, urllib.parse, urllib.request
 import datetime as dt
@@ -28,6 +33,7 @@ from pathlib import Path
 
 sys.argv = sys.argv[:1]  # build_site reads sys.argv
 import build_site as B
+from social_cards import APP_PROMOS, card_path
 
 SITE = B.SITE
 STATE = B.ROOT / "data" / "social" / "posted.json"
@@ -102,28 +108,14 @@ def weekly_item():
 # Recall posts keep their priority: the promo is added after them and counts towards nothing else.
 APP_HOUR = 12
 APP_TAGS = "#Recall #ProductSafety #Android"
-APP_PROMOS = [
-    "Is anything you own recalled? The Recall Atlas app for Android watches official recalls from 36 countries "
-    "and alerts you when one matches your things.",
-    "Car seats, smoke alarms and helmets expire. Recall Atlas for Android reminds you before they need replacing, and "
-    "alerts you if they are recalled.",
-    "Food allergy at home? Recall Atlas sends an alert when a food is recalled for an undeclared allergen you "
-    "chose: peanut, milk, egg, sesame and more. Android app.",
-    "Add your car's make, model and year and Recall Atlas alerts you to new recalls for it (US, Canada and UK). "
-    "Android app.",
-    "Recall Atlas for Android: official recalls from 36 countries in one calm feed, readable offline, each with what "
-    "to do and a link to the official notice.",
-    "No ads, no tracking. The Recall Atlas app keeps your list on your phone and only alerts you when "
-    "an official recall matches it.",
-    "Safety alerts are always free in Recall Atlas. Pro adds more things, more countries and barcode scanning. "
-    "Get it on Google Play.",
-]
+# APP_PROMOS lives in social_cards.py, next to the picture drawn for each promo.
 
 
 def app_item():
     if not getattr(B, "APP_LIVE", False) or NOW.hour < APP_HOUR: return None
     day = NOW.date()
-    return ("app:" + day.isoformat(), {"text": APP_PROMOS[day.toordinal() % len(APP_PROMOS)]})
+    i = day.toordinal() % len(APP_PROMOS)
+    return ("app:" + day.isoformat(), {"text": APP_PROMOS[i], "index": i})
 
 
 def app_text(it, limit, url_len=None, links=True):
@@ -204,7 +196,8 @@ class Bluesky:
                            "features": [{"$type": "app.bsky.richtext.facet#tag", "tag": m.group(1).decode()}]})
         rec = {"$type": "app.bsky.feed.post", "text": text, "createdAt": NOW.strftime("%Y-%m-%dT%H:%M:%S.000Z"),
                "langs": ["en"], "facets": facets,
-               "embed": {"$type": "app.bsky.embed.external", "external": card}}
+               "embed": {"$type": "app.bsky.embed.external",
+                         "external": {k: card[k] for k in ("uri", "title", "description")}}}
         r = http("POST", "https://bsky.social/xrpc/com.atproto.repo.createRecord",
                  {"repo": self.did, "collection": "app.bsky.feed.post", "record": rec}, self.auth)
         return r.get("uri")
@@ -272,6 +265,54 @@ class Facebook:
         return f"https://www.facebook.com/{pid}" if pid else ""
 
 
+class Instagram:
+    """Posts picture cards to the Instagram professional account linked to the Facebook Page.
+    Uses the Instagram API with Facebook Login: the same Meta app and Page token as Facebook, which needs the
+    instagram_basic, instagram_content_publish and pages_read_engagement permissions (add them to the app's
+    Facebook Login for Business configuration, then regenerate FB_PAGE_TOKEN). Images must be JPEG at a public URL,
+    so each post uses its card under /social/ (social_cards.py). Two steps: create a media container, then publish.
+    Instagram allows 100 API posts per 24 hours; this posts at most about 5 per run."""
+    name, limit = "instagram", 2200
+    API = "https://graph.facebook.com"
+
+    def __init__(self, ig_id, token):
+        self.ig, self.token = ig_id, token
+        me = http("GET", f"{self.API}/{ig_id}?fields=id,username&access_token={urllib.parse.quote(token)}")
+        if str(me.get("id")) != str(ig_id): raise ValueError("token cannot read this Instagram account")
+
+    @staticmethod
+    def text(kind, item):
+        bio = "Details and the official notice: link in bio (recallatlas.org)"
+        if kind == "app":
+            return f"{item['text']}\n\nGet it on Google Play: link in bio (recallatlas.org/app)\n{APP_TAGS}"
+        if kind == "weekly":
+            s = B.week_summary(item["key"], item["rows"], item["prev"], False)
+            return f"Weekly recall roundup: {s}\n\nFull roundup: link in bio (recallatlas.org/weekly)\n{WEEKLY_TAGS}"
+        r = item
+        hz = f"\n{cut(r['hazard'], 600)}" if r.get("hazard") else ""
+        return (f"Recall: {cut(r['title'], 400)}{hz}\n{where(r)} · Source: {agency(r)}\n\n{bio}.\n"
+                f"Unofficial: always check the official notice before acting.\n{hashtags(r)}")
+
+    def post(self, text, card):
+        img = card["image"]
+        try:  # the card is drawn by the build and goes live with the deploy; Instagram must be able to fetch it
+            urllib.request.urlopen(urllib.request.Request(img, method="HEAD"), timeout=20).close()
+        except Exception as e:
+            raise RuntimeError(f"card not live yet ({img}: {e}); will retry next run")
+        q = {"access_token": self.token}
+        c = http("POST", f"{self.API}/{self.ig}/media", {"image_url": img, "caption": text, **q}, form=True)["id"]
+        for _ in range(12):  # images are usually ready at once; give it up to a minute
+            st = http("GET", f"{self.API}/{c}?fields=status_code&access_token={urllib.parse.quote(self.token)}")
+            if st.get("status_code") in ("FINISHED", None): break
+            if st.get("status_code") == "ERROR": raise RuntimeError("Instagram could not process the image")
+            time.sleep(5)
+        mid = http("POST", f"{self.API}/{self.ig}/media_publish", {"creation_id": c, **q}, form=True).get("id", "")
+        try:
+            return http("GET", f"{self.API}/{mid}?fields=permalink&access_token={urllib.parse.quote(self.token)}").get("permalink", mid)
+        except Exception:
+            return mid
+
+
 # ---------- run ----------
 def main():
     state = json.loads(STATE.read_text()) if STATE.exists() else {}
@@ -280,6 +321,7 @@ def main():
         ("mastodon", Mastodon, env("MASTODON_TOKEN") and env("MASTODON_TOKEN") + [os.environ.get("MASTODON_INSTANCE")]),
         ("x", X, env("X_API_KEY", "X_API_SECRET", "X_ACCESS_TOKEN", "X_ACCESS_SECRET")),
         ("facebook", Facebook, env("FB_PAGE_ID", "FB_PAGE_TOKEN")),
+        ("instagram", Instagram, env("IG_USER_ID", "FB_PAGE_TOKEN")),
     ]
     items = [("recall", k, r) for k, r in serious_items()]
     w = weekly_item()
@@ -305,13 +347,16 @@ def main():
             text = cls.text(kind, it)
             if kind == "recall":
                 card = {"uri": f"{SITE}/recall/{it['slug']}/", "title": cut(it["title"], 120),
-                        "description": cut(f"{agency(it)} · {where(it)} · {it.get('hazard') or ''}", 280)}
+                        "description": cut(f"{agency(it)} · {where(it)} · {it.get('hazard') or ''}", 280),
+                        "image": SITE + card_path("recall", it["slug"])}
             elif kind == "app":
                 card = {"uri": f"{SITE}/app/", "title": "Recall Atlas for Android",
-                        "description": "Alerts when something you own is recalled. Official sources, 36 countries."}
+                        "description": "Alerts when something you own is recalled. Official sources, 36 countries.",
+                        "image": SITE + card_path("app", it["index"])}
             else:
                 card = {"uri": f"{SITE}/weekly/{it['key']}/", "title": f"Recall roundup: {B.week_label(it['key'])}",
-                        "description": cut(B.week_summary(it["key"], it["rows"], it["prev"], False), 280)}
+                        "description": cut(B.week_summary(it["key"], it["rows"], it["prev"], False), 280),
+                        "image": SITE + card_path("weekly", it["key"])}
             if live:
                 try:
                     ref = live.post(text, card)
@@ -322,8 +367,9 @@ def main():
                     summary.append(f"  - FAILED {k}: {e}")
             else:
                 done[k] = {"at": NOW.isoformat(timespec="minutes"), "dry_run": True}
-                log.append(f"[{NOW:%Y-%m-%d %H:%M}Z] {name} {k}\n{text}\n")
-                summary.append(f"\n```\n{text}\n```")
+                pic = f"\n[picture: {card['image']}]" if name == "instagram" else ""
+                log.append(f"[{NOW:%Y-%m-%d %H:%M}Z] {name} {k}\n{text}{pic}\n")
+                summary.append(f"\n```\n{text}{pic}\n```")
     # keep state small: forget entries older than 30 days
     cutoff = (NOW - dt.timedelta(days=30)).isoformat()
     for d in state.values():

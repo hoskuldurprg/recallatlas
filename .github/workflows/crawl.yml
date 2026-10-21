@@ -54,7 +54,7 @@ jobs:
         run: |
           [ -n "$FCM_SERVICE_ACCOUNT" ] && pip install -q google-auth
           python alerts.py
-      - name: Post to Bluesky, Mastodon, X and Facebook (dry run until the secrets are set)
+      - name: Post to Bluesky, Mastodon, X, Facebook and Instagram (dry run until the secrets are set)
         continue-on-error: true   # a social media hiccup must never fail the site update
         env:
           BSKY_HANDLE: ${{ secrets.BSKY_HANDLE }}
@@ -67,6 +67,7 @@ jobs:
           X_ACCESS_SECRET: ${{ secrets.X_ACCESS_SECRET }}
           FB_PAGE_ID: ${{ secrets.FB_PAGE_ID }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          IG_USER_ID: ${{ secrets.IG_USER_ID }}
         run: |
           python social.py
           git add data/social

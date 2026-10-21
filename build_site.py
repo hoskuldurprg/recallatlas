@@ -1335,6 +1335,8 @@ def main():
     ensure_fonts()
     ensure_flags()
     shutil.copytree(ROOT / "assets" / "fonts", OUT / "assets" / "fonts")
+    import social_cards  # Instagram picture cards under /social/ (social.py posts them after the deploy)
+    social_cards.write(OUT, sys.modules[__name__])
     for f in STATIC:
         if (ROOT / f).exists(): shutil.copy(ROOT / f, OUT / f)
     (OUT / "data").mkdir(exist_ok=True)
