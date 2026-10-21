@@ -356,6 +356,18 @@
    "at": "2026-10-20T17:15+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myd565skyv2g"
   },
+  "recall:fda-H-0013-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myee4zd2te2h"
+  },
+  "recall:fda-H-0014-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myee4x55gb2r"
+  },
+  "recall:fda-H-0016-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myee4tr6dr2r"
+  },
   "recall:fda-H-1407-2026": {
    "at": "2026-10-13T00:46+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxpsn3juil2x"
@@ -821,6 +833,18 @@
   "recall:eu-SR/03015/26": {
    "at": "2026-10-20T17:15+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115072423488772"
+  },
+  "recall:fda-H-0013-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122115184599488772"
+  },
+  "recall:fda-H-0014-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122115184569488772"
+  },
+  "recall:fda-H-0016-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122115184533488772"
   },
   "recall:fda-H-1407-2026": {
    "at": "2026-10-13T00:46+00:00",
@@ -1411,6 +1435,18 @@
   "recall:eu-SR/03015/26": {
    "at": "2026-10-20T17:15+00:00",
    "ref": "https://mastodon.social/@recallatlas/117474365396534722"
+  },
+  "recall:fda-H-0013-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117477107033253554"
+  },
+  "recall:fda-H-0014-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117477106877669123"
+  },
+  "recall:fda-H-0016-2027": {
+   "at": "2026-10-21T04:53+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117477106700326731"
   },
   "recall:fda-H-1407-2026": {
    "at": "2026-10-13T00:46+00:00",
