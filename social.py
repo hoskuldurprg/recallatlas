@@ -103,14 +103,14 @@ def weekly_item():
 APP_HOUR = 12
 APP_TAGS = "#Recall #ProductSafety #Android"
 APP_PROMOS = [
-    "Is anything you own recalled? The free Recall Atlas app for Android watches official recalls from 36 countries "
+    "Is anything you own recalled? The Recall Atlas app for Android watches official recalls from 36 countries "
     "and alerts you when one matches your things.",
     "Car seats, smoke alarms and helmets expire. Recall Atlas for Android reminds you before they need replacing, and "
     "alerts you if they are recalled.",
-    "Food allergy at home? Recall Atlas sends a free alert when a food is recalled for an undeclared allergen you "
-    "chose: peanut, milk, egg, sesame and more. Android app, no account.",
+    "Food allergy at home? Recall Atlas sends an alert when a food is recalled for an undeclared allergen you "
+    "chose: peanut, milk, egg, sesame and more. Android app.",
     "Add your car's make, model and year and Recall Atlas alerts you to new recalls for it (US, Canada and UK). "
-    "Free Android app.",
+    "Android app.",
     "Recall Atlas for Android: official recalls from 36 countries in one calm feed, readable offline, each with what "
     "to do and a link to the official notice.",
     "No account, no ads, no tracking. The Recall Atlas app keeps your list on your phone and only alerts you when "
@@ -308,7 +308,7 @@ def main():
                         "description": cut(f"{agency(it)} · {where(it)} · {it.get('hazard') or ''}", 280)}
             elif kind == "app":
                 card = {"uri": f"{SITE}/app/", "title": "Recall Atlas for Android",
-                        "description": "Free alerts when something you own is recalled. Official sources, 36 countries, no account."}
+                        "description": "Alerts when something you own is recalled. Official sources, 36 countries."}
             else:
                 card = {"uri": f"{SITE}/weekly/{it['key']}/", "title": f"Recall roundup: {B.week_label(it['key'])}",
                         "description": cut(B.week_summary(it["key"], it["rows"], it["prev"], False), 280)}

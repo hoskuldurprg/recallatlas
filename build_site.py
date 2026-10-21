@@ -660,8 +660,8 @@ def app_strip():
 
 def app_box():
     return ('<aside class="appbox"><p><b>Own one of these?</b> The Recall Atlas app alerts you when a recall matches '
-            'your things, your car or your family\'s allergens. Free, no account.</p>'
-            f'<a class="cta" href="{APP_PLAY}" rel="noopener" target="_blank">Get it on Google Play →</a></aside>') if APP_LIVE else ""
+            'your things, your car or your family\'s allergens.</p>'
+            f'<a class="playbadge" href="{APP_PLAY}" rel="noopener" target="_blank"><img src="/assets/app/google-play-badge.webp" width="189" height="56" alt="Get it on Google Play"></a></aside>') if APP_LIVE else ""
 
 
 APP_SHOTS = [("phone-1", "Recall feed with official recalls from 36 countries"),
@@ -680,7 +680,7 @@ def app_page(footer):
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/app/">App</a></nav>
 <article class="recall prose"><h1>Recall Atlas for Android</h1>
 <p class="lede">Know when something you own is recalled. The app watches official recalls from 36 countries and alerts you when one matches your things, your car or your family's allergens.</p>
-<a class="cta" href="{APP_PLAY}" rel="noopener" target="_blank">Get it on Google Play →</a>
+<a class="playbadge" href="{APP_PLAY}" rel="noopener" target="_blank"><img src="/assets/app/google-play-badge.webp" width="189" height="56" alt="Get it on Google Play"></a>
 <div class="shots">{shots}</div>
 <h2>What it does</h2>
 <ul>
@@ -695,10 +695,11 @@ def app_page(footer):
 <h2>Private by default</h2>
 <p>No account, no ads, no tracking. Your profile stays on your phone; the alerts server keeps only what it needs to match recalls. <a href="/privacy/#app-data">How the app handles data</a>.</p>
 <p class="note">Android only for now; an iPhone version is planned. Recall Atlas is independent and not affiliated with any government agency. Always check the official notice before you act.</p>
+<p class="note">Google Play and the Google Play logo are trademarks of Google LLC.</p>
 </article></div>
 {footer}{CONSENT}"""
     return head_html("Recall Atlas app for Android: recall alerts for things you own",
-                     "Free recall alerts for the things you own, your car and your family's allergens, from official sources in 36 countries. No account.",
+                     "Recall alerts for the things you own, your car and your family's allergens, from official sources in 36 countries.",
                      f"{SITE}/app/", "website", crumbs) + body + "</body>\n</html>\n"
 
 
