@@ -99,6 +99,8 @@ ol.list{list-style:none;margin:0;padding:0 0 40px}
 .cc{font:500 12px/1 var(--mono);text-align:center;border:1px solid var(--line);border-radius:6px;padding:7px 0;
   background:var(--surface);height:max-content}
 .cc small{display:block;font-size:9.5px;color:var(--muted);margin-top:4px;letter-spacing:.02em}
+.cc img.fl{display:block;width:22px;height:16px;margin:0 auto 6px;border-radius:2px;object-fit:cover;box-shadow:0 0 0 1px var(--line)}
+.cc img.sm{display:inline-block;width:12px;height:9px;margin:0 3px 0 0;vertical-align:-1px;border-radius:1px}
 .body{min-width:0}
 .tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 .tag{font:600 11px/1 var(--body);letter-spacing:.06em;text-transform:uppercase;padding:5px 7px;border-radius:4px;
@@ -425,10 +427,11 @@ function render(){
   $("#shown").textContent=`${Math.min(rows.length,state.limit)} of ${rows.length}`+(state.loading?" · loading older years…":"");
   $("#euNote").hidden=!(isEU(state.country)&&state.country!=="EU");
   let html="",last="";
+  const flag=(c,cls="fl")=>`<img class="${cls}" src="/assets/flags/${c==="GB"||c==="XI"?"gb":c.toLowerCase()}.svg" alt="" width="22" height="16" loading="lazy" decoding="async" onerror="this.remove()">`;
   rows.slice(0,state.limit).forEach(r=>{
     if(r.date!==last){html+=`<li class="day">${fmtDay(r.date)}</li>`;last=r.date;}
     const sv=sevClass(r.severity+" "+r.hazard);
-    html+=`<li class="item"><div class="cc" title="${esc(r.countryName)}">${r.country==="GB"?"UK":r.country}<small>${r.region==="EU"?"EU":""}</small></div>
+    html+=`<li class="item"><div class="cc" title="${esc(r.countryName)}">${flag(r.country)}${r.country==="GB"?"UK":r.country}<small>${r.region==="EU"&&r.country!=="EU"?flag("EU","fl sm")+"EU":""}</small></div>
       <div class="body"><div class="tags"><span class="tag cat">${CATS[r.category]||"Other"}</span>${r.severity?`<span class="tag ${sv}">${esc(r.severity)}</span>`:""}</div>
       <h3><a href="${r.slug?"/recall/"+r.slug+"/":esc(r.url)}">${esc(r.title)}</a></h3>
       ${r.hazard?`<p class="hz">${esc(r.hazard)}</p>`:""}

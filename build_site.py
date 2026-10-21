@@ -100,7 +100,8 @@ def render_rows(rows):
         by = f' · reported by {esc(r["countryName"])}' if r.get("region") == "EU" else ""
         extra = "".join(f"<span>{esc(r[k])}</span>" for k in ("brand", "units") if r.get(k))
         out.append(
-            f'<li class="item"><div class="cc" title="{esc(r["countryName"])}">{cc}<small>{"EU" if r.get("region") == "EU" else ""}</small></div>'
+            f'<li class="item"><div class="cc" title="{esc(r["countryName"])}">{flag(r["country"])}{cc}'
+            f'<small>{flag("EU", "fl sm") + "EU" if r.get("region") == "EU" and r["country"] != "EU" else ""}</small></div>'
             f'<div class="body"><div class="tags"><span class="tag cat">{CATS.get(r["category"], "Other")}</span>{sev}</div>'
             f'<h3><a href="{rlink(r)}">{esc(r["title"])}</a></h3>'
             + (f'<p class="hz">{esc(r["hazard"])}</p>' if r.get("hazard") else "")
@@ -808,6 +809,40 @@ FONT_FILES = {
     "public-sans-latin-wght-italic.woff2": "16dc93252adb7878", "public-sans-latin-wght-normal.woff2": "5ed4d31c988e73b2"}
 
 
+# ---------- country flags ----------
+# Flag images from the flag-icons package (MIT licence), fetched at build time like the fonts and checked against a
+# pinned hash. If the download fails the pages still work: each <img> removes itself when its file is missing.
+FLAG_TGZ = "flag-icons/-/flag-icons-7.5.0.tgz"
+FLAG_SHA256 = "c0b80bf0e08006a60f56621d6bc49f8c7131f4d1fef6737a165a673431f4b518"
+
+
+def flag_file(code):
+    return "gb" if code in ("GB", "XI") else code.lower()
+
+
+def flag(code, cls="fl"):
+    return (f'<img class="{cls}" src="/assets/flags/{flag_file(code)}.svg" alt="" width="22" height="16" '
+            f'loading="lazy" decoding="async" onerror="this.remove()">')
+
+
+def ensure_flags():
+    import io, tarfile
+    d = OUT / "assets" / "flags"
+    d.mkdir(parents=True, exist_ok=True)
+    codes = sorted({flag_file(c) for c in list(NAMES) + ["EU", "GB", "US", "CA", "AU", "NZ"]})
+    try:
+        with urllib.request.urlopen("https://registry.npmjs.org/" + FLAG_TGZ, timeout=60) as res:
+            data_ = res.read()
+        if hashlib.sha256(data_).hexdigest() != FLAG_SHA256: raise ValueError("hash mismatch")
+        tar = tarfile.open(fileobj=io.BytesIO(data_))
+        for c in codes:
+            (d / f"{c}.svg").write_bytes(tar.extractfile(f"package/flags/4x3/{c}.svg").read())
+        (d / "LICENSE.txt").write_bytes(tar.extractfile("package/LICENSE").read())
+        print(f"flags: {len(codes)} files")
+    except Exception as e:
+        print(f"flags: could not fetch flag-icons ({e}); pages show country codes only", file=sys.stderr)
+
+
 def ensure_fonts():
     import io, tarfile
     d = ROOT / "assets" / "fonts"
@@ -1297,6 +1332,7 @@ def main():
     (OUT / "assets").mkdir(exist_ok=True)
     (OUT / "assets" / "site.css").write_text(CSS)
     ensure_fonts()
+    ensure_flags()
     shutil.copytree(ROOT / "assets" / "fonts", OUT / "assets" / "fonts")
     for f in STATIC:
         if (ROOT / f).exists(): shutil.copy(ROOT / f, OUT / f)
