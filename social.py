@@ -113,7 +113,7 @@ APP_PROMOS = [
     "Android app.",
     "Recall Atlas for Android: official recalls from 36 countries in one calm feed, readable offline, each with what "
     "to do and a link to the official notice.",
-    "No account, no ads, no tracking. The Recall Atlas app keeps your list on your phone and only alerts you when "
+    "No ads, no tracking. The Recall Atlas app keeps your list on your phone and only alerts you when "
     "an official recall matches it.",
     "Safety alerts are always free in Recall Atlas. Pro adds more things, more countries and barcode scanning. "
     "Get it on Google Play.",
