@@ -293,6 +293,7 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
             .replace("{{PRESET}}", "" if code == "all" else code)
             .replace("{{PCAT}}", cat or "").replace("{{TOPIC}}", topic_js)
             .replace("{{PYEAR}}", year or "").replace("{{YEARS}}", json.dumps([int(y) for y in YEARS]))
+            .replace("{{HERO}}", app_hero() if code == "all" and not cat and not topic and not year else "")
             .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else '<section class="ystats" id="ystats" hidden></section>')
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
             .replace("{{BROWSE}}", app_strip() + browse)
@@ -638,7 +639,7 @@ def recall_page(r, brands, by_cc, footer):
 <h2>What to do</h2>
 <ol class="todo">{"".join(f"<li>{esc(x)}</li>" for x in todo)}</ol>
 <p class="note">General guidance from Recall Atlas. The official notice from {esc(AGENCY.get(r.get("feed"), r["source"]))} has the exact models, batch codes and remedy, and it takes priority.</p>
-{app_box()}{"".join(parts)}
+{app_box(r, brands)}{"".join(parts)}
 </article>
 </div>
 {footer}{CONSENT}"""
@@ -658,10 +659,62 @@ def app_strip():
             '<a href="/app/">Get the app →</a></p>') if APP_LIVE else ""
 
 
-def app_box():
-    return ('<aside class="appbox"><p><b>Own one of these?</b> The Recall Atlas app alerts you when a recall matches '
-            'your things, your car or your family\'s allergens.</p>'
-            f'<a class="playbadge" href="{APP_PLAY}" rel="noopener" target="_blank"><img src="/assets/app/google-play-badge.webp" width="189" height="56" alt="Get it on Google Play"></a></aside>') if APP_LIVE else ""
+def play_link(where):
+    """Google Play link tagged with where the click came from; Play Console → Acquisition shows installs per utm_content."""
+    return f"{APP_PLAY}&referrer=utm_source%3Drecallatlas.org%26utm_medium%3Dwebsite%26utm_content%3D{where}"
+
+
+def play_badge(where, w=189, h=56):
+    return (f'<a class="playbadge" href="{play_link(where)}" rel="noopener" target="_blank"><img src="/assets/app/google-play-badge.webp" '
+            f'width="{w}" height="{h}" alt="Get it on Google Play"></a>')
+
+
+ALLERGEN_WORDS = re.compile(r"\b(undeclared|allergen|allergens|allergy)\b", re.I)
+
+
+def app_box(r=None, brands=None):
+    """Recall pages: one app box after the official remedy, worded for what the visitor came about."""
+    if not APP_LIVE:
+        return ""
+    r = r or {}
+    cat = r.get("category")
+    bname = brands[r["_brand"]][0] if brands and r.get("_brand") in brands else ""
+    text = f"{r.get('title', '')} {r.get('hazard', '')}"
+    if cat == "vehicles":
+        msg, where = ("<b>Watch your car.</b> The Recall Atlas app alerts you when a recall matches your make, model and year "
+                      "(US, Canada and the UK)."), "recall_vehicle"
+    elif cat == "food" and ALLERGEN_WORDS.search(text):
+        msg, where = ("<b>Allergies at home?</b> Get free alerts when food is recalled for an undeclared allergen "
+                      "your family avoids."), "recall_allergen"
+    elif bname and cat not in ("food", "medical"):
+        msg, where = (f"<b>Own something from {esc(bname)}?</b> Get an alert if {esc(bname)} recalls something else. "
+                      "The Recall Atlas app watches the things you own."), "recall_brand"
+    else:
+        what = CATS.get(cat, "").lower() if cat and cat != "other" else ""
+        msg, where = ((f"<b>Get alerted next time.</b> The Recall Atlas app tells you when {what} you own is recalled."
+                       if what else "<b>Get alerted next time.</b> The Recall Atlas app tells you when something you own is recalled."),
+                      "recall_category")
+    return (f'<aside class="appbox"><p>{msg}</p>{play_badge(where)}'
+            '<p class="small">Free Android app. iPhone version planned.</p></aside>')
+
+
+def app_hero():
+    """Home page only: compact banner under the search bar. Closable (remembered in localStorage "ra-apphero");
+    hidden on iPhone and iPad, where the app isn't available yet."""
+    if not APP_LIVE:
+        return ""
+    return ('<aside class="apphero" id="apphero" aria-label="Recall Atlas app">'
+            '<svg class="pin" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4C20.4 4 11 13.2 11 24.6 11 40 32 60 32 60s21-20 21-35.4'
+            'C53 13.2 43.6 4 32 4z"/><rect x="28.5" y="13" width="7" height="17" rx="3.5" fill="#b8480f"/><circle cx="32" cy="37.5" r="4" fill="#b8480f"/></svg>'
+            '<div><h2>Know when something you own is recalled</h2>'
+            '<p>Free Android app. Unofficial alerts from public sources in 36 countries, for your things, your car and your family\'s allergens.</p>'
+            f'{play_badge("home_banner", 135, 40)}</div>'
+            '<img class="phone" src="/assets/app/phone-2.webp" width="220" height="391" alt="" loading="lazy">'
+            '<button class="x" type="button" aria-label="Hide the app banner">×</button></aside>'
+            '<script>(function(){var b=document.getElementById("apphero"),K="ra-apphero";'
+            'try{if(localStorage.getItem(K)==="hide"||/iPhone|iPad|iPod/.test(navigator.userAgent)||'
+            '(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)){b.hidden=true;return}}catch(e){}'
+            'b.querySelector(".x").onclick=function(){b.hidden=true;try{localStorage.setItem(K,"hide")}catch(e){}}})()</script>')
 
 
 APP_SHOTS = [("phone-1", "Recall feed with official recalls from 36 countries"),
@@ -680,7 +733,7 @@ def app_page(footer):
 <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Recall Atlas</a> › <a href="/app/">App</a></nav>
 <article class="recall prose"><h1>Recall Atlas for Android</h1>
 <p class="lede">Know when something you own is recalled. The app watches official recalls from 36 countries and alerts you when one matches your things, your car or your family's allergens.</p>
-<a class="playbadge" href="{APP_PLAY}" rel="noopener" target="_blank"><img src="/assets/app/google-play-badge.webp" width="189" height="56" alt="Get it on Google Play"></a>
+{play_badge("app_page")}
 <div class="shots">{shots}</div>
 <h2>What it does</h2>
 <ul>
