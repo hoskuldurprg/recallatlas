@@ -39,7 +39,7 @@ YEARS = sorted((y for y, n in _ycount.items() if n >= 100), reverse=True)  # ign
 FIRST_DAY = min((r["date"] for r in ARCH if r["date"][:4] in YEARS), default="")
 MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 BRANDS = {}
-HUB_COUNTS = ({}, {})  # filled in main() by hubs.counts()
+HUB_COUNTS = ({}, {}, {})  # filled in main() by hubs.counts()
 
 tpl = (ROOT / "template.html").read_text()
 CSS = tpl[tpl.index("<style>") + 7:tpl.index("</style>")].strip() + "\n"
@@ -702,7 +702,7 @@ def app_box(r=None, brands=None):
                        if what else "<b>Get alerted next time.</b> The Recall Atlas app tells you when something you own is recalled."),
                       "recall_category")
     return (f'<aside class="appbox"><p>{msg}</p>{play_badge(where)}'
-            '<p class="small">Free Android app. iPhone version planned.</p></aside>')
+            '<p class="small">Android app. iPhone version planned.</p></aside>')
 
 
 def app_hero():
@@ -714,7 +714,7 @@ def app_hero():
             '<svg class="pin" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4C20.4 4 11 13.2 11 24.6 11 40 32 60 32 60s21-20 21-35.4'
             'C53 13.2 43.6 4 32 4z"/><rect x="28.5" y="13" width="7" height="17" rx="3.5" fill="#b8480f"/><circle cx="32" cy="37.5" r="4" fill="#b8480f"/></svg>'
             '<div><h2>Know when something you own is recalled</h2>'
-            '<p>Free Android app. Unofficial alerts from public sources in 36 countries, for your things, your car and your family\'s allergens.</p>'
+            '<p>Android app. Unofficial alerts from public sources in 36 countries, for your things, your car and your family\'s allergens.</p>'
             f'{play_badge("home_banner", 135, 40)}</div>'
             '<img class="phone" src="/assets/app/phone-2.webp" width="220" height="391" alt="" loading="lazy">'
             '<button class="x" type="button" aria-label="Hide the app banner">×</button></aside>'
@@ -765,7 +765,7 @@ def app_page(footer):
 
 def footer_html(browse):
     return (f'<footer><div class="wrap">{app_strip()}{browse}<p>{DISCLAIMER}</p><p>Visitor statistics (Google Analytics) are only collected if you accept '
-            'them. <a href="/check/">Check a product</a> · <a href="/allergies/">Allergy recalls</a> · <a href="/child-safety/">Child safety</a> · <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
+            'them. <a href="/check/">Check a product</a> · <a href="/allergies/">Allergy recalls</a> · <a href="/child-safety/">Child safety</a> · <a href="/marketplaces/">Marketplaces</a> · <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
 
 
 def brand_page(k, name, rs, footer):
@@ -995,10 +995,11 @@ def email_date(updated):
 def feeds_page(feeds, footer):
     def ul(fs): return "<ul class=\"feeds\">" + "".join(f'<li><a href="{p}">{esc((lambda x: x[:1].upper() + x[1:])(t.replace("Recall Atlas: ", "")))}</a> <code>{SITE}{p}</code></li>' for p, t in fs) + "</ul>"
     groups = [("Everything", [f for f in feeds if f[0] == "/feed.xml"]),
-              ("By country", [f for f in feeds if f[0] != "/feed.xml" and not f[0].startswith(("/recalls/", "/allergies/", "/child-safety/"))]),
+              ("By country", [f for f in feeds if f[0] != "/feed.xml" and not f[0].startswith(("/recalls/", "/allergies/", "/child-safety/", "/marketplaces/"))]),
               ("By product type", [f for f in feeds if f[0].startswith("/recalls/")]),
               ("By allergen", [f for f in feeds if f[0].startswith("/allergies/")]),
-              ("Child safety", [f for f in feeds if f[0].startswith("/child-safety/")])]
+              ("Child safety", [f for f in feeds if f[0].startswith("/child-safety/")]),
+              ("By marketplace", [f for f in feeds if f[0].startswith("/marketplaces/")])]
     crumbs = [("Recall Atlas", "/"), ("RSS feeds", "/feeds/")]
     body = f"""<div class="wrap">
 <header class="top slim">{TOPLINE}</header>

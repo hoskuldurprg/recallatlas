@@ -5,6 +5,8 @@
   /child-safety/              baby and child safety hub
   /child-safety/<topic>/      sleep, strollers, button batteries, cords (car seats, magnets and choking link to the
                               existing /recalls/<topic>/ pages so the same list isn't published twice)
+  /marketplaces/              recalled products that the official notice says were sold through an online marketplace
+  /marketplaces/<name>/       e.g. /marketplaces/amazon/ and /marketplaces/amazon/feed.xml
   /check/                     "check your product": searches the whole archive by brand, product, model or barcode
   /data/check.json            the compact search index /check/ loads on the first search
 
@@ -69,17 +71,58 @@ CHILD_LINKS = [("car-seat", "/recalls/car-seats/", "Car seat recalls"), ("magnet
                (None, "/recalls/baby-products/", "All baby product recalls"), (None, "/recalls/toys-kids/", "All toy and children's product recalls")]
 
 
+# Online marketplaces: (url slug, name, regex for the name). A recall counts for a marketplace only when the official
+# notice says the product was sold, listed or distributed through it ("sold via Amazon", "Sold Exclusively on
+# Amazon.com", "distributed ... via Amazon Marketplace"), or the notice's listing field names it. A brand such as
+# AmazonBasics or a sentence like "the firm was informed by Amazon" does not count.
+# Shops that are mainly physical retailers (Walmart, Kaufland) are left out: "sold at Walmart" usually means its stores.
+MARKETS = [("amazon", "Amazon", r"amazon(?:\.[a-z.]+)?"), ("ebay", "eBay", r"e-?bay(?:\.[a-z.]+)?"),
+           ("aliexpress", "AliExpress", r"ali ?express(?:\.[a-z.]+)?"), ("temu", "Temu", r"temu(?:\.com)?"),
+           ("shein", "Shein", r"shein(?:\.com)?"), ("wish", "Wish", r"wish(?:\.com)?"), ("etsy", "Etsy", r"etsy(?:\.com)?"),
+           ("tiktok-shop", "TikTok Shop", r"tik ?tok(?: shop)?"),
+           ("fruugo", "Fruugo", r"fruugo(?:\.[a-z.]+)?"), ("onbuy", "OnBuy", r"onbuy(?:\.com)?"), ("joom", "Joom", r"joom(?:\.com)?"),
+           ("allegro", "Allegro", r"allegro(?:\.pl)?"),
+           ("bol", "Bol.com", r"bol\.com"), ("cdiscount", "Cdiscount", r"cdiscount(?:\.com)?"), ("kogan", "Kogan", r"kogan(?:\.com)?"),
+           ("wayfair", "Wayfair", r"wayfair(?:\.[a-z.]+)?"), ("desertcart", "Desertcart", r"desertcart(?:\.[a-z.]+)?"),
+           ("facebook-marketplace", "Facebook Marketplace", r"facebook marketplace")]
+SALE = re.compile(r"\b(?:sold|available|bought|purchased|offered|listed|distributed|marketed|for sale)\b", re.I)
+MARKET_TODO = [
+    "Open your order history in your account on the marketplace and search for the product name or the seller.",
+    "Compare the product, model and any batch or listing number with the official notice.",
+    "If it matches, stop using it and follow the remedy in the notice. For items bought from third-party sellers, "
+    "the marketplace's own help pages explain how to get a refund for a recalled product.",
+    "Marketplaces often email buyers about recalls, but not always: check your spam folder and don't rely on it alone.",
+]
+
+
+def markets(r):
+    """Marketplaces the official notice says the product was sold through (slugs)."""
+    text = " ".join(str(r.get(k) or "") for k in ("title", "product", "units", "hazard"))
+    ids = r.get("ids") or {}
+    listing = ids.get("listing") or []
+    listing = " ".join(map(str, listing if isinstance(listing, list) else [listing]))
+    found = []
+    windows = [text[m.end():m.end() + 90] for m in SALE.finditer(text)]
+    for slug, name, rx in MARKETS:
+        pat = re.compile(rf"(?<![a-z]){rx}(?![a-z])", re.I)
+        if any(pat.search(w) for w in windows) or (listing and pat.search(listing)):
+            found.append(slug)
+    return found
+
+
 def tag(rows):
-    """Adds _allergens and _child to each archive row (used by the hubs and the recall pages)."""
+    """Adds _allergens, _child and _markets to each archive row (used by the hubs and the recall pages)."""
     for r in rows:
         r["_allergens"] = M.allergens(r)
         r["_child"] = M.child_tags(r)
+        r["_markets"] = markets(r)
 
 
 def counts(B):
     a = {k: sum(1 for r in B.ARCH if k in r["_allergens"]) for k, _, _ in ALLERGY}
     c = {t: sum(1 for r in B.ARCH if t in r["_child"]) for t, *_ in CHILD}
-    return a, c
+    m = {s: sum(1 for r in B.ARCH if s in r["_markets"]) for s, *_ in MARKETS}
+    return a, c, m
 
 
 def recall_links(r, B):
@@ -91,6 +134,10 @@ def recall_links(r, B):
     for t, slug, h1, *_ in CHILD:
         if t in r.get("_child", []) and B.HUB_COUNTS[1].get(t, 0) >= MIN_PAGE:
             links.append((f"/child-safety/{slug}/", h1))
+    mc = B.HUB_COUNTS[2] if len(B.HUB_COUNTS) > 2 else {}
+    for slug, name, _ in MARKETS:
+        if slug in r.get("_markets", []) and mc.get(slug, 0) >= MIN_PAGE:
+            links.append((f"/marketplaces/{slug}/", f"Recalls of products sold on {name}"))
     if not links: return ""
     return ('<p class="hublinks">See also: ' + " · ".join(f'<a href="{p}">{B.esc(n)}</a>' for p, n in links) + "</p>")
 
@@ -207,6 +254,47 @@ def child_index(B, items, footer, since90):
     return _page(B, path, "Baby and child safety recalls | Recall Atlas",
                  f"Car seat, cot, stroller, button battery, magnet and choking-hazard recalls from {B.COVERAGE}, with what to do.",
                  [("Recall Atlas", "/"), ("Child safety", path)], body, footer)
+
+
+def market_page(B, slug, name, rs, others, footer, since90):
+    path = f"/marketplaces/{slug}/"
+    feed = (f"{path}feed.xml", f"Recall Atlas: recalls of products sold on {name}")
+    title = f"Recalled products sold on {name} ({len(rs)}) | Recall Atlas"
+    desc = (f"{len(rs)} official recalls where the regulator's notice says the product was sold on {name}, from "
+            f"{B.COVERAGE}. Newest first, with what to do and an RSS feed.")
+    crumbs = [("Recall Atlas", "/"), ("Marketplaces", "/marketplaces/"), (name, path)]
+    other = " · ".join(f'<a href="/marketplaces/{s}/">{B.esc(n)}</a>' for s, n in others if s != slug)
+    body = f"""<h1>Recalled products sold on {B.esc(name)}</h1>
+<p class="lede">Official recalls and safety alerts where the regulator's notice says the product was sold, listed or distributed through {B.esc(name)}. Newest first.</p>
+<p><a class="rss" href="{feed[0]}">RSS feed</a></p>
+{_stats(B, rs, since90)}
+<h2>What to do</h2>
+<ol class="todo">{"".join(f"<li>{B.esc(x)}</li>" for x in MARKET_TODO)}</ol>
+<p class="note">This list shows what regulators published; Recall Atlas adds no claims of its own. A recall appears here only when the official notice names {B.esc(name)} as a place the product was sold. Some agencies (notably the UK's Office for Product Safety and Standards) name the marketplace in nearly every notice and others rarely do, so these numbers are not a measure of how safe a marketplace is. The same product may also have been sold elsewhere.</p>
+{_app_line(B, "product")}
+<h2>Latest recalls</h2>
+<ol class="list">{B.render_rows(rs[:LIST_MAX])}</ol>
+{f'<p class="note">Showing the newest {LIST_MAX} of {len(rs)}.</p>' if len(rs) > LIST_MAX else ""}
+<h2>Other marketplaces</h2>
+<p class="hubnav">{other}</p>"""
+    return path, feed, _page(B, path, title, desc, crumbs, body, footer, feed)
+
+
+def market_index(B, items, footer, since90):
+    path = "/marketplaces/"
+    lis = "".join(f'<li><a href="/marketplaces/{s}/"><b>{B.esc(n)}</b></a><span>{len(rs)} recalls · {sum(1 for r in rs if r["date"] >= since90)} in the last 90 days</span></li>'
+                  for s, n, rs in items)
+    total = len({r["id"] for *_, rs in items for r in rs})
+    body = f"""<h1>Recalled products sold on online marketplaces</h1>
+<p class="lede">{total:,} official recalls since 2021 where the regulator's notice says the product was sold through an online marketplace, from {B.esc(B.COVERAGE)}. Pick a marketplace for its recalls and RSS feed.</p>
+<ul class="hubcards">{lis}</ul>
+<h2>What to do if you bought something online</h2>
+<ol class="todo">{"".join(f"<li>{B.esc(x)}</li>" for x in MARKET_TODO)}</ol>
+<p class="note">These pages report what regulators published. How often a marketplace appears depends mostly on which agencies name the sales channel in their notices (the UK's OPSS almost always does), so the counts are not a ranking of marketplace safety. To search for a specific product, use <a href="/check/">Check a product</a>.</p>
+{_app_line(B, "product")}"""
+    return _page(B, path, f"Recalled products sold on online marketplaces ({total:,}) | Recall Atlas",
+                 f"Official recalls of products sold on Amazon, eBay, AliExpress, Temu, Shein and other marketplaces, from {B.COVERAGE}.",
+                 [("Recall Atlas", "/"), ("Marketplaces", path)], body, footer)
 
 
 def check_page(B, footer):
@@ -345,8 +433,21 @@ def write(B, footer):
         citems.append((t, slug, h1, short, rs))
     B.write("/child-safety/", child_index(B, citems, footer, since90)); urls.append((B.SITE + "/child-safety/", lastmod))
 
+    mitems = []
+    for slug, name, _ in MARKETS:
+        rs = [r for r in B.ARCH if slug in r["_markets"]]
+        if len(rs) >= MIN_PAGE: mitems.append((slug, name, rs))
+    mitems.sort(key=lambda x: -len(x[2]))
+    mothers = [(s, n) for s, n, _ in mitems]
+    for slug, name, rs in mitems:
+        path, feed, html = market_page(B, slug, name, rs, mothers, footer, since90)
+        B.write(path, html); urls.append((B.SITE + path, lastmod)); feeds.append(feed)
+        save(feed[0], hub_feed(B, feed[0], feed[1], path,
+                               f"Official recalls of products sold on {name}, collected by Recall Atlas every 6 hours.", rs))
+    B.write("/marketplaces/", market_index(B, mitems, footer, since90)); urls.append((B.SITE + "/marketplaces/", lastmod))
+
     B.write("/check/", check_page(B, footer)); urls.append((B.SITE + "/check/", lastmod))
     (B.OUT / "data").mkdir(exist_ok=True)
     (B.OUT / "data" / "check.json").write_text(json.dumps(check_index(B), ensure_ascii=False, separators=(",", ":")))
-    print(f"hubs: {len(items)} allergen pages, {len(citems)} child-safety pages, /check/ index of {len(B.ARCH)} recalls")
+    print(f"hubs: {len(items)} allergen pages, {len(citems)} child-safety pages, {len(mitems)} marketplace pages, /check/ index of {len(B.ARCH)} recalls")
     return urls, feeds
