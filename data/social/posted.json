@@ -572,6 +572,10 @@
    "at": "2026-10-01T16:29+00:00",
    "dry_run": true
   },
+  "recall:opss-2607-0041": {
+   "at": "2026-10-26T17:03+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mys7biaq7426"
+  },
   "recall:opss-2608-0035": {
    "at": "2026-10-01T16:29+00:00",
    "dry_run": true
@@ -1286,6 +1290,10 @@
    "at": "2026-10-01T22:46+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122106138333488772"
   },
+  "recall:opss-2607-0041": {
+   "at": "2026-10-26T17:03+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122116955871488772"
+  },
   "recall:opss-2608-0035": {
    "at": "2026-10-01T22:46+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122106138147488772"
@@ -1690,6 +1698,10 @@
   },
   "recall:nhtsa-26V699000": {
    "at": "2026-10-24T11:04+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2607-0041": {
+   "at": "2026-10-26T17:03+00:00",
    "dry_run": true
   },
   "recall:opss-2609-0105": {
@@ -2377,6 +2389,10 @@
   "recall:opss-2601-0139": {
    "at": "2026-10-01T16:29+00:00",
    "ref": "https://mastodon.social/@recallatlas/117366596973459215"
+  },
+  "recall:opss-2607-0041": {
+   "at": "2026-10-26T17:03+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117508289858426238"
   },
   "recall:opss-2608-0035": {
    "at": "2026-10-01T16:29+00:00",
