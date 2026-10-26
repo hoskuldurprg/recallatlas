@@ -125,6 +125,14 @@ def counts(B):
     return a, c, m
 
 
+def totals(B):
+    """Distinct recalls on the allergy and marketplace hub pages (the same totals their index pages show)."""
+    def n(field, keys):
+        return len({r["id"] for r in B.ARCH if any(k in r[field] for k in keys)})
+    return {"allergies": n("_allergens", [k for k, _, _ in ALLERGY if B.HUB_COUNTS[0].get(k, 0) >= MIN_PAGE]),
+            "markets": n("_markets", [s for s, *_ in MARKETS if B.HUB_COUNTS[2].get(s, 0) >= MIN_PAGE])}
+
+
 def recall_links(r, B):
     """Short 'see also' line for a recall page: the allergen and child-safety hub pages this recall belongs to."""
     links = []
@@ -159,7 +167,7 @@ def _page(B, path, title, desc, crumbs, body, footer, feed=None):
 def _countries(B, rs, n=6):
     from collections import Counter
     c = Counter(r["country"] for r in rs).most_common(n)
-    return "".join(f'<li><b>{B.flag(cc, "fl sm")}{B.esc(B.NAMES.get(cc, "EU-wide") if cc != "EU" else "EU-wide")}</b><span>{k}</span></li>' for cc, k in c)
+    return "".join(f'<li><b>{B.country_link(cc, B.flag(cc, "fl sm") + B.esc(B.NAMES.get(cc, "EU-wide") if cc != "EU" else "EU-wide"))}</b><span>{k}</span></li>' for cc, k in c)
 
 
 def _stats(B, rs, since90):
@@ -349,7 +357,7 @@ async function run(q){
   $("#checkMsg").innerHTML=rs.length?`${rs.length===100?"100+":rs.length} recall${rs.length===1?" mentions":"s mention"} <b>${esc(q)}</b>. Open each one and compare the model, batch and dates with the official notice.`
     :`No match found in our data for <b>${esc(q)}</b>. That doesn't mean the product is safe: try the brand alone, the model number, or check the official recall site in your country.`;
   $("#checkResults").innerHTML=rs.map(r=>{const slug=r.s.includes("-")?r.s:slugify(r.t)+"-"+r.s;
-    return `<li class="item"><div class="cc">${flag(r.c)}${r.c==="GB"?"UK":esc(r.c)}</div><div class="body"><h3><a href="/recall/${esc(slug)}/">${esc(r.t)}</a></h3><div class="src"><span>${esc(r.d)}</span>${r.b?`<span>${esc(r.b)}</span>`:""}</div></div></li>`}).join("");
+    return `<li class="item"><div class="cc"><a href="/${r.c==="GB"||r.c==="XI"?"uk":esc(r.c.toLowerCase())}/" title="Show recalls from this country">${flag(r.c)}${r.c==="GB"?"UK":esc(r.c)}</a></div><div class="body"><h3><a href="/recall/${esc(slug)}/">${esc(r.t)}</a></h3><div class="src"><span>${esc(r.d)}</span>${r.b?`<span>${esc(r.b)}</span>`:""}</div></div></li>`}).join("");
 }
 $("#checkForm").addEventListener("submit",e=>{e.preventDefault();run($("#checkQ").value);});
 const q0=new URLSearchParams(location.search).get("q"); if(q0){$("#checkQ").value=q0;run(q0);}

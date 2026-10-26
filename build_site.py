@@ -105,8 +105,8 @@ def render_rows(rows):
         by = f' · reported by {esc(r["countryName"])}' if r.get("region") == "EU" else ""
         extra = "".join(f"<span>{esc(r[k])}</span>" for k in ("brand", "units") if r.get(k))
         out.append(
-            f'<li class="item"><div class="cc" title="{esc(r["countryName"])}">{flag(r["country"])}{cc}'
-            f'<small>{flag("EU", "fl sm") + "EU" if r.get("region") == "EU" and r["country"] != "EU" else ""}</small></div>'
+            f'<li class="item"><div class="cc">{country_link(r["country"], flag(r["country"]) + cc)}'
+            f'<small>{country_link("EU", flag("EU", "fl sm") + "EU") if r.get("region") == "EU" and r["country"] != "EU" else ""}</small></div>'
             f'<div class="body"><div class="tags"><span class="tag cat">{CATS.get(r["category"], "Other")}</span>{sev}</div>'
             f'<h3><a href="{rlink(r)}">{esc(r["title"])}</a></h3>'
             + (f'<p class="hz">{esc(r["hazard"])}</p>' if r.get("hazard") else "")
@@ -299,6 +299,7 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
             .replace("{{PCAT}}", cat or "").replace("{{TOPIC}}", topic_js)
             .replace("{{PYEAR}}", year or "").replace("{{YEARS}}", json.dumps([int(y) for y in YEARS]))
             .replace("{{HERO}}", app_hero() if code == "all" and not cat and not topic and not year else "")
+            .replace("{{TILES}}", tiles_html() if code == "all" and not cat and not topic and not year else "")
             .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else '<section class="ystats" id="ystats" hidden></section>')
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
             .replace("{{UPDATED}}", UPDATED_TEXT).replace("{{TOTAL}}", str(data.get("count", len(data.get("recalls", [])))))
@@ -705,6 +706,27 @@ def app_box(r=None, brands=None):
             '<p class="small">Android app. iPhone version planned.</p></aside>')
 
 
+TILE_ICONS = {
+    "check": '<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/>',
+    "allergies": '<path d="M12 21V9"/><path d="M12 9c0-3 2-5 5-5 0 3-2 5-5 5zM12 9c0-3-2-5-5-5 0 3 2 5 5 5zM12 15c0-3 2-5 5-5 0 3-2 5-5 5zM12 15c0-3-2-5-5-5 0 3 2 5 5 5z"/>',
+    "child": '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+    "markets": '<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
+}
+
+
+def tiles_html():
+    """Home page: the four tools as cards under the hero, so they are not only in the menu."""
+    t = hubs.totals(sys.modules[__name__])
+    first = YEARS[-1]  # stray older records aside
+    cards = [("/check/", "check", "Check a product", f"Search all {len(ARCH):,} recalls since {first} by brand, model or barcode"),
+             ("/allergies/", "allergies", "Allergies", f"{t['allergies']:,} food recalls for undeclared allergens, by allergen"),
+             ("/child-safety/", "child", "Child safety", "Sleep products, strollers, button batteries, car seats and toys"),
+             ("/marketplaces/", "markets", "Marketplaces", f"{t['markets']:,} recalls of products sold on Amazon, eBay, Temu and more")]
+    return '<ul class="tiles">' + "".join(
+        f'<li><a href="{u}"><svg viewBox="0 0 24 24" aria-hidden="true">{TILE_ICONS[i]}</svg><div><b>{h}</b><span>{esc(s)}</span></div></a></li>'
+        for u, i, h, s in cards) + "</ul>"
+
+
 def app_hero():
     """Home page only: compact banner under the search bar. Closable (remembered in localStorage "ra-apphero");
     hidden on iPhone and iPad, where the app isn't available yet."""
@@ -714,9 +736,8 @@ def app_hero():
             '<svg class="pin" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4C20.4 4 11 13.2 11 24.6 11 40 32 60 32 60s21-20 21-35.4'
             'C53 13.2 43.6 4 32 4z"/><rect x="28.5" y="13" width="7" height="17" rx="3.5" fill="#b8480f"/><circle cx="32" cy="37.5" r="4" fill="#b8480f"/></svg>'
             '<div><h2>Know when something you own is recalled</h2>'
-            '<p>Android app. Unofficial alerts from public sources in 36 countries, for your things, your car and your family\'s allergens.</p>'
-            f'{play_badge("home_banner", 135, 40)}</div>'
-            '<img class="phone" src="/assets/app/phone-2.webp" width="220" height="391" alt="" loading="lazy">'
+            '<p>Android app: alerts for your things, your car and your family\'s allergens.</p></div>'
+            f'{play_badge("home_banner", 121, 36)}'
             '<button class="x" type="button" aria-label="Hide the app banner">×</button></aside>'
             '<script>(function(){var b=document.getElementById("apphero"),K="ra-apphero";'
             'try{if(localStorage.getItem(K)==="hide"||/iPhone|iPad|iPod/.test(navigator.userAgent)||'
@@ -879,6 +900,15 @@ FLAG_SHA256 = "c0b80bf0e08006a60f56621d6bc49f8c7131f4d1fef6737a165a673431f4b518"
 
 def flag_file(code):
     return "gb" if code in ("GB", "XI") else code.lower()
+
+
+def country_link(code, inner):
+    """Flag + code linked to that country's recall list (every code in NAMES has a page)."""
+    c = "GB" if code == "XI" else code
+    if c not in NAMES:
+        return inner
+    name = "all EU & EEA countries" if c == "EU" else NAMES[c]
+    return f'<a href="/{"uk" if c == "GB" else c.lower()}/" data-cc="{c}" title="Show recalls from {esc(name)}">{inner}</a>'
 
 
 def flag(code, cls="fl"):
