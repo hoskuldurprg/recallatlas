@@ -23,6 +23,9 @@ DISCLAIMER = ("Recall Atlas is an independent site that collects recalls automat
 STATIC = ["CNAME", "favicon.svg", "favicon.ico", "apple-touch-icon.png", "og-image.png"]
 
 data = json.loads((ROOT / "data" / "recalls.json").read_text())
+# Shown in the page header before JavaScript runs (the script then switches it to the visitor's local time).
+UPDATED_TEXT = (dt.datetime.strptime(data["updated"], "%Y-%m-%dT%H:%MZ").strftime("%-d %b %Y, %H:%M UTC")
+                if data.get("updated") else "every 6 hours")
 archive = crawl.load_archive()
 # rows in the 60-day list link to their recall page; fill slugs from the archive if the list predates them
 for r in data["recalls"]:
@@ -296,6 +299,7 @@ def page(code="all", cat=None, topic=None, year=None, pages=(), browse=""):
             .replace("{{HERO}}", app_hero() if code == "all" and not cat and not topic and not year else "")
             .replace("{{STATS}}", stats_html(rows, code, cat, year) if year else '<section class="ystats" id="ystats" hidden></section>')
             .replace("{{PAGES}}", json.dumps(sorted(pages)))
+            .replace("{{UPDATED}}", UPDATED_TEXT).replace("{{TOTAL}}", str(data.get("count", len(data.get("recalls", [])))))
             .replace("{{BROWSE}}", app_strip() + browse)
             .replace("{{APP}}", '<a class="rss" href="/app/">Get the app</a>' if APP_LIVE else "")
             .replace("{{WEEKLY}}", f'<a class="rss" href="/weekly/{LATEST_WEEK}/">This week\'s roundup</a>' if LATEST_WEEK and code == "all" and not cat and not topic and not year else "")
