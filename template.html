@@ -178,6 +178,14 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
 .shots{display:flex;gap:12px;overflow-x:auto;padding:4px 0 12px;margin:8px 0 8px;scroll-snap-type:x mandatory}.shots img{flex:0 0 auto;width:220px;height:auto;border-radius:12px;scroll-snap-align:start;border:1px solid var(--line)}
 
 .more-link{display:inline-block;margin-top:12px;color:var(--accent);font-weight:600;text-decoration:none}
+.hublinks{font-size:14px;margin:14px 0 0}.hublinks a{color:var(--accent);font-weight:600;text-decoration:none}
+.hubnav{line-height:1.9}.hubnav a{color:var(--accent);text-decoration:none;font-weight:600}
+.hubcards{list-style:none;padding:0;margin:8px 0 26px;display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.hubcards li{border:1px solid var(--line);border-radius:10px;padding:12px 14px;background:var(--surface);display:flex;flex-direction:column;gap:4px}
+.hubcards a{color:var(--ink);text-decoration:none}.hubcards a:hover b{color:var(--accent)}.hubcards span{font:12px var(--mono);color:var(--muted)}
+.hub .ystats{margin:6px 0 18px}.hub .ystats .note{margin:6px 0 0}.ystats li b{font-weight:400}.ystats li .fl.sm{width:14px;height:10px;margin-right:6px;vertical-align:-1px;border-radius:1px}
+.checkform{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 4px}.checkform input{flex:1 1 240px;font:16px var(--body);padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.checkform .cta{margin:0;border:0;cursor:pointer;font-size:15px}
 .brands{columns:3 220px;padding:0;list-style:none;margin:0 0 30px}.brands li{padding:3px 0;break-inside:avoid}
 .brands a{text-decoration:none;color:var(--ink)}.brands a:hover{color:var(--accent)}.brands span{color:var(--muted);font:12px var(--mono);margin-left:6px}
 .prose p{max-width:70ch;line-height:1.6}
@@ -208,7 +216,7 @@ footer h4{font:600 11px/1 var(--body);letter-spacing:.08em;text-transform:upperc
     <div class="topline"><a class="brand" href="/" style="color:inherit;text-decoration:none"><svg class="mark" viewBox="0 0 64 64" aria-hidden="true"><path d="M32 4C20.4 4 11 13.2 11 24.6 11 40 32 60 32 60s21-20 21-35.4C53 13.2 43.6 4 32 4z"/><rect x="28.5" y="13" width="7" height="17" rx="3.5" fill="#fff"/><circle cx="32" cy="37.5" r="4" fill="#fff"/></svg>Recall Atlas</a><button class="theme" id="themeBtn" type="button" aria-label="Switch to dark theme" title="Switch to dark theme"><svg class="i-moon" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><svg class="i-sun" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button></div>
     <h1>{{H1}}</h1>
     <p class="lede">{{LEDE}}</p>
-    <div class="stamp"><span><span class="dot"></span>Updated <b id="updated">{{UPDATED}}</b></span><span><b id="total">{{TOTAL}}</b> recalls in the last 60 days</span>{{WEEKLY}}{{FEED}}{{APP}}</div>
+    <div class="stamp"><span><span class="dot"></span>Updated <b id="updated">{{UPDATED}}</b></span><span><b id="total">{{TOTAL}}</b> recalls in the last 60 days</span><a class="rss" href="/check/">Check a product</a>{{WEEKLY}}{{FEED}}{{APP}}</div>
   </header>
 </div>
 

@@ -13,6 +13,7 @@ import html, json, os, re, shutil, sys, hashlib, datetime as dt, urllib.request
 from collections import defaultdict, Counter
 from pathlib import Path
 import crawl
+import hubs
 from crawl import EU_NAMES
 
 ROOT = Path(__file__).parent
@@ -38,6 +39,7 @@ YEARS = sorted((y for y, n in _ycount.items() if n >= 100), reverse=True)  # ign
 FIRST_DAY = min((r["date"] for r in ARCH if r["date"][:4] in YEARS), default="")
 MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
 BRANDS = {}
+HUB_COUNTS = ({}, {})  # filled in main() by hubs.counts()
 
 tpl = (ROOT / "template.html").read_text()
 CSS = tpl[tpl.index("<style>") + 7:tpl.index("</style>")].strip() + "\n"
@@ -643,6 +645,7 @@ def recall_page(r, brands, by_cc, footer):
 <h2>What to do</h2>
 <ol class="todo">{"".join(f"<li>{esc(x)}</li>" for x in todo)}</ol>
 <p class="note">General guidance from Recall Atlas. The official notice from {esc(AGENCY.get(r.get("feed"), r["source"]))} has the exact models, batch codes and remedy, and it takes priority.</p>
+{hubs.recall_links(r, sys.modules[__name__])}
 {app_box(r, brands)}{"".join(parts)}
 </article>
 </div>
@@ -762,7 +765,7 @@ def app_page(footer):
 
 def footer_html(browse):
     return (f'<footer><div class="wrap">{app_strip()}{browse}<p>{DISCLAIMER}</p><p>Visitor statistics (Google Analytics) are only collected if you accept '
-            'them. <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
+            'them. <a href="/check/">Check a product</a> · <a href="/allergies/">Allergy recalls</a> · <a href="/child-safety/">Child safety</a> · <a href="/feeds/">RSS feeds</a> · <a href="/privacy/">Privacy and cookies</a> · <button class="linkbtn" id="privacyBtn" type="button">Change cookie settings</button></p></div></footer>\n')
 
 
 def brand_page(k, name, rs, footer):
@@ -992,8 +995,10 @@ def email_date(updated):
 def feeds_page(feeds, footer):
     def ul(fs): return "<ul class=\"feeds\">" + "".join(f'<li><a href="{p}">{esc((lambda x: x[:1].upper() + x[1:])(t.replace("Recall Atlas: ", "")))}</a> <code>{SITE}{p}</code></li>' for p, t in fs) + "</ul>"
     groups = [("Everything", [f for f in feeds if f[0] == "/feed.xml"]),
-              ("By country", [f for f in feeds if f[0] != "/feed.xml" and not f[0].startswith("/recalls/")]),
-              ("By product type", [f for f in feeds if f[0].startswith("/recalls/")])]
+              ("By country", [f for f in feeds if f[0] != "/feed.xml" and not f[0].startswith(("/recalls/", "/allergies/", "/child-safety/"))]),
+              ("By product type", [f for f in feeds if f[0].startswith("/recalls/")]),
+              ("By allergen", [f for f in feeds if f[0].startswith("/allergies/")]),
+              ("Child safety", [f for f in feeds if f[0].startswith("/child-safety/")])]
     crumbs = [("Recall Atlas", "/"), ("RSS feeds", "/feeds/")]
     body = f"""<div class="wrap">
 <header class="top slim">{TOPLINE}</header>
@@ -1348,6 +1353,9 @@ def main():
     if OUT.exists(): shutil.rmtree(OUT)
     OUT.mkdir()
     BRANDS = brand_index(ARCH)
+    global HUB_COUNTS
+    hubs.tag(ARCH)  # allergen and child-safety tags for the hub pages and the recall pages' "See also" line
+    HUB_COUNTS = hubs.counts(sys.modules[__name__])
     specs = [("all", None, None, None), *[(c, None, None, None) for c in REGION_CODES + sorted(EU_NAMES)]]
     specs += [("all", c, None, None) for c in CATSLUG]
     specs += [(code, c, None, None) for code in REGION_CODES for c in CATSLUG if len(select(code, c)) >= MIN_COUNTRY_CAT]
@@ -1407,6 +1415,8 @@ def main():
             json.dumps(year_file(y, [r for r in rows if r["date"][:4] == y]), ensure_ascii=False, separators=(",", ":")))
     write("/disclaimer/", disclaimer_page(footer))
     page_urls.append((f"{SITE}/disclaimer/", lastmod))
+    hub_urls, hub_feeds = hubs.write(sys.modules[__name__], footer)  # /allergies/, /child-safety/, /check/
+    page_urls += hub_urls
     feeds = [("all", None)] + [(c, None) for c in REGION_CODES + sorted(EU_NAMES)
                                if any(matches(r, c) for r in rows)] + [("all", c) for c in CATSLUG]
     FEEDS.update(feed_path(c, k) for c, k in feeds)
@@ -1414,7 +1424,8 @@ def main():
         (OUT / feed_path(code, cat).lstrip("/")).parent.mkdir(parents=True, exist_ok=True)
         (OUT / feed_path(code, cat).lstrip("/")).write_text(
             feed_xml(code, cat, [r for r in rows if matches(r, code) and (not cat or r["category"] == cat)], data["updated"]))
-    write("/feeds/", feeds_page([(feed_path(c, k), feed_title(c, k)) for c, k in feeds], footer))
+    FEEDS.update(p for p, _ in hub_feeds)
+    write("/feeds/", feeds_page([(feed_path(c, k), feed_title(c, k)) for c, k in feeds] + hub_feeds, footer))
     page_urls.append((f"{SITE}/feeds/", lastmod))
     weeks = week_groups(rows, data["updated"][:10])
     keys = list(weeks)
