@@ -440,6 +440,18 @@
    "at": "2026-10-22T21:42+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myimzjin2a2q"
   },
+  "recall:eu-SR/03061/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myutcvzkih22"
+  },
+  "recall:eu-SR/03066/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myutctursv2z"
+  },
+  "recall:eu-SR/03067/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myutcrjaj326"
+  },
   "recall:eu-SR/03069/26": {
    "at": "2026-10-27T12:16+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myu7qd7f3d26"
@@ -1198,6 +1210,18 @@
    "at": "2026-10-22T21:42+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115789213488772"
   },
+  "recall:eu-SR/03061/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117232747488772"
+  },
+  "recall:eu-SR/03066/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117232681488772"
+  },
+  "recall:eu-SR/03067/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117232651488772"
+  },
   "recall:eu-SR/03069/26": {
    "at": "2026-10-27T12:16+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122117164923488772"
@@ -1718,6 +1742,18 @@
   },
   "recall:eu-SR/03046/26": {
    "at": "2026-10-22T21:42+00:00",
+   "dry_run": true
+  },
+  "recall:eu-SR/03061/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "dry_run": true
+  },
+  "recall:eu-SR/03066/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "dry_run": true
+  },
+  "recall:eu-SR/03067/26": {
+   "at": "2026-10-27T18:07+00:00",
    "dry_run": true
   },
   "recall:eu-SR/03069/26": {
@@ -2329,6 +2365,18 @@
   "recall:eu-SR/03046/26": {
    "at": "2026-10-22T21:42+00:00",
    "ref": "https://mastodon.social/@recallatlas/117486739841278149"
+  },
+  "recall:eu-SR/03061/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117514204383193928"
+  },
+  "recall:eu-SR/03066/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117514204190842203"
+  },
+  "recall:eu-SR/03067/26": {
+   "at": "2026-10-27T18:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117514204003640565"
   },
   "recall:eu-SR/03069/26": {
    "at": "2026-10-27T12:16+00:00",
