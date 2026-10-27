@@ -440,6 +440,14 @@
    "at": "2026-10-22T21:42+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myimzjin2a2q"
   },
+  "recall:eu-SR/03056/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myvbg6vbov26"
+  },
+  "recall:eu-SR/03059/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myvbg4uhdq24"
+  },
   "recall:eu-SR/03061/26": {
    "at": "2026-10-27T18:07+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myutcvzkih22"
@@ -956,6 +964,10 @@
    "at": "2026-10-26T04:50+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myqwdojqbf2i"
   },
+  "recall:rasff-2026.9529": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myvbgaxknq24"
+  },
   "weekly:2026-w39": {
    "at": "2026-10-01T15:49+00:00",
    "dry_run": true
@@ -1209,6 +1221,14 @@
   "recall:eu-SR/03046/26": {
    "at": "2026-10-22T21:42+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115789213488772"
+  },
+  "recall:eu-SR/03056/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117274669488772"
+  },
+  "recall:eu-SR/03059/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117274621488772"
   },
   "recall:eu-SR/03061/26": {
    "at": "2026-10-27T18:07+00:00",
@@ -1642,6 +1662,10 @@
    "at": "2026-10-26T04:50+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122116796817488772"
   },
+  "recall:rasff-2026.9529": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117274699488772"
+  },
   "weekly:2026-w39": {
    "at": "2026-10-01T21:27+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122106087441488772"
@@ -1742,6 +1766,14 @@
   },
   "recall:eu-SR/03046/26": {
    "at": "2026-10-22T21:42+00:00",
+   "dry_run": true
+  },
+  "recall:eu-SR/03056/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "dry_run": true
+  },
+  "recall:eu-SR/03059/26": {
+   "at": "2026-10-27T22:19+00:00",
    "dry_run": true
   },
   "recall:eu-SR/03061/26": {
@@ -1914,6 +1946,10 @@
   },
   "recall:rasff-2026.9492": {
    "at": "2026-10-26T04:50+00:00",
+   "dry_run": true
+  },
+  "recall:rasff-2026.9529": {
+   "at": "2026-10-27T22:19+00:00",
    "dry_run": true
   },
   "weekly:2026-w42": {
@@ -2365,6 +2401,14 @@
   "recall:eu-SR/03046/26": {
    "at": "2026-10-22T21:42+00:00",
    "ref": "https://mastodon.social/@recallatlas/117486739841278149"
+  },
+  "recall:eu-SR/03056/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117515196649708077"
+  },
+  "recall:eu-SR/03059/26": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117515196477486054"
   },
   "recall:eu-SR/03061/26": {
    "at": "2026-10-27T18:07+00:00",
@@ -2881,6 +2925,10 @@
   "recall:rasff-2026.9492": {
    "at": "2026-10-26T04:50+00:00",
    "ref": "https://mastodon.social/@recallatlas/117505409596211965"
+  },
+  "recall:rasff-2026.9529": {
+   "at": "2026-10-27T22:19+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117515196803130576"
   },
   "weekly:2026-w39": {
    "at": "2026-10-01T15:49+00:00",
