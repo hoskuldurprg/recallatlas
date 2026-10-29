@@ -152,6 +152,14 @@
    "at": "2026-10-15T21:32+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxwz65bzks2p"
   },
+  "recall:cpsc-27060": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz2e7g4vtt2n"
+  },
+  "recall:cpsc-27061": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz2e7dwail2u"
+  },
   "recall:eu-OR/00117/26": {
    "at": "2026-10-09T11:34+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxguy22fvy2r"
@@ -483,6 +491,10 @@
   "recall:eu-SR/03074/26": {
    "at": "2026-10-27T12:16+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myu7q6qfhq24"
+  },
+  "recall:eu-SR/03100/26": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz2e7bpail24"
   },
   "recall:fda-H-0002-2027": {
    "at": "2026-10-21T11:59+00:00",
@@ -1118,6 +1130,14 @@
    "at": "2026-10-15T21:32+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122113604331488772"
   },
+  "recall:cpsc-27060": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117796117488772"
+  },
+  "recall:cpsc-27061": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117796087488772"
+  },
   "recall:eu-OR/00117/26": {
    "at": "2026-10-11T22:06+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122111965161488772"
@@ -1305,6 +1325,10 @@
   "recall:eu-SR/03074/26": {
    "at": "2026-10-27T12:16+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122117164881488772"
+  },
+  "recall:eu-SR/03100/26": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117796045488772"
   },
   "recall:fda-H-0002-2027": {
    "at": "2026-10-21T11:59+00:00",
@@ -1812,6 +1836,14 @@
    "at": "2026-10-24T11:04+00:00",
    "dry_run": true
   },
+  "recall:cpsc-27060": {
+   "at": "2026-10-29T22:52+00:00",
+   "dry_run": true
+  },
+  "recall:cpsc-27061": {
+   "at": "2026-10-29T22:52+00:00",
+   "dry_run": true
+  },
   "recall:eu-SR/02974/26": {
    "at": "2026-10-28T22:41+00:00",
    "dry_run": true
@@ -1890,6 +1922,10 @@
   },
   "recall:eu-SR/03074/26": {
    "at": "2026-10-27T12:16+00:00",
+   "dry_run": true
+  },
+  "recall:eu-SR/03100/26": {
+   "at": "2026-10-29T22:52+00:00",
    "dry_run": true
   },
   "recall:fda-H-0014-2027": {
@@ -2234,6 +2270,14 @@
    "at": "2026-10-15T21:32+00:00",
    "ref": "https://mastodon.social/@recallatlas/117447062008225643"
   },
+  "recall:cpsc-27060": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117526651931465288"
+  },
+  "recall:cpsc-27061": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117526651779613112"
+  },
   "recall:eu-OR/00117/26": {
    "at": "2026-10-09T11:34+00:00",
    "ref": "https://mastodon.social/@recallatlas/117410738299789607"
@@ -2565,6 +2609,10 @@
   "recall:eu-SR/03074/26": {
    "at": "2026-10-27T12:16+00:00",
    "ref": "https://mastodon.social/@recallatlas/117512826257056092"
+  },
+  "recall:eu-SR/03100/26": {
+   "at": "2026-10-29T22:52+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117526651596062853"
   },
   "recall:fda-H-0002-2027": {
    "at": "2026-10-21T11:59+00:00",
