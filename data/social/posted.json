@@ -152,6 +152,10 @@
    "at": "2026-10-15T21:32+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxwz65bzks2p"
   },
+  "recall:cpsc-27058": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz33oomuhz2z"
+  },
   "recall:cpsc-27060": {
    "at": "2026-10-29T22:52+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz2e7g4vtt2n"
@@ -984,6 +988,10 @@
    "at": "2026-10-24T11:04+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mymkbijsp624"
   },
+  "recall:rasff-2026.9475": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz33omi5cx25"
+  },
   "recall:rasff-2026.9483": {
    "at": "2026-10-24T16:01+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myn2vtehlz26"
@@ -1019,6 +1027,10 @@
   "recall:rasff-2026.9555": {
    "at": "2026-10-28T22:41+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myxt3n6vrk24"
+  },
+  "recall:rasff-2026.9566": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz33okdhfb2i"
   },
   "weekly:2026-w39": {
    "at": "2026-10-01T15:49+00:00",
@@ -1129,6 +1141,10 @@
   "recall:cpsc-27026": {
    "at": "2026-10-15T21:32+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122113604331488772"
+  },
+  "recall:cpsc-27058": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117857803488772"
   },
   "recall:cpsc-27060": {
    "at": "2026-10-29T22:52+00:00",
@@ -1734,6 +1750,10 @@
    "at": "2026-10-24T11:04+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122116241817488772"
   },
+  "recall:rasff-2026.9475": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117857767488772"
+  },
   "recall:rasff-2026.9483": {
    "at": "2026-10-24T16:01+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122116305453488772"
@@ -1769,6 +1789,10 @@
   "recall:rasff-2026.9555": {
    "at": "2026-10-28T22:41+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122117537469488772"
+  },
+  "recall:rasff-2026.9566": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122117857743488772"
   },
   "weekly:2026-w39": {
    "at": "2026-10-01T21:27+00:00",
@@ -1834,6 +1858,10 @@
   },
   "recall:ca-82848": {
    "at": "2026-10-24T11:04+00:00",
+   "dry_run": true
+  },
+  "recall:cpsc-27058": {
+   "at": "2026-10-30T05:53+00:00",
    "dry_run": true
   },
   "recall:cpsc-27060": {
@@ -2072,6 +2100,10 @@
    "at": "2026-10-24T11:04+00:00",
    "dry_run": true
   },
+  "recall:rasff-2026.9475": {
+   "at": "2026-10-30T05:53+00:00",
+   "dry_run": true
+  },
   "recall:rasff-2026.9483": {
    "at": "2026-10-24T16:01+00:00",
    "dry_run": true
@@ -2106,6 +2138,10 @@
   },
   "recall:rasff-2026.9555": {
    "at": "2026-10-28T22:41+00:00",
+   "dry_run": true
+  },
+  "recall:rasff-2026.9566": {
+   "at": "2026-10-30T05:53+00:00",
    "dry_run": true
   },
   "weekly:2026-w42": {
@@ -2269,6 +2305,10 @@
   "recall:cpsc-27026": {
    "at": "2026-10-15T21:32+00:00",
    "ref": "https://mastodon.social/@recallatlas/117447062008225643"
+  },
+  "recall:cpsc-27058": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117528303916165465"
   },
   "recall:cpsc-27060": {
    "at": "2026-10-29T22:52+00:00",
@@ -3102,6 +3142,10 @@
    "at": "2026-10-24T11:04+00:00",
    "ref": "https://mastodon.social/@recallatlas/117495553427802056"
   },
+  "recall:rasff-2026.9475": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117528303761285302"
+  },
   "recall:rasff-2026.9483": {
    "at": "2026-10-24T16:01+00:00",
    "ref": "https://mastodon.social/@recallatlas/117496724250793423"
@@ -3137,6 +3181,10 @@
   "recall:rasff-2026.9555": {
    "at": "2026-10-28T22:41+00:00",
    "ref": "https://mastodon.social/@recallatlas/117520943567165637"
+  },
+  "recall:rasff-2026.9566": {
+   "at": "2026-10-30T05:53+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117528303607630274"
   },
   "weekly:2026-w39": {
    "at": "2026-10-01T15:49+00:00",
