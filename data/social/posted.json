@@ -52,10 +52,6 @@
    "at": "2026-10-09T22:45+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxi2grojpo2x"
   },
-  "recall:ca-82661": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwx5hdc22p2s"
-  },
   "recall:ca-82694": {
    "at": "2026-10-09T22:45+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxi2gpljnt2m"
@@ -247,18 +243,6 @@
   "recall:eu-SR/02711/26": {
    "at": "2026-10-03T11:45+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwxsr5htlv2z"
-  },
-  "recall:eu-SR/02717/26": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwx5hhj5gp2u"
-  },
-  "recall:eu-SR/02718/26": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwx5hffei72l"
-  },
-  "recall:eu-SR/02721/26": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwwfrow5ka2s"
   },
   "recall:eu-SR/02801/26": {
    "at": "2026-10-07T13:29+00:00",
@@ -536,6 +520,14 @@
    "at": "2026-10-13T00:46+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxpsmwmuhp2s"
   },
+  "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzcnupso4o2n"
+  },
+  "recall:mbie-truck-dinosaur-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzcnunmizo27"
+  },
   "recall:nhtsa-26E070000": {
    "at": "2026-10-16T11:29+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxyhxnamle2s"
@@ -756,17 +748,9 @@
    "at": "2026-10-19T13:19+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mya7itzncc2m"
   },
-  "recall:rasff-2026.8577": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwwfrmrn5q2y"
-  },
   "recall:rasff-2026.8706": {
    "at": "2026-10-05T14:42+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mx55mx4vcn2z"
-  },
-  "recall:rasff-2026.8718": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mwwfrkn3si2s"
   },
   "recall:rasff-2026.8743": {
    "at": "2026-10-03T16:22+00:00",
@@ -1110,10 +1094,6 @@
    "at": "2026-11-01T13:28+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122118398541488772"
   },
-  "recall:ca-82661": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122107345005488772"
-  },
   "recall:ca-82739": {
    "at": "2026-10-11T22:06+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122111965113488772"
@@ -1213,18 +1193,6 @@
   "recall:eu-SR/02689/26": {
    "at": "2026-10-03T11:45+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122107682565488772"
-  },
-  "recall:eu-SR/02729/26": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122107345071488772"
-  },
-  "recall:eu-SR/02749/26": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122107345029488772"
-  },
-  "recall:eu-SR/02765/26": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122107112517488772"
   },
   "recall:eu-SR/02886/26": {
    "at": "2026-10-11T22:06+00:00",
@@ -1430,6 +1398,14 @@
    "at": "2026-10-13T00:46+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122112435447488772"
   },
+  "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122118549945488772"
+  },
+  "recall:mbie-truck-dinosaur-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122118549921488772"
+  },
   "recall:nhtsa-26E070000": {
    "at": "2026-10-16T11:29+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122113793517488772"
@@ -1617,14 +1593,6 @@
   "recall:rasff-2026.7552": {
    "at": "2026-10-19T13:19+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122114724957488772"
-  },
-  "recall:rasff-2026.8577": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122107112355488772"
-  },
-  "recall:rasff-2026.8718": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122107112247488772"
   },
   "recall:rasff-2026.8879": {
    "at": "2026-10-14T21:49+00:00",
@@ -2084,6 +2052,14 @@
    "at": "2026-10-26T23:26+00:00",
    "dry_run": true
   },
+  "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "dry_run": true
+  },
+  "recall:mbie-truck-dinosaur-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "dry_run": true
+  },
   "recall:nhtsa-26V673000": {
    "at": "2026-10-22T04:49+00:00",
    "dry_run": true
@@ -2378,10 +2354,6 @@
    "at": "2026-10-09T22:45+00:00",
    "ref": "https://mastodon.social/@recallatlas/117413374387492192"
   },
-  "recall:ca-82661": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117375306073883022"
-  },
   "recall:ca-82694": {
    "at": "2026-10-09T22:45+00:00",
    "ref": "https://mastodon.social/@recallatlas/117413374235595431"
@@ -2573,18 +2545,6 @@
   "recall:eu-SR/02711/26": {
    "at": "2026-10-03T11:45+00:00",
    "ref": "https://mastodon.social/@recallatlas/117376805417435527"
-  },
-  "recall:eu-SR/02717/26": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117375306376658090"
-  },
-  "recall:eu-SR/02718/26": {
-   "at": "2026-10-03T05:23+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117375306227428780"
-  },
-  "recall:eu-SR/02721/26": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117373640060039166"
   },
   "recall:eu-SR/02801/26": {
    "at": "2026-10-07T13:29+00:00",
@@ -2862,6 +2822,14 @@
    "at": "2026-10-13T00:46+00:00",
    "ref": "https://mastodon.social/@recallatlas/117430839429153657"
   },
+  "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117545346250649775"
+  },
+  "recall:mbie-truck-dinosaur-toys-sold-at-various-variety-and-dollar-stores": {
+   "at": "2026-11-02T06:07+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117545346098185365"
+  },
   "recall:nhtsa-26E070000": {
    "at": "2026-10-16T11:29+00:00",
    "ref": "https://mastodon.social/@recallatlas/117450355035767620"
@@ -3082,17 +3050,9 @@
    "at": "2026-10-19T13:19+00:00",
    "ref": "https://mastodon.social/@recallatlas/117467773803589465"
   },
-  "recall:rasff-2026.8577": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117373639894833348"
-  },
   "recall:rasff-2026.8706": {
    "at": "2026-10-05T14:42+00:00",
    "ref": "https://mastodon.social/@recallatlas/117388829091043547"
-  },
-  "recall:rasff-2026.8718": {
-   "at": "2026-10-02T22:20+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117373639740213242"
   },
   "recall:rasff-2026.8743": {
    "at": "2026-10-03T16:22+00:00",
