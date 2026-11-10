@@ -13,10 +13,10 @@ concurrency:
 jobs:
   crawl:
     runs-on: ubuntu-latest
-    timeout-minutes: 40
+    timeout-minutes: 60
     environment:
       name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
+      url: ${{ steps.deploy.outputs.page_url || steps.deploy_retry.outputs.page_url }}
     env:
       PYTHONUNBUFFERED: "1"
     steps:
@@ -43,8 +43,16 @@ jobs:
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with: { path: _site }
+      # GitHub Pages sometimes hangs at "syncing_files" (9-10 Nov 2026). Wait longer,
+      # then try once more before failing the run.
       - id: deploy
+        continue-on-error: true
         uses: actions/deploy-pages@v5
+        with: { timeout: 1200000 }
+      - id: deploy_retry
+        if: steps.deploy.outcome == 'failure'
+        uses: actions/deploy-pages@v5
+        with: { timeout: 1200000 }
       - name: Send watchlist alerts (dry run until the Firebase secret is set)
         continue-on-error: true   # an alerts hiccup must never fail the site update
         env:
