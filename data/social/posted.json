@@ -152,10 +152,6 @@
    "at": "2026-11-01T13:28+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzaw3nrfll2n"
   },
-  "recall:ca-82799": {
-   "at": "2026-10-17T04:30+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3my2azalbcs2g"
-  },
   "recall:ca-82808": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myfnt3yrfn2v"
@@ -543,10 +539,6 @@
   "recall:nhtsa-26V656000": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myfnsxrsdj2r"
-  },
-  "recall:nhtsa-26V660000": {
-   "at": "2026-10-16T21:14+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mxzimi3e2n2r"
   },
   "recall:nhtsa-26V661000": {
    "at": "2026-10-21T21:49+00:00",
@@ -1138,10 +1130,6 @@
    "at": "2026-11-01T13:28+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122118398499488772"
   },
-  "recall:ca-82799": {
-   "at": "2026-10-17T04:30+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122113979571488772"
-  },
   "recall:ca-82808": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115353949488772"
@@ -1529,10 +1517,6 @@
   "recall:nhtsa-26V656000": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115353877488772"
-  },
-  "recall:nhtsa-26V660000": {
-   "at": "2026-10-16T21:14+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122113910985488772"
   },
   "recall:nhtsa-26V661000": {
    "at": "2026-10-21T21:49+00:00",
@@ -2986,10 +2970,6 @@
    "at": "2026-11-01T13:28+00:00",
    "ref": "https://mastodon.social/@recallatlas/117541421212351974"
   },
-  "recall:ca-82799": {
-   "at": "2026-10-17T04:30+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117454369283513579"
-  },
   "recall:ca-82808": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://mastodon.social/@recallatlas/117480040728492520"
@@ -3377,10 +3357,6 @@
   "recall:nhtsa-26V656000": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://mastodon.social/@recallatlas/117480040382497424"
-  },
-  "recall:nhtsa-26V660000": {
-   "at": "2026-10-16T21:14+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117452652371108330"
   },
   "recall:nhtsa-26V661000": {
    "at": "2026-10-21T21:49+00:00",
