@@ -536,6 +536,18 @@
    "at": "2026-11-10T09:11+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzx3vy67vd26"
   },
+  "recall:fda-Z-0216-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2il6jbxd525"
+  },
+  "recall:fda-Z-0287-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2il6h5bmy2h"
+  },
+  "recall:fda-Z-0316-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2il6eydta2b"
+  },
   "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
    "at": "2026-11-02T06:07+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzcnupso4o2n"
@@ -1522,6 +1534,18 @@
    "at": "2026-11-10T09:11+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122120467611488772"
   },
+  "recall:fda-Z-0216-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122085229488772"
+  },
+  "recall:fda-Z-0287-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122085181488772"
+  },
+  "recall:fda-Z-0316-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122085085488772"
+  },
   "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
    "at": "2026-11-02T06:07+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122118549945488772"
@@ -2450,6 +2474,18 @@
   },
   "recall:fda-Z-0208-2027": {
    "at": "2026-11-10T09:11+00:00",
+   "dry_run": true
+  },
+  "recall:fda-Z-0216-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "dry_run": true
+  },
+  "recall:fda-Z-0287-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "dry_run": true
+  },
+  "recall:fda-Z-0316-2027": {
+   "at": "2026-11-17T08:00+00:00",
    "dry_run": true
   },
   "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
@@ -3389,6 +3425,18 @@
   "recall:fda-Z-0208-2027": {
    "at": "2026-11-10T09:11+00:00",
    "ref": "https://mastodon.social/@recallatlas/117591370468238391"
+  },
+  "recall:fda-Z-0216-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117630725262440009"
+  },
+  "recall:fda-Z-0287-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117630725096538606"
+  },
+  "recall:fda-Z-0316-2027": {
+   "at": "2026-11-17T08:00+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117630724932641538"
   },
   "recall:mbie-traffic-team-toys-sold-at-various-variety-and-dollar-stores": {
    "at": "2026-11-02T06:07+00:00",
