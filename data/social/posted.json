@@ -100,6 +100,10 @@
    "at": "2026-11-16T22:06+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2hjyug2ou2b"
   },
+  "app:2026-11-17": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2jwufn7sj25"
+  },
   "recall:accc-08ddb81f-1ad4-4a51-bdd4-e8c52defaf6f": {
    "at": "2026-11-11T14:34+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n226gpxnqf2a"
@@ -159,10 +163,6 @@
   "recall:ca-82808": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myfnt3yrfn2v"
-  },
-  "recall:ca-82810": {
-   "at": "2026-10-18T15:59+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3my5xxhx6is2g"
   },
   "recall:ca-82826": {
    "at": "2026-10-23T21:29+00:00",
@@ -732,6 +732,14 @@
    "at": "2026-11-06T19:30+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzo4myayze24"
   },
+  "recall:opss-2610-0256": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2jwudjyb72b"
+  },
+  "recall:opss-2610-0257": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2jwubhppg2t"
+  },
   "recall:opss-2611-0050": {
    "at": "2026-11-12T23:44+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n25nm42qyk2i"
@@ -743,6 +751,10 @@
   "recall:opss-2611-0056": {
    "at": "2026-11-12T15:20+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n24rhigpc52n"
+  },
+  "recall:opss-2611-0068": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2jwu7dzdb25"
   },
   "recall:rasff-2026.10084": {
    "at": "2026-11-15T06:34+00:00",
@@ -1098,6 +1110,10 @@
    "at": "2026-11-16T22:06+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122122001721488772"
   },
+  "app:2026-11-17": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122208631488772"
+  },
   "recall:accc-08ddb81f-1ad4-4a51-bdd4-e8c52defaf6f": {
    "at": "2026-11-11T14:34+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122120756709488772"
@@ -1157,10 +1173,6 @@
   "recall:ca-82808": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115353949488772"
-  },
-  "recall:ca-82810": {
-   "at": "2026-10-18T15:59+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122114469567488772"
   },
   "recall:ca-82826": {
    "at": "2026-10-23T21:29+00:00",
@@ -1730,6 +1742,14 @@
    "at": "2026-11-06T19:30+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122119637145488772"
   },
+  "recall:opss-2610-0256": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122208601488772"
+  },
+  "recall:opss-2610-0257": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122208565488772"
+  },
   "recall:opss-2611-0050": {
    "at": "2026-11-12T23:44+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122121099189488772"
@@ -1741,6 +1761,10 @@
   "recall:opss-2611-0056": {
    "at": "2026-11-12T15:20+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122120994777488772"
+  },
+  "recall:opss-2611-0068": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122208541488772"
   },
   "recall:rasff-2026.10084": {
    "at": "2026-11-15T06:34+00:00",
@@ -2098,6 +2122,10 @@
   },
   "app:2026-11-16": {
    "at": "2026-11-16T22:06+00:00",
+   "dry_run": true
+  },
+  "app:2026-11-17": {
+   "at": "2026-11-17T21:01+00:00",
    "dry_run": true
   },
   "recall:accc-08ddb81f-1ad4-4a51-bdd4-e8c52defaf6f": {
@@ -2636,6 +2664,14 @@
    "at": "2026-11-06T19:30+00:00",
    "dry_run": true
   },
+  "recall:opss-2610-0256": {
+   "at": "2026-11-17T21:01+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2610-0257": {
+   "at": "2026-11-17T21:01+00:00",
+   "dry_run": true
+  },
   "recall:opss-2611-0050": {
    "at": "2026-11-12T23:44+00:00",
    "dry_run": true
@@ -2646,6 +2682,10 @@
   },
   "recall:opss-2611-0056": {
    "at": "2026-11-12T15:20+00:00",
+   "dry_run": true
+  },
+  "recall:opss-2611-0068": {
+   "at": "2026-11-17T21:01+00:00",
    "dry_run": true
   },
   "recall:rasff-2026.10084": {
@@ -2990,6 +3030,10 @@
    "at": "2026-11-16T22:06+00:00",
    "ref": "https://mastodon.social/@recallatlas/117628390987358525"
   },
+  "app:2026-11-17": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117633799408221763"
+  },
   "recall:accc-08ddb81f-1ad4-4a51-bdd4-e8c52defaf6f": {
    "at": "2026-11-11T14:34+00:00",
    "ref": "https://mastodon.social/@recallatlas/117598303500318168"
@@ -3049,10 +3093,6 @@
   "recall:ca-82808": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://mastodon.social/@recallatlas/117480040728492520"
-  },
-  "recall:ca-82810": {
-   "at": "2026-10-18T15:59+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117462739251436625"
   },
   "recall:ca-82826": {
    "at": "2026-10-23T21:29+00:00",
@@ -3622,6 +3662,14 @@
    "at": "2026-11-06T19:30+00:00",
    "ref": "https://mastodon.social/@recallatlas/117571154920975227"
   },
+  "recall:opss-2610-0256": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117633799247791933"
+  },
+  "recall:opss-2610-0257": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117633799089825101"
+  },
   "recall:opss-2611-0050": {
    "at": "2026-11-12T23:44+00:00",
    "ref": "https://mastodon.social/@recallatlas/117606126035766387"
@@ -3633,6 +3681,10 @@
   "recall:opss-2611-0056": {
    "at": "2026-11-12T15:20+00:00",
    "ref": "https://mastodon.social/@recallatlas/117604145731060991"
+  },
+  "recall:opss-2611-0068": {
+   "at": "2026-11-17T21:01+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117633798926679185"
   },
   "recall:rasff-2026.10084": {
    "at": "2026-11-15T06:34+00:00",
