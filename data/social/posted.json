@@ -156,6 +156,10 @@
    "at": "2026-11-07T06:02+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzp7wxv7in2y"
   },
+  "recall:accc-be671486-25b7-40bf-b9d5-9d785d1b4953": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2q2csrop22f"
+  },
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n26fgcgqjk2l"
@@ -224,6 +228,14 @@
    "at": "2026-11-12T00:48+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n23arxtpca2m"
   },
+  "recall:ca-82976": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2q2cx7r7725"
+  },
+  "recall:ca-82977": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2q2cuyx3o2t"
+  },
   "recall:cpsc-27055": {
    "at": "2026-10-30T13:00+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz3tkgpqip2i"
@@ -267,14 +279,6 @@
   "recall:eu-SR/02974/26": {
    "at": "2026-10-28T22:41+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myxt3kvl2o22"
-  },
-  "recall:eu-SR/03000/26": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mydm7i4msu2a"
-  },
-  "recall:eu-SR/03004/26": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mydm7g3upj2t"
   },
   "recall:eu-SR/03022/26": {
    "at": "2026-10-21T15:34+00:00",
@@ -491,18 +495,6 @@
   "recall:fda-H-0011-2027": {
    "at": "2026-10-21T11:08+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myez44rihx2d"
-  },
-  "recall:fda-H-0013-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myee4zd2te2h"
-  },
-  "recall:fda-H-0014-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myee4x55gb2r"
-  },
-  "recall:fda-H-0016-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myee4tr6dr2r"
   },
   "recall:fda-H-0092-2027": {
    "at": "2026-10-26T23:26+00:00",
@@ -799,10 +791,6 @@
   "recall:rasff-2026.9254": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myfnszudpp2c"
-  },
-  "recall:rasff-2026.9286": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mydm7k5abi2o"
   },
   "recall:rasff-2026.9302": {
    "at": "2026-10-28T13:00+00:00",
@@ -1170,6 +1158,10 @@
    "at": "2026-11-07T06:02+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122119729827488772"
   },
+  "recall:accc-be671486-25b7-40bf-b9d5-9d785d1b4953": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122724097488772"
+  },
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122121158205488772"
@@ -1238,6 +1230,14 @@
    "at": "2026-11-12T00:48+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122120854725488772"
   },
+  "recall:ca-82976": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122724181488772"
+  },
+  "recall:ca-82977": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122122724139488772"
+  },
   "recall:cpsc-27055": {
    "at": "2026-10-30T13:00+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122117930991488772"
@@ -1281,14 +1281,6 @@
   "recall:eu-SR/02974/26": {
    "at": "2026-10-28T22:41+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122117537433488772"
-  },
-  "recall:eu-SR/03000/26": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122115121593488772"
-  },
-  "recall:eu-SR/03004/26": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122115121569488772"
   },
   "recall:eu-SR/03022/26": {
    "at": "2026-10-21T15:34+00:00",
@@ -1505,18 +1497,6 @@
   "recall:fda-H-0011-2027": {
    "at": "2026-10-21T11:08+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115278493488772"
-  },
-  "recall:fda-H-0013-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122115184599488772"
-  },
-  "recall:fda-H-0014-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122115184569488772"
-  },
-  "recall:fda-H-0016-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122115184533488772"
   },
   "recall:fda-H-0092-2027": {
    "at": "2026-10-26T23:26+00:00",
@@ -1813,10 +1793,6 @@
   "recall:rasff-2026.9254": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122115353901488772"
-  },
-  "recall:rasff-2026.9286": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122115121641488772"
   },
   "recall:rasff-2026.9302": {
    "at": "2026-10-28T13:00+00:00",
@@ -2188,6 +2164,10 @@
    "at": "2026-11-07T06:02+00:00",
    "dry_run": true
   },
+  "recall:accc-be671486-25b7-40bf-b9d5-9d785d1b4953": {
+   "at": "2026-11-20T07:19+00:00",
+   "dry_run": true
+  },
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "dry_run": true
@@ -2250,6 +2230,14 @@
   },
   "recall:ca-82937": {
    "at": "2026-11-12T00:48+00:00",
+   "dry_run": true
+  },
+  "recall:ca-82976": {
+   "at": "2026-11-20T07:19+00:00",
+   "dry_run": true
+  },
+  "recall:ca-82977": {
+   "at": "2026-11-20T07:19+00:00",
    "dry_run": true
   },
   "recall:cpsc-27055": {
@@ -3150,6 +3138,10 @@
    "at": "2026-11-07T06:02+00:00",
    "ref": "https://mastodon.social/@recallatlas/117573639632953344"
   },
+  "recall:accc-be671486-25b7-40bf-b9d5-9d785d1b4953": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117647552825575570"
+  },
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "ref": "https://mastodon.social/@recallatlas/117607802215038993"
@@ -3218,6 +3210,14 @@
    "at": "2026-11-12T00:48+00:00",
    "ref": "https://mastodon.social/@recallatlas/117600720594144761"
   },
+  "recall:ca-82976": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117647553138884760"
+  },
+  "recall:ca-82977": {
+   "at": "2026-11-20T07:19+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117647552984701204"
+  },
   "recall:cpsc-27055": {
    "at": "2026-10-30T13:00+00:00",
    "ref": "https://mastodon.social/@recallatlas/117529983579822802"
@@ -3261,14 +3261,6 @@
   "recall:eu-SR/02974/26": {
    "at": "2026-10-28T22:41+00:00",
    "ref": "https://mastodon.social/@recallatlas/117520943389001401"
-  },
-  "recall:eu-SR/03000/26": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117475423552403780"
-  },
-  "recall:eu-SR/03004/26": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117475423390312471"
   },
   "recall:eu-SR/03022/26": {
    "at": "2026-10-21T15:34+00:00",
@@ -3485,18 +3477,6 @@
   "recall:fda-H-0011-2027": {
    "at": "2026-10-21T11:08+00:00",
    "ref": "https://mastodon.social/@recallatlas/117478582795294754"
-  },
-  "recall:fda-H-0013-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117477107033253554"
-  },
-  "recall:fda-H-0014-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117477106877669123"
-  },
-  "recall:fda-H-0016-2027": {
-   "at": "2026-10-21T04:53+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117477106700326731"
   },
   "recall:fda-H-0092-2027": {
    "at": "2026-10-26T23:26+00:00",
@@ -3793,10 +3773,6 @@
   "recall:rasff-2026.9254": {
    "at": "2026-10-21T17:19+00:00",
    "ref": "https://mastodon.social/@recallatlas/117480040551405782"
-  },
-  "recall:rasff-2026.9286": {
-   "at": "2026-10-20T21:44+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117475423699883770"
   },
   "recall:rasff-2026.9302": {
    "at": "2026-10-28T13:00+00:00",
