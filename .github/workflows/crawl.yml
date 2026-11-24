@@ -45,6 +45,8 @@ jobs:
         with: { path: _site }
       # GitHub Pages has transient hiccups: hanging at "syncing_files" (9-10 Nov 2026)
       # or not yet seeing the just-uploaded artifact (23 Nov 2026). Try once, wait, retry.
+      - name: Give GitHub a moment to register the uploaded site
+        run: sleep 30
       - id: deploy
         continue-on-error: true
         uses: actions/deploy-pages@v5
