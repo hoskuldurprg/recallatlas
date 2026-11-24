@@ -43,16 +43,19 @@ jobs:
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5
         with: { path: _site }
-      # GitHub Pages sometimes hangs at "syncing_files" (9-10 Nov 2026). Wait longer,
-      # then try once more before failing the run.
+      # GitHub Pages has transient hiccups: hanging at "syncing_files" (9-10 Nov 2026)
+      # or not yet seeing the just-uploaded artifact (23 Nov 2026). Try once, wait, retry.
       - id: deploy
         continue-on-error: true
         uses: actions/deploy-pages@v5
-        with: { timeout: 1200000 }
+        with: { timeout: 600000 }   # 10 min is the action's maximum
+      - name: Wait before retrying the deploy
+        if: steps.deploy.outcome == 'failure'
+        run: sleep 120
       - id: deploy_retry
         if: steps.deploy.outcome == 'failure'
         uses: actions/deploy-pages@v5
-        with: { timeout: 1200000 }
+        with: { timeout: 600000 }
       - name: Send watchlist alerts (dry run until the Firebase secret is set)
         continue-on-error: true   # an alerts hiccup must never fail the site update
         env:
