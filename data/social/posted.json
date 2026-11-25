@@ -148,6 +148,10 @@
    "at": "2026-11-23T07:41+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2xmwvrihd2h"
   },
+  "recall:accc-5d8c0a6b-ac8b-4231-82e8-f3b826e5abfb": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n34r3zzymt2s"
+  },
   "recall:accc-7bd8de58-8bca-4ea4-afdf-a5f3b55641e8": {
    "at": "2026-11-07T06:02+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mzp7wzyv4k2b"
@@ -171,6 +175,10 @@
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n26fgcgqjk2l"
+  },
+  "recall:accc-e15087ee-931a-41fa-9b05-09afd53d5f77": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n34r3xpqqw24"
   },
   "recall:accc-f0990f3d-7a45-4e5b-8e59-050a138b1b7d": {
    "at": "2026-11-18T07:34+00:00",
@@ -508,6 +516,10 @@
    "at": "2026-11-17T08:00+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2il6eydta2b"
   },
+  "recall:mbie-hisense-501l-and-702l-chest-freezers-sold-at-various-retailers": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n34r3vdhe42e"
+  },
   "recall:mbie-hunting-and-fishing-youth-towelling-poncho-sold-at-hunting-and-fishing": {
    "at": "2026-11-18T07:34+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3n2l27dtw2u2t"
@@ -723,10 +735,6 @@
   "recall:rasff-2026.9475": {
    "at": "2026-10-30T05:53+00:00",
    "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3mz33omi5cx25"
-  },
-  "recall:rasff-2026.9492": {
-   "at": "2026-10-26T04:50+00:00",
-   "ref": "at://did:plc:yjt3amfejmhrza3vgg7jk5dd/app.bsky.feed.post/3myqwdojqbf2i"
   },
   "recall:rasff-2026.9519": {
    "at": "2026-10-28T05:49+00:00",
@@ -1018,6 +1026,10 @@
    "at": "2026-11-23T07:41+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122123371011488772"
   },
+  "recall:accc-5d8c0a6b-ac8b-4231-82e8-f3b826e5abfb": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122123809659488772"
+  },
   "recall:accc-7bd8de58-8bca-4ea4-afdf-a5f3b55641e8": {
    "at": "2026-11-07T06:02+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122119729869488772"
@@ -1041,6 +1053,10 @@
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122121158205488772"
+  },
+  "recall:accc-e15087ee-931a-41fa-9b05-09afd53d5f77": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122123809623488772"
   },
   "recall:accc-f0990f3d-7a45-4e5b-8e59-050a138b1b7d": {
    "at": "2026-11-18T07:34+00:00",
@@ -1378,6 +1394,10 @@
    "at": "2026-11-17T08:00+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122122085085488772"
   },
+  "recall:mbie-hisense-501l-and-702l-chest-freezers-sold-at-various-retailers": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "https://www.facebook.com/1402368802952535_122123809539488772"
+  },
   "recall:mbie-hunting-and-fishing-youth-towelling-poncho-sold-at-hunting-and-fishing": {
    "at": "2026-11-18T07:34+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122122284879488772"
@@ -1593,10 +1613,6 @@
   "recall:rasff-2026.9475": {
    "at": "2026-10-30T05:53+00:00",
    "ref": "https://www.facebook.com/1402368802952535_122117857767488772"
-  },
-  "recall:rasff-2026.9492": {
-   "at": "2026-10-26T04:50+00:00",
-   "ref": "https://www.facebook.com/1402368802952535_122116796817488772"
   },
   "recall:rasff-2026.9519": {
    "at": "2026-10-28T05:49+00:00",
@@ -1892,6 +1908,10 @@
    "at": "2026-11-23T07:41+00:00",
    "dry_run": true
   },
+  "recall:accc-5d8c0a6b-ac8b-4231-82e8-f3b826e5abfb": {
+   "at": "2026-11-25T08:39+00:00",
+   "dry_run": true
+  },
   "recall:accc-7bd8de58-8bca-4ea4-afdf-a5f3b55641e8": {
    "at": "2026-11-07T06:02+00:00",
    "dry_run": true
@@ -1914,6 +1934,10 @@
   },
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
+   "dry_run": true
+  },
+  "recall:accc-e15087ee-931a-41fa-9b05-09afd53d5f77": {
+   "at": "2026-11-25T08:39+00:00",
    "dry_run": true
   },
   "recall:accc-f0990f3d-7a45-4e5b-8e59-050a138b1b7d": {
@@ -2252,6 +2276,10 @@
    "at": "2026-11-17T08:00+00:00",
    "dry_run": true
   },
+  "recall:mbie-hisense-501l-and-702l-chest-freezers-sold-at-various-retailers": {
+   "at": "2026-11-25T08:39+00:00",
+   "dry_run": true
+  },
   "recall:mbie-hunting-and-fishing-youth-towelling-poncho-sold-at-hunting-and-fishing": {
    "at": "2026-11-18T07:34+00:00",
    "dry_run": true
@@ -2466,10 +2494,6 @@
   },
   "recall:rasff-2026.9475": {
    "at": "2026-10-30T05:53+00:00",
-   "dry_run": true
-  },
-  "recall:rasff-2026.9492": {
-   "at": "2026-10-26T04:50+00:00",
    "dry_run": true
   },
   "recall:rasff-2026.9519": {
@@ -2766,6 +2790,10 @@
    "at": "2026-11-23T07:41+00:00",
    "ref": "https://mastodon.social/@recallatlas/117664625961458390"
   },
+  "recall:accc-5d8c0a6b-ac8b-4231-82e8-f3b826e5abfb": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117676178035165554"
+  },
   "recall:accc-7bd8de58-8bca-4ea4-afdf-a5f3b55641e8": {
    "at": "2026-11-07T06:02+00:00",
    "ref": "https://mastodon.social/@recallatlas/117573639784481982"
@@ -2789,6 +2817,10 @@
   "recall:accc-dec5979a-509c-44ff-9366-072c425d7c26": {
    "at": "2026-11-13T06:50+00:00",
    "ref": "https://mastodon.social/@recallatlas/117607802215038993"
+  },
+  "recall:accc-e15087ee-931a-41fa-9b05-09afd53d5f77": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117676177880280608"
   },
   "recall:accc-f0990f3d-7a45-4e5b-8e59-050a138b1b7d": {
    "at": "2026-11-18T07:34+00:00",
@@ -3126,6 +3158,10 @@
    "at": "2026-11-17T08:00+00:00",
    "ref": "https://mastodon.social/@recallatlas/117630724932641538"
   },
+  "recall:mbie-hisense-501l-and-702l-chest-freezers-sold-at-various-retailers": {
+   "at": "2026-11-25T08:39+00:00",
+   "ref": "https://mastodon.social/@recallatlas/117676177722999333"
+  },
   "recall:mbie-hunting-and-fishing-youth-towelling-poncho-sold-at-hunting-and-fishing": {
    "at": "2026-11-18T07:34+00:00",
    "ref": "https://mastodon.social/@recallatlas/117636286232980449"
@@ -3341,10 +3377,6 @@
   "recall:rasff-2026.9475": {
    "at": "2026-10-30T05:53+00:00",
    "ref": "https://mastodon.social/@recallatlas/117528303761285302"
-  },
-  "recall:rasff-2026.9492": {
-   "at": "2026-10-26T04:50+00:00",
-   "ref": "https://mastodon.social/@recallatlas/117505409596211965"
   },
   "recall:rasff-2026.9519": {
    "at": "2026-10-28T05:49+00:00",
